@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:quiz_app/utils/animations/page_transition.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:quiz_app/screens/login_page.dart';
-import 'package:quiz_app/screens/dashboard.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,28 +17,19 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Squix',
       debugShowCheckedModeBanner: false,
-      initialRoute: '/',
-      routes: {
-        '/': (context) => const _AppEntryPoint(),
-        '/dashboard': (context) => const Dashboard(),
-        '/login': (context) => LoginPage(
-              onLoginSuccess: () {
-                Navigator.pushReplacementNamed(context, '/dashboard');
-              },
-            ),
-      },
+      home: const AppEntryPoint(),
     );
   }
 }
 
-class _AppEntryPoint extends StatefulWidget {
-  const _AppEntryPoint({Key? key}) : super(key: key);
+class AppEntryPoint extends StatefulWidget {
+  const AppEntryPoint({Key? key}) : super(key: key);
 
   @override
-  State<_AppEntryPoint> createState() => _AppEntryPointState();
+  State<AppEntryPoint> createState() => _AppEntryPointState();
 }
 
-class _AppEntryPointState extends State<_AppEntryPoint> {
+class _AppEntryPointState extends State<AppEntryPoint> {
   bool _isLoading = true;
   String _lastRoute = '/login';
 
@@ -61,18 +51,13 @@ class _AppEntryPointState extends State<_AppEntryPoint> {
 
     // After loading, redirect to the last route
     if (mounted) {
-      if (_lastRoute == '/') {
-        // Avoid redirect loop to self
-        Navigator.pushReplacementNamed(context, '/login');
-      } else {
-        Navigator.pushReplacementNamed(context, _lastRoute);
-      }
+      final routeToNavigate = _lastRoute == '/' ? '/login' : _lastRoute;
+      customNavigateReplacement(context, routeToNavigate, AnimationType.fade);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Show loading indicator while state loads
     return Scaffold(
       body: Center(
         child: _isLoading

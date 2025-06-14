@@ -1,7 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:quiz_app/utils/color.dart';
-import 'package:quiz_app/utils/page_transition.dart';
+import 'package:quiz_app/utils/animations/page_transition.dart';
 import 'package:quiz_app/widgets/navbar/create_button.dart';
 import 'package:quiz_app/widgets/navbar/navbar_shape.dart';
 
