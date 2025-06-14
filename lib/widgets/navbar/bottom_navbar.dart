@@ -1,6 +1,5 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:quiz_app/screens/create_page.dart'; // Import your create page here
 import 'package:quiz_app/utils/color.dart';
 import 'package:quiz_app/utils/page_transition.dart';
 import 'package:quiz_app/widgets/navbar/create_button.dart';
@@ -13,20 +12,39 @@ class BottomNavbarController extends StatefulWidget {
   State<BottomNavbarController> createState() => _BottomNavbarControllerState();
 }
 
-class _BottomNavbarControllerState extends State<BottomNavbarController> {
+class _BottomNavbarControllerState extends State<BottomNavbarController>
+    with TickerProviderStateMixin {
   int _selectedIndex = 0;
-  int _previousIndex = 0;
+  int _previousIndex = -1;
 
-  // Add CreatePage as index 2
-  final List<Widget> _pages = const [
-    Center(key: ValueKey("Home"), child: Text("Home")),
-    Center(key: ValueKey("Library"), child: Text("Library")),
-    CreatePage(key: ValueKey("Create")),  
-    Center(key: ValueKey("Profile"), child: Text("Profile")),
-    Center(key: ValueKey("Settings"), child: Text("Settings")),
-  ];
-
+  final GlobalKey<NavigatorState> _createNavigatorKey =
+      GlobalKey<NavigatorState>();
+  late final CreateNavigator _createNavigator;
+  late final List<Widget> _pages;
   late FloatingActionButtonLocation _fabLocation;
+
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    _animation = CurvedAnimation(parent: _controller, curve: Curves.easeOut);
+
+    _createNavigator = CreateNavigator(navigatorKey: _createNavigatorKey);
+    _pages = [
+      const Center(key: ValueKey("Home"), child: Text("Home")),
+      const Center(key: ValueKey("Library"), child: Text("Library")),
+      _createNavigator,
+      const Center(key: ValueKey("Profile"), child: Text("Profile")),
+      const Center(key: ValueKey("Settings"), child: Text("Settings")),
+    ];
+    _controller.forward();
+  }
 
   @override
   void didChangeDependencies() {
@@ -36,31 +54,52 @@ class _BottomNavbarControllerState extends State<BottomNavbarController> {
   }
 
   void _onNavItemTapped(int index) {
-    setState(() {
-      _previousIndex = _selectedIndex;
-      _selectedIndex = index;
-    });
+    if (index != _selectedIndex) {
+      setState(() {
+        _previousIndex = _selectedIndex;
+        _selectedIndex = index;
+        _controller.reset();
+        _controller.forward();
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  AnimationType _getAnimationType(int previous, int current) {
+    if (current == 2) return AnimationType.fade;
+    if (current - previous >= 1) return AnimationType.slideLeft;
+    return AnimationType.slideRight;
+  }
+
+  Widget _buildTransitioningPage(int index) {
+    final bool isActive = index == _selectedIndex;
+    final animationType = _getAnimationType(_previousIndex, _selectedIndex);
+
+    return Offstage(
+      offstage: !isActive,
+      child: TickerMode(
+        enabled: isActive,
+        child: PageTransition(
+          animation: _animation,
+          animationType: animationType,
+          child: _pages[index],
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: PageTransition(
-        isForward: _selectedIndex > _previousIndex,
-        index: _selectedIndex,
-        child: _pages[_selectedIndex],
+      body: Stack(
+        children: List.generate(_pages.length, _buildTransitioningPage),
       ),
-      floatingActionButton: CreateButton(
-        onPressed: () {
-          print('FAB pressed');
-          if (_selectedIndex != 2) {
-            setState(() {
-              _previousIndex = _selectedIndex;
-              _selectedIndex = 2;
-            });
-          }
-        },
-      ),
+      floatingActionButton: CreateButton(onPressed: () => _onNavItemTapped(2)),
       floatingActionButtonLocation: _fabLocation,
       bottomNavigationBar: _BottomNavbar(
         currentIndex: _selectedIndex,

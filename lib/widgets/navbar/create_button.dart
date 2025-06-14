@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:quiz_app/CreateSection/screens/assessment_page.dart';
+import 'package:quiz_app/CreateSection/screens/create_page.dart';
 import 'package:quiz_app/utils/color.dart';
 
 class CreateButton extends StatelessWidget {
@@ -55,5 +57,32 @@ class CreateButtonLocation extends FloatingActionButtonLocation {
         scaffoldGeometry.floatingActionButtonSize.height -
         offset;
     return Offset(fabX, fabY);
+  }
+}
+
+class CreateNavigator extends StatelessWidget {
+  final GlobalKey<NavigatorState> navigatorKey;
+
+  const CreateNavigator({super.key, required this.navigatorKey});
+
+  @override
+  Widget build(BuildContext context) {
+    return Navigator(
+      key: navigatorKey,
+      onGenerateRoute: (RouteSettings settings) {
+        WidgetBuilder builder;
+        switch (settings.name) {
+          case '/':
+            builder = (context) => const CreatePage();
+            break;
+          case '/assessment_page':
+            builder = (context) => AssessmentPage(); // your other pages
+            break;
+          default:
+            throw Exception('Invalid route: ${settings.name}');
+        }
+        return MaterialPageRoute(builder: builder, settings: settings);
+      },
+    );
   }
 }

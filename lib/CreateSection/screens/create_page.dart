@@ -4,9 +4,7 @@ class CreatePage extends StatelessWidget {
   const CreatePage({super.key});
 
   void _onAssessmentTap(BuildContext context) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Assessment tapped!')));
+      Navigator.of(context).pushNamed('/assessment_page');
   }
 
   void _onLearningToolsTap(BuildContext context) {

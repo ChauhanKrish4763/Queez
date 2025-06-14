@@ -10,8 +10,8 @@ class Dashboard extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Scaffold(
       appBar: Appbar(),
-      body: BottomNavbarController(), // New main logic container
+      body: BottomNavbarController(),
       backgroundColor: AppColors.background,
-    );
+    );  
   }
 }
