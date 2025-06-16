@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:quiz_app/utils/color.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:quiz_app/utils/animations/page_transition.dart';
 
 class LoginPage extends StatefulWidget {
   final VoidCallback onLoginSuccess;
@@ -16,7 +17,8 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -66,83 +68,122 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     return doc.exists && doc.data() != null;
   }
 
-Future<void> _login() async {
-  final email = _emailController.text.trim();
-  final password = _passwordController.text;
+  Future<void> _login() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
 
-  if (email.isEmpty || password.isEmpty) {
-    _showMessage('Please enter both email and password');
-    return;
-  }
-
-  setState(() => _loading = true);
-
-  try {
-    await _auth.signInWithEmailAndPassword(email: email, password: password);
-
-    // Save login state and last route to SharedPreferences
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('loggedIn', true);
-    await prefs.setString('lastRoute', '/dashboard');
-
-    widget.onLoginSuccess(); // Notify parent
-  } on FirebaseAuthException catch (e) {
-    _showMessage('Login failed: ${e.message}');
-  } catch (e) {
-    _showMessage('An unexpected error occurred');
-  } finally {
-    setState(() => _loading = false);
-  }
-}
-
-
-Future<void> _signUp() async {
-  final email = _emailController.text.trim();
-  final password = _passwordController.text;
-  final confirmPassword = _confirmPasswordController.text;
-
-  if (email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
-    _showMessage('Please fill all fields');
-    return;
-  }
-
-  if (password != confirmPassword) {
-    _showMessage('Passwords do not match');
-    return;
-  }
-
-  setState(() => _loading = true);
-
-  try {
-    final userCredential = await _auth.createUserWithEmailAndPassword(
-      email: email,
-      password: password,
-    );
-
-    final uid = userCredential.user?.uid;
-    if (uid == null) {
-      _showMessage('Failed to get user info.');
+    if (email.isEmpty || password.isEmpty) {
+      _showMessage('Please enter both email and password');
       return;
     }
 
-    // Save login state and last route to SharedPreferences
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('loggedIn', true);
-    await prefs.setString('lastRoute', '/dashboard');
+    setState(() => _loading = true);
 
-    widget.onLoginSuccess(); // Notify parent
-  } on FirebaseAuthException catch (e) {
-    _showMessage('Sign up failed: ${e.message}');
-  } catch (e) {
-    _showMessage('An unexpected error occurred');
-  } finally {
-    setState(() => _loading = false);
+    try {
+      final userCredential = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      final uid = userCredential.user?.uid;
+
+      if (uid == null) {
+        _showMessage('Failed to get user info.');
+        return;
+      }
+
+      // Check if profile is set up
+      final hasProfile = await _isProfileSetup(uid);
+
+      // Save login state and last route to SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('loggedIn', true);
+
+      if (hasProfile) {
+        // Profile is already set up, go to dashboard
+        await prefs.setBool('profileSetupCompleted', true);
+        await prefs.setString('lastRoute', '/dashboard');
+        // Use customNavigateReplacement directly instead of callback
+        customNavigateReplacement(context, '/dashboard', AnimationType.fade);
+      } else {
+        // Profile not set up, go to profile setup
+        await prefs.setBool('profileSetupCompleted', false);
+        await prefs.setString('lastRoute', '/profile_welcome');
+        // Use customNavigateReplacement directly instead of callback
+        customNavigateReplacement(
+          context,
+          '/profile_welcome',
+          AnimationType.fade,
+        );
+      }
+
+      // Still call the callback for backward compatibility
+      widget.onLoginSuccess();
+    } on FirebaseAuthException catch (e) {
+      _showMessage('Login failed: ${e.message}');
+    } catch (e) {
+      _showMessage('An unexpected error occurred');
+    } finally {
+      setState(() => _loading = false);
+    }
   }
-}
 
+  Future<void> _signUp() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+    final confirmPassword = _confirmPasswordController.text;
+
+    if (email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
+      _showMessage('Please fill all fields');
+      return;
+    }
+
+    if (password != confirmPassword) {
+      _showMessage('Passwords do not match');
+      return;
+    }
+
+    setState(() => _loading = true);
+
+    try {
+      final userCredential = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      final uid = userCredential.user?.uid;
+      if (uid == null) {
+        _showMessage('Failed to get user info.');
+        return;
+      }
+
+      // For new users, always go to profile setup
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('loggedIn', true);
+      await prefs.setBool('profileSetupCompleted', false);
+      await prefs.setString('lastRoute', '/profile_welcome');
+
+      // Use customNavigateReplacement directly instead of callback
+      customNavigateReplacement(
+        context,
+        '/profile_welcome',
+        AnimationType.fade,
+      );
+
+      // Still call the callback for backward compatibility
+      widget.onLoginSuccess();
+    } on FirebaseAuthException catch (e) {
+      _showMessage('Sign up failed: ${e.message}');
+    } catch (e) {
+      _showMessage('An unexpected error occurred');
+    } finally {
+      setState(() => _loading = false);
+    }
+  }
 
   void _showMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   Widget _buildInputField({
@@ -167,7 +208,10 @@ Future<void> _signUp() async {
           hintText: hint,
           hintStyle: TextStyle(color: Colors.grey[500]),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 20,
+          ),
           prefixIcon: Icon(icon, color: AppColors.primary),
         ),
       ),
@@ -223,7 +267,9 @@ Future<void> _signUp() async {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    _isSignUpMode ? 'Let\'s begin your journey' : 'Let\'s continue your journey',
+                    _isSignUpMode
+                        ? 'Let\'s begin your journey'
+                        : 'Let\'s continue your journey',
                     style: const TextStyle(
                       fontSize: 18,
                       color: AppColors.primary,
@@ -272,9 +318,10 @@ Future<void> _signUp() async {
                       width: double.infinity,
                       height: 50,
                       child: ElevatedButton(
-                        onPressed: _loading
-                            ? null
-                            : _isSignUpMode
+                        onPressed:
+                            _loading
+                                ? null
+                                : _isSignUpMode
                                 ? _signUp
                                 : _login,
                         style: ElevatedButton.styleFrom(
@@ -284,18 +331,21 @@ Future<void> _signUp() async {
                           ),
                           elevation: 4,
                         ),
-                        child: _loading
-                            ? const CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation(Colors.white),
-                              )
-                            : Text(
-                                _isSignUpMode ? 'Sign Up' : 'Login',
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  color: AppColors.secondaryDark,
-                                  fontWeight: FontWeight.bold,
+                        child:
+                            _loading
+                                ? const CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation(
+                                    Colors.white,
+                                  ),
+                                )
+                                : Text(
+                                  _isSignUpMode ? 'Sign Up' : 'Login',
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    color: AppColors.secondaryDark,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              ),
                       ),
                     ),
                   ),
