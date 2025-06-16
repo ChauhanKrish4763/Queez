@@ -75,25 +75,6 @@ class CustomTextField extends StatelessWidget {
             ),
           ),
         ),
-        if (validator != null && autoValidate)
-          ValueListenableBuilder<TextEditingValue>(
-            valueListenable: controller,
-            builder: (context, value, child) {
-              final error = validator!(value.text);
-              return error != null
-                  ? Padding(
-                      padding: const EdgeInsets.only(top: 8, left: 12),
-                      child: Text(
-                        error,
-                        style: const TextStyle(
-                          color: AppColors.error,
-                          fontSize: 12,
-                        ),
-                      ),
-                    )
-                  : const SizedBox.shrink();
-            },
-          ),
       ],
     );
   }
