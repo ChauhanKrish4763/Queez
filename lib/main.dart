@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:quiz_app/ProfileSetup/profile_setup_routes.dart';
 import 'package:quiz_app/utils/animations/page_transition.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -43,9 +44,16 @@ class _AppEntryPointState extends State<AppEntryPoint> {
     final prefs = await SharedPreferences.getInstance();
     final loggedIn = prefs.getBool('loggedIn') ?? false;
     final lastRoute = prefs.getString('lastRoute') ?? '/login';
+    final profileSetupCompleted =
+        prefs.getBool('profileSetupCompleted') ?? false;
 
     setState(() {
-      _lastRoute = loggedIn ? lastRoute : '/login';
+      // If logged in but profile setup not completed, go to profile setup
+      if (loggedIn && !profileSetupCompleted) {
+        _lastRoute = '/profile_welcome';
+      } else {
+        _lastRoute = loggedIn ? lastRoute : '/login';
+      }
       _isLoading = false;
     });
 
@@ -60,9 +68,10 @@ class _AppEntryPointState extends State<AppEntryPoint> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: _isLoading
-            ? const CircularProgressIndicator()
-            : const SizedBox.shrink(),
+        child:
+            _isLoading
+                ? const CircularProgressIndicator()
+                : const SizedBox.shrink(),
       ),
     );
   }

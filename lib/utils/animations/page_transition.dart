@@ -72,38 +72,26 @@ class PageTransition extends StatelessWidget {
         );
       case AnimationType.scale:
         return ScaleTransition(
-          scale: Tween<double>(
-            begin: 0.0,
-            end: 1.0,
-          ).animate(CurvedAnimation(
-            parent: animation,
-            curve: Curves.easeOutBack,
-          )),
+          scale: Tween<double>(begin: 0.0, end: 1.0).animate(
+            CurvedAnimation(parent: animation, curve: Curves.easeOutBack),
+          ),
           child: child,
         );
       case AnimationType.rotation:
         return RotationTransition(
-          turns: Tween<double>(
-            begin: 0.25,
-            end: 0.0,
-          ).animate(CurvedAnimation(
-            parent: animation,
-            curve: Curves.easeOutBack,
-          )),
-          child: FadeTransition(
-            opacity: animation,
-            child: child,
+          turns: Tween<double>(begin: 0.25, end: 0.0).animate(
+            CurvedAnimation(parent: animation, curve: Curves.easeOutBack),
           ),
+          child: FadeTransition(opacity: animation, child: child),
         );
       case AnimationType.bounce:
         return SlideTransition(
           position: Tween<Offset>(
             begin: const Offset(0, 1),
             end: Offset.zero,
-          ).animate(CurvedAnimation(
-            parent: animation,
-            curve: Curves.bounceOut,
-          )),
+          ).animate(
+            CurvedAnimation(parent: animation, curve: Curves.bounceOut),
+          ),
           child: child,
         );
     }
@@ -124,11 +112,25 @@ Route customRoute(Widget page, AnimationType animationType) {
 }
 
 void customNavigate(
-    BuildContext context, String routeName, AnimationType animationType) {
+  BuildContext context,
+  String routeName,
+  AnimationType animationType, {
+  Map<String, dynamic>? arguments,
+}) {
   final builder = routeMap[routeName];
   if (builder != null) {
     Navigator.of(context).push(
-      customRoute(builder(context), animationType),
+      PageRouteBuilder(
+        settings: RouteSettings(arguments: arguments),
+        pageBuilder: (context, animation, secondaryAnimation) {
+          return PageTransition(
+            child: builder(context),
+            animation: animation,
+            animationType: animationType,
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 300),
+      ),
     );
   } else {
     throw Exception('Route "$routeName" not found in routeMap.');
@@ -136,11 +138,25 @@ void customNavigate(
 }
 
 void customNavigateReplacement(
-    BuildContext context, String routeName, AnimationType animationType) {
+  BuildContext context,
+  String routeName,
+  AnimationType animationType, {
+  Map<String, dynamic>? arguments,
+}) {
   final builder = routeMap[routeName];
   if (builder != null) {
     Navigator.of(context).pushReplacement(
-      customRoute(builder(context), animationType),
+      PageRouteBuilder(
+        settings: RouteSettings(arguments: arguments),
+        pageBuilder: (context, animation, secondaryAnimation) {
+          return PageTransition(
+            child: builder(context),
+            animation: animation,
+            animationType: animationType,
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 300),
+      ),
     );
   } else {
     throw Exception('Route "$routeName" not found in routeMap.');

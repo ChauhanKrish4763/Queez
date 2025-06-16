@@ -50,10 +50,12 @@ class CreateButtonLocation extends FloatingActionButtonLocation {
 
   @override
   Offset getOffset(ScaffoldPrelayoutGeometry scaffoldGeometry) {
-    final double fabX = (scaffoldGeometry.scaffoldSize.width -
+    final double fabX =
+        (scaffoldGeometry.scaffoldSize.width -
             scaffoldGeometry.floatingActionButtonSize.width) /
         2;
-    final double fabY = scaffoldGeometry.scaffoldSize.height -
+    final double fabY =
+        scaffoldGeometry.scaffoldSize.height -
         scaffoldGeometry.floatingActionButtonSize.height -
         offset;
     return Offset(fabX, fabY);

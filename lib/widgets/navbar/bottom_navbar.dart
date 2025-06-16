@@ -1,7 +1,10 @@
 import 'dart:ui';
+
 import 'package:flutter/material.dart';
-import 'package:quiz_app/utils/color.dart';
+import 'package:quiz_app/CreateSection/screens/create_page.dart';
+import 'package:quiz_app/ProfilePage/profile_page.dart';
 import 'package:quiz_app/utils/animations/page_transition.dart';
+import 'package:quiz_app/utils/color.dart';
 import 'package:quiz_app/widgets/navbar/create_button.dart';
 import 'package:quiz_app/widgets/navbar/navbar_shape.dart';
 
@@ -37,11 +40,11 @@ class _BottomNavbarControllerState extends State<BottomNavbarController>
 
     _createNavigator = CreateNavigator(navigatorKey: _createNavigatorKey);
     _pages = [
-      const Center(key: ValueKey("Home"), child: Text("Home")),
-      const Center(key: ValueKey("Library"), child: Text("Library")),
-      _createNavigator,
-      const Center(key: ValueKey("Profile"), child: Text("Profile")),
-      const Center(key: ValueKey("Settings"), child: Text("Settings")),
+      const Center(key: ValueKey("Home"), child: Text("Home Page")),
+      const Center(key: ValueKey("Library"), child: Text("Library Page")),
+      const CreatePage(),
+      const ProfilePage(),
+      const Center(key: ValueKey("Settings"), child: Text("Settings Page")),
     ];
     _controller.forward();
   }
