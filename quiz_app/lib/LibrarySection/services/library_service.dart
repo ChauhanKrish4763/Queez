@@ -1,0 +1,44 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+class QuizLibraryItem {
+  final String id;
+  final String title;
+  final String? coverImagePath;
+
+  QuizLibraryItem({
+    required this.id,
+    required this.title,
+    this.coverImagePath,
+  });
+
+  factory QuizLibraryItem.fromJson(Map<String, dynamic> json) {
+    return QuizLibraryItem(
+      id: json['id'],
+      title: json['title'],
+      coverImagePath: json['coverImagePath'],
+    );
+  }
+}
+
+class LibraryService {
+  static const String baseUrl = 'http://YOUR-IP-ADDRESS:8000'; // Change as needed
+
+  static Future<List<QuizLibraryItem>> fetchQuizLibrary() async {
+    final response = await http.get(Uri.parse('$baseUrl/quizzes/library'));
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = json.decode(response.body);
+      if (data['success'] == true && data['data'] != null) {
+        final List<dynamic> quizzesJson = data['data'];
+        return quizzesJson
+            .map((json) => QuizLibraryItem.fromJson(json))
+            .toList();
+      } else {
+        throw Exception('Failed to load quizzes');
+      }
+    } else {
+      throw Exception('Failed to load quizzes: ${response.reasonPhrase}');
+    }
+  }
+}
