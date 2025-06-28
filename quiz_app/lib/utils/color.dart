@@ -35,4 +35,7 @@ class AppColors {
   // 🖋️ Text contrast colors
   static const Color textPrimary = Color(0xFF2E2E2E);       // Rich black
   static const Color textSecondary = Color(0xFF616161);     // Medium gray
+
+  static const Color disabledBackground = Color(0xFFF5F5F5);
+  static const Color textDisabled = Color(0xFFBDBDBD);
 }

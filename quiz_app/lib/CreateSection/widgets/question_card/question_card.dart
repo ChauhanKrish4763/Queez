@@ -9,11 +9,13 @@ import 'package:quiz_app/utils/color.dart';
 class QuestionCard extends StatefulWidget {
   final Question question;
   final Function(Question) onQuestionUpdated;
+  final bool isLocked;
 
   const QuestionCard({
     Key? key,
     required this.question,
     required this.onQuestionUpdated,
+    this.isLocked = false,
   }) : super(key: key);
 
   @override
@@ -291,7 +293,8 @@ class _QuestionCardState extends State<QuestionCard>
             'Drag & Drop',
           ],
           hintText: 'Select question type',
-          onChanged: _changeQuestionType,
+          onChanged: widget.isLocked ? null : _changeQuestionType,
+          enabled: !widget.isLocked,
         ),
       ],
     );
@@ -314,6 +317,7 @@ class _QuestionCardState extends State<QuestionCard>
           controller: _questionController,
           hintText: 'Enter your question here...',
           maxLines: 3,
+          enabled: !widget.isLocked,
         ),
       ],
     );
@@ -330,6 +334,7 @@ class _QuestionCardState extends State<QuestionCard>
       onCorrectAnswerSelected: _selectCorrectAnswer,
       onAddDragDropPair: _addDragDropPair,
       onRemoveDragDropPair: _removeDragDropPair,
+      isLocked: widget.isLocked,
     );
   }
 

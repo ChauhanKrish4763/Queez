@@ -6,12 +6,14 @@ class DragDropPair extends StatelessWidget {
   final int index;
   final TextEditingController? dragController;
   final TextEditingController? dropController;
+  final bool isLocked;
 
   const DragDropPair({
     Key? key,
     required this.index,
     this.dragController,
     this.dropController,
+    this.isLocked = false,
   }) : super(key: key);
 
   @override
@@ -36,6 +38,7 @@ class DragDropPair extends StatelessWidget {
               controller: dragController ?? TextEditingController(),
               hintText: 'Drag item ${index + 1}',
               width: double.infinity,
+              enabled: !isLocked,
             ),
           ),
 
@@ -48,6 +51,7 @@ class DragDropPair extends StatelessWidget {
               controller: dropController ?? TextEditingController(),
               hintText: 'Drop target ${index + 1}',
               width: double.infinity,
+              enabled: !isLocked,
             ),
           ),
         ],

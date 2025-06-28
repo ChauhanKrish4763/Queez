@@ -7,6 +7,7 @@ class DragDropContent extends StatelessWidget {
   final List<TextEditingController> dropTargetControllers;
   final VoidCallback onAddPair;
   final VoidCallback onRemovePair;
+  final bool isLocked;
 
   const DragDropContent({
     Key? key,
@@ -14,6 +15,7 @@ class DragDropContent extends StatelessWidget {
     required this.dropTargetControllers,
     required this.onAddPair,
     required this.onRemovePair,
+    this.isLocked = false,
   }) : super(key: key);
 
   @override
@@ -112,10 +114,12 @@ class DragDropContent extends StatelessWidget {
   }
 
   Widget _buildControlButtons() {
+    if (isLocked) return const SizedBox.shrink();
+    
     return Row(
       children: [
         ElevatedButton.icon(
-          onPressed: onAddPair,
+          onPressed: isLocked ? null : onAddPair,
           icon: const Icon(Icons.add, size: 18),
           label: const Text('Add Pair'),
           style: ElevatedButton.styleFrom(
@@ -133,7 +137,7 @@ class DragDropContent extends StatelessWidget {
         const SizedBox(width: 12),
         if (dragItemControllers.length > 1 || dropTargetControllers.length > 1)
           ElevatedButton.icon(
-            onPressed: onRemovePair,
+            onPressed: isLocked ? null : onRemovePair,
             icon: const Icon(Icons.remove, size: 18),
             label: const Text('Remove Pair'),
             style: ElevatedButton.styleFrom(

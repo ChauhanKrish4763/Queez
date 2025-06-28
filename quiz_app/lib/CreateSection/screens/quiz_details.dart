@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:quiz_app/CreateSection/models/question.dart';
+import 'package:quiz_app/CreateSection/screens/quiz_questions.dart';
 import 'package:quiz_app/CreateSection/services/quiz_cache_manager.dart';
+import 'package:quiz_app/CreateSection/services/quiz_service.dart';
 import 'package:quiz_app/CreateSection/widgets/custom_dropdown.dart';
 import 'package:quiz_app/CreateSection/widgets/custom_text_field.dart';
 import 'package:quiz_app/CreateSection/widgets/image_picker.dart';
@@ -7,9 +10,12 @@ import 'package:quiz_app/CreateSection/widgets/primary_button.dart';
 import 'package:quiz_app/CreateSection/widgets/section_title.dart';
 import 'package:quiz_app/utils/animations/page_transition.dart';
 import 'package:quiz_app/utils/color.dart';
+import 'package:quiz_app/LibrarySection/widgets/quiz_library_item.dart';
 
 class QuizDetails extends StatefulWidget {
-  const QuizDetails({super.key});
+  final QuizLibraryItem? quizItem;
+
+  const QuizDetails({super.key, this.quizItem});
 
   @override
   _QuizDetailsState createState() => _QuizDetailsState();
@@ -23,6 +29,8 @@ class _QuizDetailsState extends State<QuizDetails> {
   String? _selectedLanguage;
   String? _coverImagePath;
   bool _autoValidate = false;
+  bool _isLocked = false;
+  List<Question> questions = [];
 
   final List<String> _tags = [
     'Language Learning',
@@ -32,6 +40,34 @@ class _QuizDetailsState extends State<QuizDetails> {
   ];
 
   final List<String> _languages = ['English', 'Spanish', 'French', 'Others'];
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.quizItem != null) {
+      _titleController.text = widget.quizItem!.title;
+      _descriptionController.text = widget.quizItem!.description;
+      _selectedTag = widget.quizItem!.category;
+      _selectedLanguage = widget.quizItem!.language;
+      _coverImagePath = widget.quizItem!.coverImagePath;
+      _isLocked = true;
+      _fetchQuestions();
+    }
+  }
+
+  Future<void> _fetchQuestions() async {
+    try {
+      final fetchedQuestions = await QuizService.fetchQuestionsByQuizId(
+        widget.quizItem!.id,
+      );
+      setState(() {
+        questions = fetchedQuestions;
+      });
+    } catch (e) {
+      // Handle error (e.g., show a snackbar)
+      print('Error fetching questions: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,9 +86,7 @@ class _QuizDetailsState extends State<QuizDetails> {
         elevation: 0,
       ),
       body: GestureDetector(
-        onTap: () {
-          FocusScope.of(context).unfocus();
-        },
+        onTap: () => FocusScope.of(context).unfocus(),
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(24.0),
@@ -61,7 +95,6 @@ class _QuizDetailsState extends State<QuizDetails> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Simple Title
                   Text(
                     'Fill the details to get started',
                     style: TextStyle(
@@ -70,7 +103,6 @@ class _QuizDetailsState extends State<QuizDetails> {
                       color: AppColors.textPrimary,
                     ),
                   ),
-
                   const SizedBox(height: 32),
 
                   // Quiz Title Field
@@ -86,9 +118,9 @@ class _QuizDetailsState extends State<QuizDetails> {
                         return null;
                       },
                       autoValidate: _autoValidate,
+                      enabled: !_isLocked,
                     ),
                   ),
-
                   const SizedBox(height: 20),
 
                   // Language Dropdown
@@ -105,14 +137,11 @@ class _QuizDetailsState extends State<QuizDetails> {
                         return null;
                       },
                       autoValidate: _autoValidate,
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedLanguage = value;
-                        });
-                      },
+                      onChanged:
+                          (value) => setState(() => _selectedLanguage = value),
+                      enabled: !_isLocked,
                     ),
                   ),
-
                   const SizedBox(height: 20),
 
                   // Cover Image Section
@@ -125,7 +154,6 @@ class _QuizDetailsState extends State<QuizDetails> {
                       },
                     ),
                   ),
-
                   const SizedBox(height: 20),
 
                   // Description Field
@@ -142,9 +170,9 @@ class _QuizDetailsState extends State<QuizDetails> {
                         return null;
                       },
                       autoValidate: _autoValidate,
+                      enabled: !_isLocked,
                     ),
                   ),
-
                   const SizedBox(height: 20),
 
                   // Category Dropdown
@@ -161,14 +189,11 @@ class _QuizDetailsState extends State<QuizDetails> {
                         return null;
                       },
                       autoValidate: _autoValidate,
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedTag = value;
-                        });
-                      },
+                      onChanged:
+                          (value) => setState(() => _selectedTag = value),
+                      enabled: !_isLocked,
                     ),
                   ),
-
                   const SizedBox(height: 40),
 
                   // Get Started Button
@@ -176,7 +201,6 @@ class _QuizDetailsState extends State<QuizDetails> {
                     text: 'Get Started',
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
-                        // Add this cache functionality here
                         QuizCacheManager.instance.cacheQuizDetails(
                           title: _titleController.text,
                           description: _descriptionController.text,
@@ -185,15 +209,23 @@ class _QuizDetailsState extends State<QuizDetails> {
                           coverImagePath: _coverImagePath,
                         );
 
-                        customNavigate(
-                          context,
-                          '/quiz_questions',
-                          AnimationType.slideLeft,
-                        );
+                        if (widget.quizItem == null) {
+                          // Navigate by route
+                          customNavigate(
+                            context,
+                            '/quiz_questions',
+                            AnimationType.slideLeft,
+                          );
+                        } else {
+                          // Navigate directly with data
+                          _privateNavigator(
+                            context,
+                            questions, // null-checked as requested
+                            AnimationType.slideLeft,
+                          );
+                        }
                       } else {
-                        setState(() {
-                          _autoValidate = true;
-                        });
+                        setState(() => _autoValidate = true);
                       }
                     },
                   ),
@@ -213,5 +245,28 @@ class _QuizDetailsState extends State<QuizDetails> {
     _titleController.dispose();
     _descriptionController.dispose();
     super.dispose();
+  }
+
+  void _privateNavigator(
+    BuildContext context,
+    List<Question> questions,
+    AnimationType animationType, {
+    GlobalKey<NavigatorState>? navigatorKey,
+  }) {
+    final navigator = navigatorKey?.currentState ?? Navigator.of(context);
+
+    navigator.push(
+      PageRouteBuilder(
+        settings: RouteSettings(arguments: questions),
+        pageBuilder: (context, animation, secondaryAnimation) {
+          return PageTransition(
+            animation: animation,
+            animationType: animationType,
+            child: QuizQuestions(questions: questions),
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 300),
+      ),
+    );
   }
 }

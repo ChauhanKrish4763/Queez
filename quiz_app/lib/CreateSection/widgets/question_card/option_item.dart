@@ -10,6 +10,7 @@ class OptionItem extends StatelessWidget {
   final ValueNotifier<int?> correctAnswerNotifier;
   final ValueNotifier<List<int>> multiCorrectAnswersNotifier;
   final Function(int) onCorrectAnswerSelected;
+  final bool isLocked;
 
   const OptionItem({
     Key? key,
@@ -19,6 +20,7 @@ class OptionItem extends StatelessWidget {
     required this.correctAnswerNotifier,
     required this.multiCorrectAnswersNotifier,
     required this.onCorrectAnswerSelected,
+    this.isLocked = false,
   }) : super(key: key);
 
   @override
@@ -32,7 +34,7 @@ class OptionItem extends StatelessWidget {
             bool isCorrect = question.type == QuestionType.multiMcq
                 ? multiCorrect.contains(index)
                 : singleCorrect == index;
-            bool isReadOnly = question.type == QuestionType.trueFalse;
+            bool isReadOnly = question.type == QuestionType.trueFalse || isLocked;
 
             return AnimatedContainer(
               duration: const Duration(milliseconds: 300),
@@ -64,6 +66,7 @@ class OptionItem extends StatelessWidget {
                           : CustomTextField(
                               controller: controller,
                               hintText: 'Option ${String.fromCharCode(65 + index)}',
+                              enabled: !isLocked,
                             ),
                     ),
                   ),
@@ -78,7 +81,7 @@ class OptionItem extends StatelessWidget {
 
   Widget _buildSelectionIndicator(bool isCorrect) {
     return GestureDetector(
-      onTap: () => onCorrectAnswerSelected(index),
+      onTap: isLocked ? null : () => onCorrectAnswerSelected(index),
       child: Container(
         padding: const EdgeInsets.all(16),
         child: Container(

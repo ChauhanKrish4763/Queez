@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:quiz_app/LibrarySection/widgets/item_card.dart';
 import 'package:quiz_app/LibrarySection/widgets/library_body.dart';
 import 'package:quiz_app/LibrarySection/services/library_service.dart';
+import 'package:quiz_app/LibrarySection/widgets/quiz_library_item.dart';
 import 'package:quiz_app/utils/animations/page_transition.dart';
 import 'package:quiz_app/utils/color.dart';
 
@@ -27,7 +27,6 @@ class _LibraryPageState extends State<LibraryPage> with TickerProviderStateMixin
   String? errorMessage;
   String searchQuery = '';
   late AnimationController _fadeController;
-  late Animation<double> _fadeAnimation;
 
   @override
   void initState() {
@@ -35,9 +34,6 @@ class _LibraryPageState extends State<LibraryPage> with TickerProviderStateMixin
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 600),
       vsync: this,
-    );
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _fadeController, curve: Curves.easeInOut),
     );
     _loadQuizzesOnce();
   }
@@ -111,14 +107,12 @@ class _LibraryPageState extends State<LibraryPage> with TickerProviderStateMixin
             ),
           ),
           buildLibraryBody(
+            context: context,
             isLoading: isLoading,
             errorMessage: errorMessage,
             filteredQuizzes: filteredQuizzes,
             searchQuery: searchQuery,
             onRetry: _loadQuizzesOnce,
-            onCardTap: (quiz) {
-              customNavigate(context, '/assessment_page', AnimationType.slideUp);
-            },
           ),
         ],
       ),

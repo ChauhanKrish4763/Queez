@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:quiz_app/utils/color.dart';
 
@@ -7,7 +9,8 @@ class CustomTextField extends StatelessWidget {
   final int maxLines;
   final String? Function(String?)? validator;
   final bool autoValidate;
-  final double? width; // New width parameter
+  final double? width;
+  final bool enabled; // New enabled property
 
   const CustomTextField({
     super.key,
@@ -16,7 +19,8 @@ class CustomTextField extends StatelessWidget {
     this.maxLines = 1,
     this.validator,
     this.autoValidate = false,
-    this.width, // Optional width parameter
+    this.width,
+    this.enabled = true, // Default to enabled
   });
 
   @override
@@ -25,22 +29,25 @@ class CustomTextField extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          width: width, // Apply width if provided
+          width: width,
           decoration: BoxDecoration(
-            color: AppColors.white,
+            color: enabled ? AppColors.white : AppColors.disabledBackground,
             borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.secondary.withOpacity(0.1),
-                spreadRadius: 1,
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
+            boxShadow: enabled
+                ? [
+                    BoxShadow(
+                      color: AppColors.secondary.withOpacity(0.1),
+                      spreadRadius: 1,
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : [],
           ),
           child: TextFormField(
             controller: controller,
             maxLines: maxLines,
+            enabled: enabled, // Set enabled state
             autovalidateMode: autoValidate 
                 ? AutovalidateMode.onUserInteraction 
                 : AutovalidateMode.disabled,
@@ -68,10 +75,12 @@ class CustomTextField extends StatelessWidget {
                 borderSide: const BorderSide(color: AppColors.error, width: 2),
               ),
               filled: true,
-              fillColor: AppColors.white,
+              fillColor: enabled ? AppColors.white : AppColors.disabledBackground,
               contentPadding: const EdgeInsets.all(16),
               hintStyle: TextStyle(
-                color: AppColors.textSecondary,
+                color: enabled
+                    ? AppColors.textSecondary
+                    : AppColors.textDisabled,
                 fontWeight: FontWeight.w400,
               ),
               errorStyle: const TextStyle(height: 0),

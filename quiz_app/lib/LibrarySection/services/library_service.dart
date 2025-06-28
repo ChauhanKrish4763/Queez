@@ -1,25 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-
-class QuizLibraryItem {
-  final String id;
-  final String title;
-  final String? coverImagePath;
-
-  QuizLibraryItem({
-    required this.id,
-    required this.title,
-    this.coverImagePath,
-  });
-
-  factory QuizLibraryItem.fromJson(Map<String, dynamic> json) {
-    return QuizLibraryItem(
-      id: json['id'],
-      title: json['title'],
-      coverImagePath: json['coverImagePath'],
-    );
-  }
-}
+import 'package:quiz_app/LibrarySection/widgets/quiz_library_item.dart';
 
 class LibraryService {
   static const String baseUrl = 'http://YOUR-IP-ADDRESS:8000'; // Change as needed

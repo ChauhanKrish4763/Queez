@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:quiz_app/CreateSection/screens/quiz_details.dart';
 import 'package:quiz_app/LibrarySection/widgets/item_card.dart';
+import 'package:quiz_app/LibrarySection/widgets/quiz_library_item.dart';
+import 'package:quiz_app/utils/animations/page_transition.dart';
 import 'package:quiz_app/utils/color.dart';
-import 'package:quiz_app/LibrarySection/services/library_service.dart';
 
 Widget buildSearchSection({
   required String searchQuery,
@@ -50,14 +52,21 @@ Widget buildSearchSection({
                   size: 24,
                 ),
               ),
-              suffixIcon: searchQuery.isNotEmpty
-                  ? IconButton(
-                      icon: const Icon(Icons.clear_rounded, color: AppColors.iconInactive),
-                      onPressed: () => onQueryChanged(''),
-                    )
-                  : null,
+              suffixIcon:
+                  searchQuery.isNotEmpty
+                      ? IconButton(
+                        icon: const Icon(
+                          Icons.clear_rounded,
+                          color: AppColors.iconInactive,
+                        ),
+                        onPressed: () => onQueryChanged(''),
+                      )
+                      : null,
               border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 18,
+              ),
             ),
             style: const TextStyle(
               fontSize: 16,
@@ -72,12 +81,12 @@ Widget buildSearchSection({
 }
 
 Widget buildLibraryBody({
+  required BuildContext context,
   required bool isLoading,
   required String? errorMessage,
   required List<QuizLibraryItem> filteredQuizzes,
   required String searchQuery,
   required VoidCallback onRetry,
-  required void Function(QuizLibraryItem) onCardTap,
 }) {
   if (isLoading) {
     return SliverFillRemaining(
@@ -100,9 +109,22 @@ Widget buildLibraryBody({
               ),
             ),
             const SizedBox(height: 24),
-            Text('Loading your quizzes...', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+            Text(
+              'Loading your quizzes...',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textSecondary,
+              ),
+            ),
             const SizedBox(height: 8),
-            Text('Please wait a moment', style: TextStyle(fontSize: 14, color: AppColors.textSecondary.withOpacity(0.7))),
+            Text(
+              'Please wait a moment',
+              style: TextStyle(
+                fontSize: 14,
+                color: AppColors.textSecondary.withOpacity(0.7),
+              ),
+            ),
           ],
         ),
       ),
@@ -117,9 +139,20 @@ Widget buildLibraryBody({
           children: [
             Icon(Icons.error_outline_rounded, size: 60, color: AppColors.error),
             const SizedBox(height: 16),
-            Text('Oops! Something went wrong', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+            Text(
+              'Oops! Something went wrong',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary,
+              ),
+            ),
             const SizedBox(height: 12),
-            Text(errorMessage, textAlign: TextAlign.center, style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
+            Text(
+              errorMessage,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+            ),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: onRetry,
@@ -140,7 +173,11 @@ Widget buildLibraryBody({
       child: Center(
         child: Text(
           searchQuery.isNotEmpty ? 'No matches found' : 'No quizzes available',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textPrimary,
+          ),
         ),
       ),
     );
@@ -154,10 +191,45 @@ Widget buildLibraryBody({
           filteredQuizzes.length,
           (index) => Container(
             margin: const EdgeInsets.only(bottom: 16),
-            child: ItemCard(quiz: filteredQuizzes[index], onTap: () => onCardTap(filteredQuizzes[index])),
+            child: ItemCard(
+              quiz: filteredQuizzes[index],
+              onView: () {
+                _privateNavigator(
+                  context,
+                  filteredQuizzes[index],
+                  AnimationType.fade,
+                );
+              },
+              onDelete: () {
+                // Handle delete action, e.g., show confirmation and delete item
+              },
+            ),
           ),
         ),
       ),
+    ),
+  );
+}
+
+void _privateNavigator(
+  BuildContext context,
+  QuizLibraryItem quizItem,
+  AnimationType animationType, {
+  GlobalKey<NavigatorState>? navigatorKey,
+}) {
+  final navigator = navigatorKey?.currentState ?? Navigator.of(context);
+
+  navigator.push(
+    PageRouteBuilder(
+      settings: RouteSettings(arguments: quizItem),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return PageTransition(
+          animation: animation,
+          animationType: animationType,
+          child: QuizDetails(quizItem: quizItem),
+        );
+      },
+      transitionDuration: const Duration(milliseconds: 300),
     ),
   );
 }

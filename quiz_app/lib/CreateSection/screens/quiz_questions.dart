@@ -10,8 +10,9 @@ import 'package:quiz_app/utils/color.dart';
 import 'package:quiz_app/utils/globals.dart';
 
 class QuizQuestions extends StatefulWidget {
-  const QuizQuestions({Key? key}) : super(key: key);
+  final List<Question>? questions;
 
+  const QuizQuestions({Key? key, this.questions}) : super(key: key);
   @override
   State<QuizQuestions> createState() => _QuizQuestionsState();
 }
@@ -20,11 +21,19 @@ class _QuizQuestionsState extends State<QuizQuestions> {
   List<Question> questions = [];
   int currentQuestionIndex = 0;
   bool isNavigationExpanded = false;
+  bool _isLocked = false;
+
 
   @override
   void initState() {
     super.initState();
-    _addNewQuestion();
+    if (widget.questions != null && widget.questions!.isNotEmpty) {
+      questions = List.from(widget.questions!);
+      _isLocked = true;
+      currentQuestionIndex = 0;
+    } else {
+      _addNewQuestion();
+    }
   }
 
   void _addNewQuestion() {
@@ -118,6 +127,7 @@ class _QuizQuestionsState extends State<QuizQuestions> {
                         ),
                         question: questions[currentQuestionIndex],
                         onQuestionUpdated: _updateQuestion,
+                        isLocked: _isLocked,
                       ),
                     ),
                   ),
@@ -128,6 +138,7 @@ class _QuizQuestionsState extends State<QuizQuestions> {
                     onAddQuestion: _addNewQuestion,
                     isExpanded: isNavigationExpanded,
                     onToggleExpanded: _toggleNavigationMode,
+                    isLocked: _isLocked,
                   ),
                 ],
               ),
@@ -151,10 +162,14 @@ class _QuizQuestionsState extends State<QuizQuestions> {
 
       // Save to backend with timeout
       print('Saving quiz to backend');
-      final quizId = await QuizService.createQuiz(quiz).timeout(
+      String quizId;
+
+      // Call createQuiz() for new quiz
+      quizId = await QuizService.createQuiz(quiz).timeout(
         Duration(seconds: 30),
         onTimeout: () => throw Exception('Request timed out'),
       );
+
       print('Quiz saved with ID: $quizId');
 
       // Show success dialog

@@ -14,6 +14,7 @@ class QuestionContentBuilder extends StatelessWidget {
   final Function(int) onCorrectAnswerSelected;
   final VoidCallback onAddDragDropPair;
   final VoidCallback onRemoveDragDropPair;
+  final bool isLocked;
 
   const QuestionContentBuilder({
     Key? key,
@@ -26,6 +27,7 @@ class QuestionContentBuilder extends StatelessWidget {
     required this.onCorrectAnswerSelected,
     required this.onAddDragDropPair,
     required this.onRemoveDragDropPair,
+    this.isLocked = false,
   }) : super(key: key);
 
   @override
@@ -37,6 +39,7 @@ class QuestionContentBuilder extends StatelessWidget {
           dropTargetControllers: dropTargetControllers,
           onAddPair: onAddDragDropPair,
           onRemovePair: onRemoveDragDropPair,
+          isLocked: isLocked,
         );
       default:
         return _buildOptionsContent();
@@ -78,6 +81,7 @@ class QuestionContentBuilder extends StatelessWidget {
             correctAnswerNotifier: correctAnswerNotifier,
             multiCorrectAnswersNotifier: multiCorrectAnswersNotifier,
             onCorrectAnswerSelected: onCorrectAnswerSelected,
+            isLocked: isLocked,
           ),
         ),
       ],

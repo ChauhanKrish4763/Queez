@@ -8,6 +8,7 @@ class QuestionNavigation extends StatefulWidget {
   final VoidCallback onAddQuestion;
   final bool isExpanded;
   final VoidCallback onToggleExpanded;
+  final bool isLocked;
 
   const QuestionNavigation({
     Key? key,
@@ -17,6 +18,7 @@ class QuestionNavigation extends StatefulWidget {
     required this.onAddQuestion,
     required this.onToggleExpanded,
     this.isExpanded = false,
+    required this.isLocked,
   }) : super(key: key);
 
   @override
@@ -42,22 +44,17 @@ class _QuestionNavigationState extends State<QuestionNavigation>
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, 1),
       end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _slideController,
-      curve: Curves.easeOutCubic,
-    ));
-    
+    ).animate(
+      CurvedAnimation(parent: _slideController, curve: Curves.easeOutCubic),
+    );
+
     _buttonController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    _buttonAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _buttonController,
-      curve: Curves.elasticOut,
-    ));
+    _buttonAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _buttonController, curve: Curves.elasticOut),
+    );
 
     _expandController = AnimationController(
       duration: const Duration(milliseconds: 300),
@@ -67,10 +64,10 @@ class _QuestionNavigationState extends State<QuestionNavigation>
       parent: _expandController,
       curve: Curves.easeInOut,
     );
-    
+
     _slideController.forward();
     _buttonController.forward();
-    
+
     if (widget.isExpanded) {
       _expandController.forward();
     }
@@ -113,7 +110,6 @@ class _QuestionNavigationState extends State<QuestionNavigation>
           boxShadow: [
             BoxShadow(
               color: AppColors.primary.withOpacity(0.08),
-              spreadRadius: 0,
               blurRadius: 20,
               offset: const Offset(0, -8),
             ),
@@ -125,34 +121,28 @@ class _QuestionNavigationState extends State<QuestionNavigation>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Toggle button (always visible)
                 GestureDetector(
                   onTap: widget.onToggleExpanded,
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: Center(
-                      child: Icon(
-                        widget.isExpanded ? Icons.expand_more : Icons.expand_less,
-                        color: AppColors.textSecondary,
-                        size: 20,
-                      ),
+                  child: Center(
+                    child: Icon(
+                      widget.isExpanded
+                          ? Icons.expand_more
+                          : Icons.expand_less,
+                      color: AppColors.textSecondary,
+                      size: 20,
                     ),
                   ),
                 ),
-                
                 const SizedBox(height: 4),
-                
-                // Main slider with conditional text labels (always visible)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: AppColors.surface,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Column(
-                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Question labels (only shown in expanded mode)
                       if (widget.isExpanded)
                         Padding(
                           padding: const EdgeInsets.only(bottom: 4),
@@ -177,124 +167,131 @@ class _QuestionNavigationState extends State<QuestionNavigation>
                             ],
                           ),
                         ),
-                      
-                      // The slider (always visible)
                       SliderTheme(
                         data: SliderTheme.of(context).copyWith(
                           trackHeight: 3,
-                          thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-                          overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
+                          thumbShape:
+                              const RoundSliderThumbShape(enabledThumbRadius: 6),
+                          overlayShape:
+                              const RoundSliderOverlayShape(overlayRadius: 12),
                           activeTrackColor: AppColors.primary,
                           inactiveTrackColor: AppColors.primaryLighter,
                           thumbColor: AppColors.primary,
-                          overlayColor: AppColors.primary.withOpacity(0.2),
+                          overlayColor:
+                              AppColors.primary.withOpacity(0.2),
                         ),
                         child: Slider(
                           value: widget.currentIndex.toDouble(),
                           min: 0,
                           max: (widget.totalQuestions - 1).toDouble(),
-                          divisions: widget.totalQuestions > 1 ? widget.totalQuestions - 1 : 1,
-                          onChanged: (value) {
-                            widget.onIndexChanged(value.round());
-                          },
+                          divisions: widget.totalQuestions > 1
+                              ? widget.totalQuestions - 1
+                              : 1,
+                          onChanged: (value) =>
+                              widget.onIndexChanged(value.round()),
                         ),
                       ),
                     ],
                   ),
                 ),
-                
-                // Expanded content (navigation buttons and add question button)
                 SizeTransition(
                   sizeFactor: _expandAnimation,
                   child: Column(
-                    mainAxisSize: MainAxisSize.min,
                     children: [
                       const SizedBox(height: 8),
-                      
-                      // Navigation buttons
                       Row(
                         children: [
                           Expanded(
                             child: ElevatedButton.icon(
-                              onPressed: widget.currentIndex > 0 
-                                  ? () => widget.onIndexChanged(widget.currentIndex - 1) 
+                              onPressed: widget.currentIndex > 0
+                                  ? () => widget.onIndexChanged(
+                                      widget.currentIndex - 1)
                                   : null,
-                              icon: const Icon(Icons.arrow_back_ios_rounded, size: 12),
+                              icon: const Icon(
+                                Icons.arrow_back_ios_rounded,
+                                size: 12,
+                              ),
                               label: const Text('Prev', style: TextStyle(fontSize: 12)),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: widget.currentIndex > 0 
-                                    ? AppColors.secondary 
+                                backgroundColor: widget.currentIndex > 0
+                                    ? AppColors.secondary
                                     : AppColors.iconInactive.withOpacity(0.3),
                                 foregroundColor: AppColors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 8, horizontal: 6),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 elevation: widget.currentIndex > 0 ? 1 : 0,
-                                minimumSize: const Size(0, 32),
                               ),
                             ),
                           ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: ElevatedButton(
-                              onPressed: widget.currentIndex < widget.totalQuestions - 1 
-                                  ? () => widget.onIndexChanged(widget.currentIndex + 1) 
+                              onPressed: widget.currentIndex <
+                                      widget.totalQuestions - 1
+                                  ? () => widget.onIndexChanged(
+                                      widget.currentIndex + 1)
                                   : null,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: const [
+                                  Text('Next', style: TextStyle(fontSize: 12)),
+                                  SizedBox(width: 4),
+                                  Icon(Icons.arrow_forward_ios_rounded, size: 12),
+                                ],
+                              ),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: widget.currentIndex < widget.totalQuestions - 1 
-                                    ? AppColors.secondary 
+                                backgroundColor: widget.currentIndex <
+                                        widget.totalQuestions - 1
+                                    ? AppColors.secondary
                                     : AppColors.iconInactive.withOpacity(0.3),
                                 foregroundColor: AppColors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 8, horizontal: 6),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                elevation: widget.currentIndex < widget.totalQuestions - 1 ? 1 : 0,
-                                minimumSize: const Size(0, 32),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Text('Next', style: TextStyle(fontSize: 12)),
-                                  const SizedBox(width: 4),
-                                  const Icon(Icons.arrow_forward_ios_rounded, size: 12),
-                                ],
+                                elevation:
+                                    widget.currentIndex < widget.totalQuestions - 1
+                                        ? 1
+                                        : 0,
                               ),
                             ),
                           ),
                         ],
                       ),
                       const SizedBox(height: 8),
-                      
-                      // Add Question button
-                      ScaleTransition(
-                        scale: _buttonAnimation,
-                        child: SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton.icon(
-                            onPressed: _handleAddQuestion,
-                            icon: const Icon(Icons.add_rounded, size: 14, color: Colors.white),
-                            label: const Text(
-                              'Add Question',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
+                      if (!widget.isLocked)
+                        ScaleTransition(
+                          scale: _buttonAnimation,
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: _handleAddQuestion,
+                              icon: const Icon(Icons.add_rounded,
+                                  size: 14, color: Colors.white),
+                              label: const Text(
+                                'Add Question',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.accentBright,
-                              foregroundColor: AppColors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.accentBright,
+                                foregroundColor: AppColors.white,
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 10, horizontal: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                elevation: 2,
                               ),
-                              elevation: 2,
-                              minimumSize: const Size(0, 36),
                             ),
                           ),
                         ),
-                      ),
                     ],
                   ),
                 ),

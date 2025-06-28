@@ -7,8 +7,9 @@ class CustomDropdown extends StatefulWidget {
   final String hintText;
   final String? Function(String?)? validator;
   final bool autoValidate;
-  final Function(String?) onChanged;
+  final void Function(String?)? onChanged;
   final double? menuMaxHeight;
+  final bool enabled; // New enabled property
 
   const CustomDropdown({
     super.key,
@@ -19,6 +20,7 @@ class CustomDropdown extends StatefulWidget {
     this.autoValidate = false,
     required this.onChanged,
     this.menuMaxHeight,
+    this.enabled = true, // Default to enabled
   });
 
   @override
@@ -32,16 +34,18 @@ class _CustomDropdownState extends State<CustomDropdown> {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: widget.enabled ? AppColors.white : AppColors.disabledBackground,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.secondary.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        boxShadow: widget.enabled
+            ? [
+                BoxShadow(
+                  color: AppColors.secondary.withOpacity(0.1),
+                  spreadRadius: 1,
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ]
+            : [],
       ),
       child: DropdownButtonFormField<String>(
         autovalidateMode: widget.autoValidate
@@ -60,7 +64,7 @@ class _CustomDropdownState extends State<CustomDropdown> {
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide(
-              color: AppColors.primary,
+              color: widget.enabled ? AppColors.primary : AppColors.textDisabled,
               width: 2,
             ),
           ),
@@ -79,13 +83,13 @@ class _CustomDropdownState extends State<CustomDropdown> {
             ),
           ),
           filled: true,
-          fillColor: AppColors.white,
+          fillColor: widget.enabled ? AppColors.white : AppColors.disabledBackground,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
             vertical: 16,
           ),
           hintStyle: TextStyle(
-            color: AppColors.textSecondary,
+            color: widget.enabled ? AppColors.textSecondary : AppColors.textDisabled,
             fontWeight: FontWeight.w400,
           ),
         ),
@@ -96,7 +100,7 @@ class _CustomDropdownState extends State<CustomDropdown> {
           duration: const Duration(milliseconds: 200),
           child: Icon(
             Icons.keyboard_arrow_down_rounded,
-            color: AppColors.textSecondary,
+            color: widget.enabled ? AppColors.textSecondary : AppColors.textDisabled,
             size: 24,
           ),
         ),
@@ -106,7 +110,7 @@ class _CustomDropdownState extends State<CustomDropdown> {
         borderRadius: BorderRadius.circular(12),
         menuMaxHeight: widget.menuMaxHeight ?? 300,
         style: TextStyle(
-          color: AppColors.textPrimary,
+          color: widget.enabled ? AppColors.textPrimary : AppColors.textDisabled,
           fontSize: 16,
         ),
         items: widget.items.map((item) {
@@ -121,14 +125,14 @@ class _CustomDropdownState extends State<CustomDropdown> {
                     style: TextStyle(
                       color: isSelected
                           ? AppColors.primary
-                          : AppColors.textPrimary,
+                          : (widget.enabled ? AppColors.textPrimary : AppColors.textDisabled),
                       fontWeight: isSelected
                           ? FontWeight.w600
                           : FontWeight.w400,
                     ),
                   ),
                 ),
-                if (isSelected) ...[
+                if (isSelected && widget.enabled) ...[
                   const SizedBox(width: 8),
                   Icon(
                     Icons.check_rounded,
@@ -140,19 +144,21 @@ class _CustomDropdownState extends State<CustomDropdown> {
             ),
           );
         }).toList(),
-        onChanged: widget.onChanged,
+        onChanged: widget.enabled ? widget.onChanged : null, // Disable when not enabled
         validator: widget.validator,
-        onTap: () {
-          setState(() {
-            _isOpen = true;
-          });
-        },
+        onTap: widget.enabled
+            ? () {
+                setState(() {
+                  _isOpen = true;
+                });
+              }
+            : null, // Disable tap when not enabled
         selectedItemBuilder: (BuildContext context) {
           return widget.items.map<Widget>((String item) {
             return Text(
               item,
               style: TextStyle(
-                color: AppColors.textPrimary,
+                color: widget.enabled ? AppColors.textPrimary : AppColors.textDisabled,
                 fontSize: 16,
               ),
             );
