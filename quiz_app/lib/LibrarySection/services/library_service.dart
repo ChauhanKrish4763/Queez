@@ -3,7 +3,8 @@ import 'package:http/http.dart' as http;
 import 'package:quiz_app/LibrarySection/widgets/quiz_library_item.dart';
 
 class LibraryService {
-  static const String baseUrl = 'http://YOUR-IP-ADDRESS:8000'; // Change as needed
+  static const String baseUrl =
+      'https://quizapp2024.loca.lt'; // Public tunnel URL
 
   static Future<List<QuizLibraryItem>> fetchQuizLibrary() async {
     final response = await http.get(Uri.parse('$baseUrl/quizzes/library'));

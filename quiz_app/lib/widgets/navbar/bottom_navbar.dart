@@ -53,7 +53,7 @@ class BottomNavbarControllerState extends State<BottomNavbarController>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final double offset = MediaQuery.of(context).size.height * 0.015;
+    final double offset = MediaQuery.of(context).size.height * 0.030;
     _fabLocation = CreateButtonLocation(offset: offset);
   }
 

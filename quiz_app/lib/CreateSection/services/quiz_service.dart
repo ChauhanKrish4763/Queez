@@ -7,7 +7,7 @@ import '../models/quiz.dart';
 
 class QuizService {
   static const String baseUrl =
-      'http://<YOUR-IP-ADDRESS>:8000'; // Replace with your FastAPI URL
+      'https://quizapp2024.loca.lt'; // Public tunnel URL
 
   static Future<String> createQuiz(Quiz quiz) async {
     try {
@@ -129,7 +129,5 @@ class QuizService {
     } catch (e) {
       throw Exception('Error fetching questions: $e');
     }
-
-    
   }
 }

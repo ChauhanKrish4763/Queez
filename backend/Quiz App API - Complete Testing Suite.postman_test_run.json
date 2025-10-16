@@ -1,0 +1,638 @@
+{
+	"id": "720eaea8-c0d2-4d18-87f6-077f32aa272b",
+	"name": "Quiz App API - Complete Testing Suite",
+	"timestamp": "2025-10-14T01:38:35.853Z",
+	"collection_id": "45291489-e72d0d73-56f9-4735-be17-0f7035a98e96",
+	"folder_id": 0,
+	"environment_id": "0",
+	"totalPass": 0,
+	"delay": 0,
+	"persist": true,
+	"status": "finished",
+	"startedAt": "2025-10-14T01:38:23.253Z",
+	"totalFail": 0,
+	"results": [
+		{
+			"id": "7b9328a8-ef1f-487f-b4ae-25e3de962335",
+			"name": "Get API Status",
+			"url": "http://localhost:8000/",
+			"time": 3,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {},
+			"testPassFailCounts": {},
+			"times": [
+				3
+			],
+			"allTests": [
+				{}
+			]
+		},
+		{
+			"id": "fa513672-4ca4-4cbc-b063-ca8a11090c54",
+			"name": "Create Quiz",
+			"url": "http://localhost:8000/quizzes",
+			"time": 8518,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {},
+			"testPassFailCounts": {},
+			"times": [
+				8518
+			],
+			"allTests": [
+				{}
+			]
+		},
+		{
+			"id": "98a11a88-4132-46e9-97d4-7d968afe76e3",
+			"name": "Get All Quizzes (Library)",
+			"url": "http://localhost:8000/quizzes/library",
+			"time": 28,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {},
+			"testPassFailCounts": {},
+			"times": [
+				28
+			],
+			"allTests": [
+				{}
+			]
+		},
+		{
+			"id": "eddd0f4e-f103-4d3b-9ee7-31fbbea38c8f",
+			"name": "Get Quiz by ID",
+			"url": "http://localhost:8000/quizzes/68eda9902e5261af3839c51c",
+			"time": 26,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {},
+			"testPassFailCounts": {},
+			"times": [
+				26
+			],
+			"allTests": [
+				{}
+			]
+		},
+		{
+			"id": "ead73945-944b-4af3-8f50-fbd52de4260e",
+			"name": "Update Quiz (PUT)",
+			"url": "http://localhost:8000/quizzes/68eda9902e5261af3839c51c",
+			"time": 30,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {},
+			"testPassFailCounts": {},
+			"times": [
+				30
+			],
+			"allTests": [
+				{}
+			]
+		},
+		{
+			"id": "03a3a084-f9a6-4069-bfcb-3f516d049a53",
+			"name": "Partial Update Quiz (PATCH)",
+			"url": "http://localhost:8000/quizzes/68eda9902e5261af3839c51c",
+			"time": 37,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {},
+			"testPassFailCounts": {},
+			"times": [
+				37
+			],
+			"allTests": [
+				{}
+			]
+		},
+		{
+			"id": "f5f6b963-989c-4f7b-bb9d-1e51626e2460",
+			"name": "Delete Quiz",
+			"url": "http://localhost:8000/quizzes/68eda9902e5261af3839c51c",
+			"time": 29,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {},
+			"testPassFailCounts": {},
+			"times": [
+				29
+			],
+			"allTests": [
+				{}
+			]
+		},
+		{
+			"id": "8e66d4a6-ccb5-4786-9884-8a3dcd50f5a4",
+			"name": "Search Quizzes",
+			"url": "http://localhost:8000/quizzes/search?q=python",
+			"time": 28,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {},
+			"testPassFailCounts": {},
+			"times": [
+				28
+			],
+			"allTests": [
+				{}
+			]
+		},
+		{
+			"id": "9fe8c8b3-d239-4141-ad62-89e5d57ba547",
+			"name": "Filter by Category",
+			"url": "http://localhost:8000/quizzes/category/Science and Technology",
+			"time": 32,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {},
+			"testPassFailCounts": {},
+			"times": [
+				32
+			],
+			"allTests": [
+				{}
+			]
+		},
+		{
+			"id": "7011fe96-7dec-49b6-9abc-09c65c1228b0",
+			"name": "Filter by Language",
+			"url": "http://localhost:8000/quizzes/language/English",
+			"time": 27,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {},
+			"testPassFailCounts": {},
+			"times": [
+				27
+			],
+			"allTests": [
+				{}
+			]
+		},
+		{
+			"id": "a1c3d128-1b10-42a9-a9ad-a20a2b387bb3",
+			"name": "Get Quiz Stats",
+			"url": "http://localhost:8000/quizzes/68eda9902e5261af3839c51c/stats",
+			"time": 28,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {},
+			"testPassFailCounts": {},
+			"times": [
+				28
+			],
+			"allTests": [
+				{}
+			]
+		},
+		{
+			"id": "9570340f-23b9-4b2d-b183-8d7e012e1eae",
+			"name": "Record Quiz Attempt",
+			"url": "http://localhost:8000/quizzes/68eda9902e5261af3839c51c/attempt",
+			"time": 65,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {},
+			"testPassFailCounts": {},
+			"times": [
+				65
+			],
+			"allTests": [
+				{}
+			]
+		},
+		{
+			"id": "7cbfd5e6-3fe9-45c9-854b-5beb97ee243e",
+			"name": "Get Quiz Attempts",
+			"url": "http://localhost:8000/quizzes/68eda9902e5261af3839c51c/attempts?limit=10",
+			"time": 27,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {},
+			"testPassFailCounts": {},
+			"times": [
+				27
+			],
+			"allTests": [
+				{}
+			]
+		},
+		{
+			"id": "bfeadf44-636a-4c71-9018-00cc759cb895",
+			"name": "Create User",
+			"url": "http://localhost:8000/users",
+			"time": 30,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {},
+			"testPassFailCounts": {},
+			"times": [
+				30
+			],
+			"allTests": [
+				{}
+			]
+		},
+		{
+			"id": "cbaa62b7-b6af-4f61-a592-a74c3fe3b196",
+			"name": "Get User Profile",
+			"url": "http://localhost:8000/users/68eda9992e5261af3839c51e",
+			"time": 31,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {},
+			"testPassFailCounts": {},
+			"times": [
+				31
+			],
+			"allTests": [
+				{}
+			]
+		},
+		{
+			"id": "51dc8dee-504c-435f-a868-9db5d6ee8efa",
+			"name": "Update User Profile",
+			"url": "http://localhost:8000/users/68eda9992e5261af3839c51e",
+			"time": 33,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {},
+			"testPassFailCounts": {},
+			"times": [
+				33
+			],
+			"allTests": [
+				{}
+			]
+		},
+		{
+			"id": "28b60189-9831-478b-bd0b-9864ca834532",
+			"name": "Get User's Quizzes",
+			"url": "http://localhost:8000/users/68eda9992e5261af3839c51e/quizzes",
+			"time": 27,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {},
+			"testPassFailCounts": {},
+			"times": [
+				27
+			],
+			"allTests": [
+				{}
+			]
+		},
+		{
+			"id": "273080f2-a2be-4d31-b3e6-78b2e5ab956d",
+			"name": "Add Review",
+			"url": "http://localhost:8000/quizzes/68eda9902e5261af3839c51c/reviews",
+			"time": 55,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {},
+			"testPassFailCounts": {},
+			"times": [
+				55
+			],
+			"allTests": [
+				{}
+			]
+		},
+		{
+			"id": "60ab4c2a-404f-4dbe-a1f2-98e9193e9bd4",
+			"name": "Get Quiz Reviews",
+			"url": "http://localhost:8000/quizzes/68eda9902e5261af3839c51c/reviews?limit=20",
+			"time": 30,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {},
+			"testPassFailCounts": {},
+			"times": [
+				30
+			],
+			"allTests": [
+				{}
+			]
+		},
+		{
+			"id": "b4fc74f2-620a-4dc7-bd6f-29b0d7edd875",
+			"name": "Get Top Rated Quizzes",
+			"url": "http://localhost:8000/quizzes/top-rated?limit=10",
+			"time": 2,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {},
+			"testPassFailCounts": {},
+			"times": [
+				2
+			],
+			"allTests": [
+				{}
+			]
+		},
+		{
+			"id": "c45040dd-4ea6-45c3-bbb8-060d2a46edfb",
+			"name": "Submit Quiz Result",
+			"url": "http://localhost:8000/results",
+			"time": 31,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {},
+			"testPassFailCounts": {},
+			"times": [
+				31
+			],
+			"allTests": [
+				{}
+			]
+		},
+		{
+			"id": "5d05e12c-22d8-480a-a03b-30d2d1a9b338",
+			"name": "Get Quiz Results",
+			"url": "http://localhost:8000/results/68eda9902e5261af3839c51c?limit=50",
+			"time": 35,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {},
+			"testPassFailCounts": {},
+			"times": [
+				35
+			],
+			"allTests": [
+				{}
+			]
+		},
+		{
+			"id": "4b1fd84a-69b2-4ad3-931a-d4face5f8aff",
+			"name": "Get Leaderboard",
+			"url": "http://localhost:8000/leaderboard/68eda9902e5261af3839c51c?limit=10",
+			"time": 35,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {},
+			"testPassFailCounts": {},
+			"times": [
+				35
+			],
+			"allTests": [
+				{}
+			]
+		},
+		{
+			"id": "5e47e258-1a4f-42c1-9309-6b83af61f967",
+			"name": "Get All Categories",
+			"url": "http://localhost:8000/categories",
+			"time": 128,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {},
+			"testPassFailCounts": {},
+			"times": [
+				128
+			],
+			"allTests": [
+				{}
+			]
+		},
+		{
+			"id": "fca9f09f-cd44-4c1a-a2d1-c5fb81634270",
+			"name": "Get All Languages",
+			"url": "http://localhost:8000/languages",
+			"time": 61,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {},
+			"testPassFailCounts": {},
+			"times": [
+				61
+			],
+			"allTests": [
+				{}
+			]
+		},
+		{
+			"id": "c4e75578-58aa-4f32-8be6-949a772dd6f7",
+			"name": "Get All Tags",
+			"url": "http://localhost:8000/tags",
+			"time": 27,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {},
+			"testPassFailCounts": {},
+			"times": [
+				27
+			],
+			"allTests": [
+				{}
+			]
+		},
+		{
+			"id": "d9e878cc-3baa-4ffb-8c87-4781bac82c99",
+			"name": "Create Tag",
+			"url": "http://localhost:8000/tags",
+			"time": 30,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {},
+			"testPassFailCounts": {},
+			"times": [
+				30
+			],
+			"allTests": [
+				{}
+			]
+		},
+		{
+			"id": "7a626a9b-2b22-41b1-97b0-decc71b74a06",
+			"name": "Get Dashboard Stats",
+			"url": "http://localhost:8000/dashboard/stats",
+			"time": 128,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {},
+			"testPassFailCounts": {},
+			"times": [
+				128
+			],
+			"allTests": [
+				{}
+			]
+		}
+	],
+	"count": 1,
+	"totalTime": 9561,
+	"collection": {
+		"requests": [
+			{
+				"id": "7b9328a8-ef1f-487f-b4ae-25e3de962335",
+				"method": "GET"
+			},
+			{
+				"id": "fa513672-4ca4-4cbc-b063-ca8a11090c54",
+				"method": "POST"
+			},
+			{
+				"id": "98a11a88-4132-46e9-97d4-7d968afe76e3",
+				"method": "GET"
+			},
+			{
+				"id": "eddd0f4e-f103-4d3b-9ee7-31fbbea38c8f",
+				"method": "GET"
+			},
+			{
+				"id": "ead73945-944b-4af3-8f50-fbd52de4260e",
+				"method": "PUT"
+			},
+			{
+				"id": "03a3a084-f9a6-4069-bfcb-3f516d049a53",
+				"method": "PATCH"
+			},
+			{
+				"id": "f5f6b963-989c-4f7b-bb9d-1e51626e2460",
+				"method": "DELETE"
+			},
+			{
+				"id": "8e66d4a6-ccb5-4786-9884-8a3dcd50f5a4",
+				"method": "GET"
+			},
+			{
+				"id": "9fe8c8b3-d239-4141-ad62-89e5d57ba547",
+				"method": "GET"
+			},
+			{
+				"id": "7011fe96-7dec-49b6-9abc-09c65c1228b0",
+				"method": "GET"
+			},
+			{
+				"id": "a1c3d128-1b10-42a9-a9ad-a20a2b387bb3",
+				"method": "GET"
+			},
+			{
+				"id": "9570340f-23b9-4b2d-b183-8d7e012e1eae",
+				"method": "POST"
+			},
+			{
+				"id": "7cbfd5e6-3fe9-45c9-854b-5beb97ee243e",
+				"method": "GET"
+			},
+			{
+				"id": "bfeadf44-636a-4c71-9018-00cc759cb895",
+				"method": "POST"
+			},
+			{
+				"id": "cbaa62b7-b6af-4f61-a592-a74c3fe3b196",
+				"method": "GET"
+			},
+			{
+				"id": "51dc8dee-504c-435f-a868-9db5d6ee8efa",
+				"method": "PUT"
+			},
+			{
+				"id": "28b60189-9831-478b-bd0b-9864ca834532",
+				"method": "GET"
+			},
+			{
+				"id": "273080f2-a2be-4d31-b3e6-78b2e5ab956d",
+				"method": "POST"
+			},
+			{
+				"id": "60ab4c2a-404f-4dbe-a1f2-98e9193e9bd4",
+				"method": "GET"
+			},
+			{
+				"id": "b4fc74f2-620a-4dc7-bd6f-29b0d7edd875",
+				"method": "GET"
+			},
+			{
+				"id": "c45040dd-4ea6-45c3-bbb8-060d2a46edfb",
+				"method": "POST"
+			},
+			{
+				"id": "5d05e12c-22d8-480a-a03b-30d2d1a9b338",
+				"method": "GET"
+			},
+			{
+				"id": "4b1fd84a-69b2-4ad3-931a-d4face5f8aff",
+				"method": "GET"
+			},
+			{
+				"id": "5e47e258-1a4f-42c1-9309-6b83af61f967",
+				"method": "GET"
+			},
+			{
+				"id": "fca9f09f-cd44-4c1a-a2d1-c5fb81634270",
+				"method": "GET"
+			},
+			{
+				"id": "c4e75578-58aa-4f32-8be6-949a772dd6f7",
+				"method": "GET"
+			},
+			{
+				"id": "d9e878cc-3baa-4ffb-8c87-4781bac82c99",
+				"method": "POST"
+			},
+			{
+				"id": "7a626a9b-2b22-41b1-97b0-decc71b74a06",
+				"method": "GET"
+			}
+		]
+	}
+}

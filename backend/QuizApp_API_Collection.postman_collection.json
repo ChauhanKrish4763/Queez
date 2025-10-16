@@ -1,0 +1,576 @@
+{
+  "info": {
+    "name": "Quiz App API - Complete Testing Suite",
+    "description": "Comprehensive API testing collection for Quiz App with 30+ endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "quiz_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Health Check",
+      "item": [
+        {
+          "name": "Get API Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": ["{{base_url}}"],
+              "path": [""]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. Quiz CRUD Operations",
+      "item": [
+        {
+          "name": "Create Quiz",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.collectionVariables.set(\"quiz_id\", jsonData.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Python Programming Basics\",\n  \"description\": \"Test your knowledge of Python fundamentals\",\n  \"language\": \"English\",\n  \"category\": \"Science and Technology\",\n  \"questions\": [\n    {\n      \"id\": \"1\",\n      \"questionText\": \"What is Python?\",\n      \"type\": \"single\",\n      \"options\": [\n        \"A programming language\",\n        \"A snake\",\n        \"A software\",\n        \"An operating system\"\n      ],\n      \"correctAnswerIndex\": 0\n    },\n    {\n      \"id\": \"2\",\n      \"questionText\": \"Which are valid Python data types?\",\n      \"type\": \"multiple\",\n      \"options\": [\n        \"int\",\n        \"string\",\n        \"list\",\n        \"float\"\n      ],\n      \"correctAnswerIndices\": [0, 1, 2, 3]\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/quizzes",
+              "host": ["{{base_url}}"],
+              "path": ["quizzes"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Quizzes (Library)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/quizzes/library",
+              "host": ["{{base_url}}"],
+              "path": ["quizzes", "library"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Quiz by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/quizzes/{{quiz_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["quizzes", "{{quiz_id}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Quiz (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Python Programming Basics - Updated\",\n  \"description\": \"Updated: Test your knowledge of Python fundamentals\",\n  \"language\": \"English\",\n  \"category\": \"Science and Technology\",\n  \"questions\": [\n    {\n      \"id\": \"1\",\n      \"questionText\": \"What is Python?\",\n      \"type\": \"single\",\n      \"options\": [\n        \"A programming language\",\n        \"A snake\",\n        \"A software\",\n        \"An operating system\"\n      ],\n      \"correctAnswerIndex\": 0\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/quizzes/{{quiz_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["quizzes", "{{quiz_id}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Partial Update Quiz (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Python Quiz - Partially Updated\",\n  \"description\": \"Only title and description updated\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/quizzes/{{quiz_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["quizzes", "{{quiz_id}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Quiz",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/quizzes/{{quiz_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["quizzes", "{{quiz_id}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. Search & Filter",
+      "item": [
+        {
+          "name": "Search Quizzes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/quizzes/search?q=python",
+              "host": ["{{base_url}}"],
+              "path": ["quizzes", "search"],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "python"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Filter by Category",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/quizzes/category/Science and Technology",
+              "host": ["{{base_url}}"],
+              "path": ["quizzes", "category", "Science and Technology"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Filter by Language",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/quizzes/language/English",
+              "host": ["{{base_url}}"],
+              "path": ["quizzes", "language", "English"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4. Quiz Statistics & Attempts",
+      "item": [
+        {
+          "name": "Get Quiz Stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/quizzes/{{quiz_id}}/stats",
+              "host": ["{{base_url}}"],
+              "path": ["quizzes", "{{quiz_id}}", "stats"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Record Quiz Attempt",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": \"user123\",\n  \"score\": 8,\n  \"total_questions\": 10,\n  \"time_taken\": 120,\n  \"answers\": [\n    {\"question_id\": \"1\", \"answer\": 0},\n    {\"question_id\": \"2\", \"answer\": [0, 1, 2]}\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/quizzes/{{quiz_id}}/attempt",
+              "host": ["{{base_url}}"],
+              "path": ["quizzes", "{{quiz_id}}", "attempt"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Quiz Attempts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/quizzes/{{quiz_id}}/attempts?limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["quizzes", "{{quiz_id}}", "attempts"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "5. User Management",
+      "item": [
+        {
+          "name": "Create User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.collectionVariables.set(\"user_id\", jsonData.user_id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"john_doe\",\n  \"email\": \"john@example.com\",\n  \"full_name\": \"John Doe\",\n  \"bio\": \"Python developer and quiz enthusiast\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users",
+              "host": ["{{base_url}}"],
+              "path": ["users"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get User Profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{user_id}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update User Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bio\": \"Updated bio: Senior Python developer\",\n  \"full_name\": \"John Michael Doe\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{user_id}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get User's Quizzes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}/quizzes",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{user_id}}", "quizzes"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "6. Reviews & Ratings",
+      "item": [
+        {
+          "name": "Add Review",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": \"user123\",\n  \"username\": \"John Doe\",\n  \"rating\": 5,\n  \"comment\": \"Excellent quiz! Very informative and well-structured.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/quizzes/{{quiz_id}}/reviews",
+              "host": ["{{base_url}}"],
+              "path": ["quizzes", "{{quiz_id}}", "reviews"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Quiz Reviews",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/quizzes/{{quiz_id}}/reviews?limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["quizzes", "{{quiz_id}}", "reviews"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Top Rated Quizzes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/quizzes/top-rated?limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["quizzes", "top-rated"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "7. Results & Leaderboard",
+      "item": [
+        {
+          "name": "Submit Quiz Result",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quiz_id\": \"{{quiz_id}}\",\n  \"user_id\": \"user123\",\n  \"username\": \"John Doe\",\n  \"score\": 9,\n  \"total_questions\": 10,\n  \"percentage\": 90,\n  \"time_taken\": 180\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/results",
+              "host": ["{{base_url}}"],
+              "path": ["results"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Quiz Results",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/results/{{quiz_id}}?limit=50",
+              "host": ["{{base_url}}"],
+              "path": ["results", "{{quiz_id}}"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "50"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Leaderboard",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/leaderboard/{{quiz_id}}?limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["leaderboard", "{{quiz_id}}"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "8. Categories, Languages & Tags",
+      "item": [
+        {
+          "name": "Get All Categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/categories",
+              "host": ["{{base_url}}"],
+              "path": ["categories"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Languages",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/languages",
+              "host": ["{{base_url}}"],
+              "path": ["languages"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Tags",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/tags",
+              "host": ["{{base_url}}"],
+              "path": ["tags"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Tag",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"beginner\",\n  \"description\": \"Quizzes suitable for beginners\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/tags",
+              "host": ["{{base_url}}"],
+              "path": ["tags"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "9. Dashboard & Analytics",
+      "item": [
+        {
+          "name": "Get Dashboard Stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/dashboard/stats",
+              "host": ["{{base_url}}"],
+              "path": ["dashboard", "stats"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
