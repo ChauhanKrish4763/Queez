@@ -15,6 +15,7 @@ class QuizCacheManager {
     required String description,
     required String language,
     required String category,
+    required String creatorId,
     String? coverImagePath,
   }) {
     _currentQuiz = Quiz(
@@ -23,6 +24,7 @@ class QuizCacheManager {
       language: language,
       category: category,
       coverImagePath: coverImagePath,
+      creatorId: creatorId,
       createdAt: DateTime.now(), // Add this line
       questions: [], // Initialize with empty list
     );

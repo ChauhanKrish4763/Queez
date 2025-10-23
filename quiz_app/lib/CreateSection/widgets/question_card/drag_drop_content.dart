@@ -93,21 +93,24 @@ class DragDropContent extends StatelessWidget {
   }
 
   Widget _buildPairs() {
-    int maxLength = dragItemControllers.length > dropTargetControllers.length
-        ? dragItemControllers.length
-        : dropTargetControllers.length;
+    int maxLength =
+        dragItemControllers.length > dropTargetControllers.length
+            ? dragItemControllers.length
+            : dropTargetControllers.length;
 
     return Column(
       children: List.generate(
         maxLength,
         (index) => DragDropPair(
           index: index,
-          dragController: index < dragItemControllers.length
-              ? dragItemControllers[index]
-              : null,
-          dropController: index < dropTargetControllers.length
-              ? dropTargetControllers[index]
-              : null,
+          dragController:
+              index < dragItemControllers.length
+                  ? dragItemControllers[index]
+                  : null,
+          dropController:
+              index < dropTargetControllers.length
+                  ? dropTargetControllers[index]
+                  : null,
         ),
       ),
     );
@@ -115,40 +118,75 @@ class DragDropContent extends StatelessWidget {
 
   Widget _buildControlButtons() {
     if (isLocked) return const SizedBox.shrink();
-    
+
     return Row(
       children: [
-        ElevatedButton.icon(
-          onPressed: isLocked ? null : onAddPair,
-          icon: const Icon(Icons.add, size: 18),
-          label: const Text('Add Pair'),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary,
-            foregroundColor: AppColors.white,
-            padding: const EdgeInsets.symmetric(
-              horizontal: 20,
-              vertical: 14,
-            ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
+        // Add Pair Button
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: isLocked ? null : onAddPair,
+            borderRadius: BorderRadius.circular(8),
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: AppColors.primary.withOpacity(0.3),
+                  width: 1.5,
+                ),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.add, size: 20, color: AppColors.primary),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Add Pair',
+                    style: TextStyle(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
         const SizedBox(width: 12),
+
+        // Remove Pair Button
         if (dragItemControllers.length > 1 || dropTargetControllers.length > 1)
-          ElevatedButton.icon(
-            onPressed: isLocked ? null : onRemovePair,
-            icon: const Icon(Icons.remove, size: 18),
-            label: const Text('Remove Pair'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.error,
-              foregroundColor: AppColors.white,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 14,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: isLocked ? null : onRemovePair,
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: AppColors.error.withOpacity(0.3),
+                    width: 1.5,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.remove, size: 20, color: AppColors.error),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Remove Pair',
+                      style: TextStyle(
+                        color: AppColors.error,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

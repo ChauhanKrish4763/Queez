@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quiz_app/LibrarySection/widgets/library_body.dart';
-import 'package:quiz_app/LibrarySection/services/library_service.dart';
 import 'package:quiz_app/LibrarySection/widgets/quiz_library_item.dart';
-import 'package:quiz_app/utils/animations/page_transition.dart';
+import 'package:quiz_app/providers/library_provider.dart';
 import 'package:quiz_app/utils/color.dart';
 
-final GlobalKey<_LibraryPageState> libraryPageKey = GlobalKey<_LibraryPageState>();
+final GlobalKey<_LibraryPageState> libraryPageKey =
+    GlobalKey<_LibraryPageState>();
 
-class LibraryPage extends StatefulWidget {
+class LibraryPage extends ConsumerStatefulWidget {
   LibraryPage({Key? key}) : super(key: libraryPageKey);
 
   @override
-  State<LibraryPage> createState() => _LibraryPageState();
+  ConsumerState<LibraryPage> createState() => _LibraryPageState();
 
   /// ✅ Static method to call reload from anywhere
   static void reloadItems() {
@@ -19,14 +20,10 @@ class LibraryPage extends StatefulWidget {
   }
 }
 
-class _LibraryPageState extends State<LibraryPage> with TickerProviderStateMixin {
-  static List<QuizLibraryItem>? _cachedQuizzes;
-  List<QuizLibraryItem> quizzes = [];
-  List<QuizLibraryItem> filteredQuizzes = [];
-  bool isLoading = true;
-  String? errorMessage;
-  String searchQuery = '';
+class _LibraryPageState extends ConsumerState<LibraryPage>
+    with TickerProviderStateMixin {
   late AnimationController _fadeController;
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -35,7 +32,7 @@ class _LibraryPageState extends State<LibraryPage> with TickerProviderStateMixin
       duration: const Duration(milliseconds: 600),
       vsync: this,
     );
-    _loadQuizzesOnce();
+    _fadeController.forward();
   }
 
   @override
@@ -44,65 +41,56 @@ class _LibraryPageState extends State<LibraryPage> with TickerProviderStateMixin
     super.dispose();
   }
 
-  /// 🔁 Called internally and from `reloadItems`
+  /// 🔁 Reload items from server
   Future<void> _reloadItems() async {
-    _cachedQuizzes = null;
-    await _loadQuizzesOnce();
-  }
-
-  Future<void> _loadQuizzesOnce() async {
-    if (_cachedQuizzes != null) {
-      setState(() {
-        quizzes = _cachedQuizzes!;
-        filteredQuizzes = _cachedQuizzes!;
-        isLoading = false;
-      });
-      _fadeController.forward();
-      return;
-    }
-    try {
-      setState(() {
-        isLoading = true;
-        errorMessage = null;
-      });
-
-      final fetchedQuizzes = await LibraryService.fetchQuizLibrary();
-
-      _cachedQuizzes = fetchedQuizzes;
-      setState(() {
-        quizzes = fetchedQuizzes;
-        filteredQuizzes = fetchedQuizzes;
-        isLoading = false;
-      });
-      _fadeController.forward();
-    } catch (e) {
-      setState(() {
-        errorMessage = e.toString();
-        isLoading = false;
-      });
-    }
+    await ref.read(quizLibraryProvider.notifier).reload();
   }
 
   void _filterQuizzes(String query) {
     setState(() {
-      searchQuery = query;
-      filteredQuizzes = query.isEmpty
-          ? quizzes
-          : quizzes
-              .where((quiz) => quiz.title.toLowerCase().contains(query.toLowerCase()))
-              .toList();
+      _searchQuery = query;
     });
+  }
+
+  List<QuizLibraryItem> _getFilteredQuizzes(List<QuizLibraryItem> allQuizzes) {
+    if (_searchQuery.isEmpty) {
+      return allQuizzes;
+    }
+
+    return allQuizzes.where((quiz) {
+      return quiz.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          quiz.description.toLowerCase().contains(_searchQuery.toLowerCase());
+    }).toList();
   }
 
   @override
   Widget build(BuildContext context) {
+    final quizzesAsync = ref.watch(quizLibraryProvider);
+
+    // Get filtered quizzes and loading/error state from AsyncValue
+    bool isLoading = false;
+    String? errorMessage;
+    List<QuizLibraryItem> filteredQuizzes = [];
+
+    quizzesAsync.when(
+      data: (quizzes) {
+        filteredQuizzes = _getFilteredQuizzes(quizzes);
+      },
+      loading: () {
+        isLoading = true;
+      },
+      error: (error, _) {
+        errorMessage = error.toString();
+      },
+    );
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(
             child: buildSearchSection(
-              searchQuery: searchQuery,
+              searchQuery: _searchQuery,
               onQueryChanged: _filterQuizzes,
             ),
           ),
@@ -111,8 +99,8 @@ class _LibraryPageState extends State<LibraryPage> with TickerProviderStateMixin
             isLoading: isLoading,
             errorMessage: errorMessage,
             filteredQuizzes: filteredQuizzes,
-            searchQuery: searchQuery,
-            onRetry: _loadQuizzesOnce,
+            searchQuery: _searchQuery,
+            onRetry: _reloadItems,
           ),
         ],
       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:quiz_app/CreateSection/services/quiz_cache_manager.dart';
 import 'package:quiz_app/CreateSection/services/quiz_service.dart';
 import 'package:quiz_app/CreateSection/widgets/quiz_saved_dialog.dart';
@@ -22,7 +23,6 @@ class _QuizQuestionsState extends State<QuizQuestions> {
   int currentQuestionIndex = 0;
   bool isNavigationExpanded = false;
   bool _isLocked = false;
-
 
   @override
   void initState() {
@@ -160,13 +160,18 @@ class _QuizQuestionsState extends State<QuizQuestions> {
         throw Exception('No quiz details found');
       }
 
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        throw Exception('User not authenticated. Cannot save quiz.');
+      }
+
       // Save to backend with timeout
       print('Saving quiz to backend');
       String quizId;
 
       // Call createQuiz() for new quiz
       quizId = await QuizService.createQuiz(quiz).timeout(
-        Duration(seconds: 30),
+        const Duration(seconds: 30),
         onTimeout: () => throw Exception('Request timed out'),
       );
 

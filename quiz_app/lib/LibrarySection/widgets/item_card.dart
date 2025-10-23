@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:quiz_app/LibrarySection/widgets/quiz_library_item.dart';
 import 'package:quiz_app/utils/color.dart';
+import 'package:quiz_app/LibrarySection/screens/mode_selection_sheet.dart';
 
 class ItemCard extends StatelessWidget {
   final QuizLibraryItem quiz;
@@ -43,14 +45,21 @@ class ItemCard extends StatelessWidget {
                 children: [
                   // Question count tag
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.primary.withOpacity(0.07),
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.quiz_outlined, size: 18, color: AppColors.primary),
+                        const Icon(
+                          Icons.quiz_outlined,
+                          size: 18,
+                          color: AppColors.primary,
+                        ),
                         const SizedBox(width: 6),
                         Text(
                           '${quiz.questionCount}',
@@ -68,7 +77,7 @@ class ItemCard extends StatelessWidget {
                     children: [
                       // CreatedAt text
                       Text(
-                        quiz.createdAt!,
+                        quiz.createdAt ?? 'Unknown',
                         style: const TextStyle(
                           fontSize: 13,
                           color: AppColors.textSecondary,
@@ -85,7 +94,10 @@ class ItemCard extends StatelessWidget {
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: softRed,
-                            border: Border.all(color: Colors.transparent, width: 2),
+                            border: Border.all(
+                              color: Colors.transparent,
+                              width: 2,
+                            ),
                           ),
                           child: const Icon(
                             Icons.delete_outline,
@@ -105,25 +117,30 @@ class ItemCard extends StatelessWidget {
               margin: const EdgeInsets.symmetric(horizontal: 20),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16),
-                child: quiz.coverImagePath != null
-                    ? Image.network(
-                        quiz.coverImagePath!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => _buildDefaultIcon(),
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return Container(
-                            color: AppColors.surface,
-                            child: const Center(
-                              child: CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation(AppColors.primary),
-                                strokeWidth: 2,
+                child:
+                    quiz.coverImagePath != null
+                        ? Image.network(
+                          quiz.coverImagePath!,
+                          fit: BoxFit.cover,
+                          errorBuilder:
+                              (context, error, stackTrace) =>
+                                  _buildDefaultIcon(),
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return Container(
+                              color: AppColors.surface,
+                              child: const Center(
+                                child: CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation(
+                                    AppColors.primary,
+                                  ),
+                                  strokeWidth: 2,
+                                ),
                               ),
-                            ),
-                          );
-                        },
-                      )
-                    : _buildDefaultIcon(),
+                            );
+                          },
+                        )
+                        : _buildDefaultIcon(),
               ),
             ),
             // Title and View Icon
@@ -147,7 +164,10 @@ class ItemCard extends StatelessWidget {
                   ),
                   // View icon
                   IconButton(
-                    icon: const Icon(Icons.visibility_rounded, color: AppColors.iconInactive),
+                    icon: const Icon(
+                      Icons.visibility_rounded,
+                      color: AppColors.iconInactive,
+                    ),
                     onPressed: onView,
                     tooltip: 'View',
                   ),
@@ -168,6 +188,39 @@ class ItemCard extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
+            // Host Quiz Button
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+              child: SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    final hostId =
+                        FirebaseAuth.instance.currentUser?.uid ?? 'anonymous';
+                    showModeSelection(
+                      context: context,
+                      quizId: quiz.id,
+                      quizTitle: quiz.title,
+                      hostId: hostId,
+                    );
+                  },
+                  icon: const Icon(Icons.rocket_launch, size: 20),
+                  label: const Text(
+                    'Host This Quiz',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: AppColors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -178,7 +231,11 @@ class ItemCard extends StatelessWidget {
     return Container(
       color: AppColors.surface,
       child: const Center(
-        child: Icon(Icons.quiz_rounded, size: 48, color: AppColors.iconInactive),
+        child: Icon(
+          Icons.quiz_rounded,
+          size: 48,
+          color: AppColors.iconInactive,
+        ),
       ),
     );
   }

@@ -1,20 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:quiz_app/utils/color.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:quiz_app/utils/color.dart';
+import 'package:quiz_app/providers/auth_provider.dart';
 import 'package:quiz_app/utils/animations/page_transition.dart';
 
-class LoginPage extends StatefulWidget {
+class LoginPage extends ConsumerStatefulWidget {
   final VoidCallback onLoginSuccess;
 
   const LoginPage({super.key, required this.onLoginSuccess});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  ConsumerState<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
+class _LoginPageState extends ConsumerState<LoginPage>
+    with TickerProviderStateMixin {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
@@ -94,26 +97,29 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       // Check if profile is set up
       final hasProfile = await _isProfileSetup(uid);
 
-      // Save login state and last route to SharedPreferences
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('loggedIn', true);
-
+      // Use auth provider to handle login state
       if (hasProfile) {
         // Profile is already set up, go to dashboard
-        await prefs.setBool('profileSetupCompleted', true);
-        await prefs.setString('lastRoute', '/dashboard');
+        await ref
+            .read(appAuthProvider.notifier)
+            .login(profileCompleted: true, lastRoute: '/dashboard');
         // Use customNavigateReplacement directly instead of callback
-        customNavigateReplacement(context, '/dashboard', AnimationType.fade);
+        if (mounted) {
+          customNavigateReplacement(context, '/dashboard', AnimationType.fade);
+        }
       } else {
         // Profile not set up, go to profile setup
-        await prefs.setBool('profileSetupCompleted', false);
-        await prefs.setString('lastRoute', '/profile_welcome');
+        await ref
+            .read(appAuthProvider.notifier)
+            .login(profileCompleted: false, lastRoute: '/profile_welcome');
         // Use customNavigateReplacement directly instead of callback
-        customNavigateReplacement(
-          context,
-          '/profile_welcome',
-          AnimationType.fade,
-        );
+        if (mounted) {
+          customNavigateReplacement(
+            context,
+            '/profile_welcome',
+            AnimationType.fade,
+          );
+        }
       }
 
       // Still call the callback for backward compatibility
@@ -123,7 +129,9 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     } catch (e) {
       _showMessage('An unexpected error occurred');
     } finally {
-      setState(() => _loading = false);
+      if (mounted) {
+        setState(() => _loading = false);
+      }
     }
   }
 

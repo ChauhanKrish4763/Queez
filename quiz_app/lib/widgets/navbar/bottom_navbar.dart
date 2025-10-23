@@ -1,26 +1,26 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quiz_app/CreateSection/screens/create_page.dart';
 import 'package:quiz_app/LibrarySection/screens/library_page.dart';
 import 'package:quiz_app/ProfilePage/profile_page.dart';
+import 'package:quiz_app/providers/navigation_provider.dart';
 import 'package:quiz_app/utils/animations/page_transition.dart';
 import 'package:quiz_app/utils/color.dart';
 import 'package:quiz_app/utils/custom_navigator.dart';
 import 'package:quiz_app/widgets/navbar/create_button.dart';
 import 'package:quiz_app/widgets/navbar/navbar_shape.dart';
 
-class BottomNavbarController extends StatefulWidget {
+class BottomNavbarController extends ConsumerStatefulWidget {
   const BottomNavbarController({super.key});
 
   @override
-  State<BottomNavbarController> createState() => BottomNavbarControllerState();
+  ConsumerState<BottomNavbarController> createState() =>
+      BottomNavbarControllerState();
 }
 
-class BottomNavbarControllerState extends State<BottomNavbarController>
+class BottomNavbarControllerState extends ConsumerState<BottomNavbarController>
     with TickerProviderStateMixin {
-  int _selectedIndex = 0;
-  int _previousIndex = -1;
-
   final List<GlobalKey<NavigatorState>> navigatorKeys = List.generate(
     5,
     (index) => GlobalKey<NavigatorState>(),
@@ -31,6 +31,7 @@ class BottomNavbarControllerState extends State<BottomNavbarController>
   late AnimationController _controller;
   late Animation<double> _animation;
   final List<Widget> _sections = [LibraryPage(), CreatePage()];
+
   @override
   void initState() {
     super.initState();
@@ -58,13 +59,12 @@ class BottomNavbarControllerState extends State<BottomNavbarController>
   }
 
   void _onNavItemTapped(int index) {
-    if (index != _selectedIndex) {
-      setState(() {
-        _previousIndex = _selectedIndex;
-        _selectedIndex = index;
-        _controller.reset();
-        _controller.forward();
-      });
+    final currentIndex = ref.read(bottomNavIndexProvider);
+    if (index != currentIndex) {
+      ref.read(previousNavIndexProvider.notifier).setIndex(currentIndex);
+      ref.read(bottomNavIndexProvider.notifier).setIndex(index);
+      _controller.reset();
+      _controller.forward();
     }
   }
 
@@ -81,8 +81,10 @@ class BottomNavbarControllerState extends State<BottomNavbarController>
   }
 
   Widget _buildTransitioningPage(int index) {
-    final bool isActive = index == _selectedIndex;
-    final animationType = _getAnimationType(_previousIndex, _selectedIndex);
+    final selectedIndex = ref.watch(bottomNavIndexProvider);
+    final previousIndex = ref.watch(previousNavIndexProvider);
+    final bool isActive = index == selectedIndex;
+    final animationType = _getAnimationType(previousIndex, selectedIndex);
 
     return Offstage(
       offstage: !isActive,
@@ -99,6 +101,8 @@ class BottomNavbarControllerState extends State<BottomNavbarController>
 
   @override
   Widget build(BuildContext context) {
+    final selectedIndex = ref.watch(bottomNavIndexProvider);
+
     return Scaffold(
       body: Stack(
         children: List.generate(_pages.length, _buildTransitioningPage),
@@ -106,7 +110,7 @@ class BottomNavbarControllerState extends State<BottomNavbarController>
       floatingActionButton: CreateButton(onPressed: () => _onNavItemTapped(2)),
       floatingActionButtonLocation: _fabLocation,
       bottomNavigationBar: _BottomNavbar(
-        currentIndex: _selectedIndex,
+        currentIndex: selectedIndex,
         onTap: _onNavItemTapped,
       ),
     );

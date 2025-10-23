@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:quiz_app/providers/auth_provider.dart';
 import 'package:quiz_app/utils/animations/page_transition.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
 
-  runApp(const MyApp());
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -16,63 +17,49 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Squix',
+      title: 'Queez',
       debugShowCheckedModeBanner: false,
       home: const AppEntryPoint(),
     );
   }
 }
 
-class AppEntryPoint extends StatefulWidget {
+class AppEntryPoint extends ConsumerWidget {
   const AppEntryPoint({Key? key}) : super(key: key);
 
   @override
-  State<AppEntryPoint> createState() => _AppEntryPointState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final appState = ref.watch(appAuthProvider);
 
-class _AppEntryPointState extends State<AppEntryPoint> {
-  bool _isLoading = true;
-  String _lastRoute = '/login';
+    return appState.when(
+      data: (state) {
+        if (state.isLoading) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
 
-  @override
-  void initState() {
-    super.initState();
-    _loadAppState();
-  }
+        // Navigate after build is complete
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (context.mounted) {
+            final routeToNavigate =
+                state.lastRoute == '/' ? '/login' : state.lastRoute;
+            customNavigateReplacement(
+              context,
+              routeToNavigate,
+              AnimationType.fade,
+            );
+          }
+        });
 
-  Future<void> _loadAppState() async {
-    final prefs = await SharedPreferences.getInstance();
-    final loggedIn = prefs.getBool('loggedIn') ?? false;
-    final lastRoute = prefs.getString('lastRoute') ?? '/login';
-    final profileSetupCompleted =
-        prefs.getBool('profileSetupCompleted') ?? false;
-
-    setState(() {
-      // If logged in but profile setup not completed, go to profile setup
-      if (loggedIn && !profileSetupCompleted) {
-        _lastRoute = '/profile_welcome';
-      } else {
-        _lastRoute = loggedIn ? lastRoute : '/login';
-      }
-      _isLoading = false;
-    });
-
-    // After loading, redirect to the last route
-    if (mounted) {
-      final routeToNavigate = _lastRoute == '/' ? '/login' : _lastRoute;
-      customNavigateReplacement(context, routeToNavigate, AnimationType.fade);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child:
-            _isLoading
-                ? const CircularProgressIndicator()
-                : const SizedBox.shrink(),
-      ),
+        return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      },
+      loading:
+          () =>
+              const Scaffold(body: Center(child: CircularProgressIndicator())),
+      error:
+          (error, stack) =>
+              Scaffold(body: Center(child: Text('Error: $error'))),
     );
   }
 }

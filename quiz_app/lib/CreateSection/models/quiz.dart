@@ -7,6 +7,7 @@ class Quiz {
   String language;
   String category;
   String? coverImagePath;
+  String creatorId;
   List<Question> questions;
   DateTime createdAt;
 
@@ -17,6 +18,7 @@ class Quiz {
     required this.language,
     required this.category,
     this.coverImagePath,
+    required this.creatorId,
     List<Question>? questions,
     DateTime? createdAt,
   }) : questions = questions ?? [],
@@ -30,6 +32,7 @@ class Quiz {
       'language': language,
       'category': category,
       'coverImagePath': coverImagePath,
+      'creatorId': creatorId,
       'questions': questions.map((q) => q.toJson()).toList(),
       'createdAt': createdAt.toIso8601String(),
     };
@@ -43,6 +46,7 @@ class Quiz {
       language: json['language'],
       category: json['category'],
       coverImagePath: json['coverImagePath'],
+      creatorId: json['creatorId'] ?? '',
       questions:
           (json['questions'] as List).map((q) => Question.fromJson(q)).toList(),
       createdAt: DateTime.parse(json['createdAt']),

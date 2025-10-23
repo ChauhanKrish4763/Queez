@@ -46,7 +46,7 @@ class AssessmentPage extends StatelessWidget {
       ),
 
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(20.0),
           child: Column(
             children: [

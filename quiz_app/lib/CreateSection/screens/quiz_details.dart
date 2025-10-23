@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:quiz_app/CreateSection/models/question.dart';
 import 'package:quiz_app/CreateSection/screens/quiz_questions.dart';
 import 'package:quiz_app/CreateSection/services/quiz_cache_manager.dart';
@@ -57,15 +58,22 @@ class _QuizDetailsState extends State<QuizDetails> {
 
   Future<void> _fetchQuestions() async {
     try {
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+      if (userId == null) {
+        throw Exception("User not authenticated");
+      }
       final fetchedQuestions = await QuizService.fetchQuestionsByQuizId(
         widget.quizItem!.id,
+        userId,
       );
       setState(() {
         questions = fetchedQuestions;
       });
     } catch (e) {
-      // Handle error (e.g., show a snackbar)
       print('Error fetching questions: $e');
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error fetching questions: $e')));
     }
   }
 
@@ -201,11 +209,22 @@ class _QuizDetailsState extends State<QuizDetails> {
                     text: 'Get Started',
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
+                        final userId = FirebaseAuth.instance.currentUser?.uid;
+                        if (userId == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('User not authenticated'),
+                            ),
+                          );
+                          return;
+                        }
+
                         QuizCacheManager.instance.cacheQuizDetails(
                           title: _titleController.text,
                           description: _descriptionController.text,
                           language: _selectedLanguage!,
                           category: _selectedTag!,
+                          creatorId: userId,
                           coverImagePath: _coverImagePath,
                         );
 
@@ -217,10 +236,11 @@ class _QuizDetailsState extends State<QuizDetails> {
                             AnimationType.slideLeft,
                           );
                         } else {
-                          // Navigate directly with data
+                          // For editing existing quiz, preserve existing questions
+                          // and navigate with the quiz that now has creatorId set
                           _privateNavigator(
                             context,
-                            questions, // null-checked as requested
+                            questions,
                             AnimationType.slideLeft,
                           );
                         }

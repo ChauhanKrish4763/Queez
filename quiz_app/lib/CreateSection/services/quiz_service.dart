@@ -55,8 +55,8 @@ class QuizService {
           'Server error (${response.statusCode}): ${response.body}',
         );
       }
-    } on SocketException catch (e) {
-      print('Network error: $e');
+    } on SocketException {
+      print('Network error');
       throw Exception(
         'Network error. Please check your internet connection and server status.',
       );
@@ -94,18 +94,21 @@ class QuizService {
           'Failed to get quiz (${response.statusCode}): ${response.body}',
         );
       }
-    } on SocketException catch (e) {
+    } on SocketException {
       throw Exception('Network error: Please check your connection');
     } catch (e) {
       throw Exception('Error getting quiz: $e');
     }
   }
 
-  static Future<List<Question>> fetchQuestionsByQuizId(String quizId) async {
+  static Future<List<Question>> fetchQuestionsByQuizId(
+    String quizId,
+    String userId,
+  ) async {
     try {
       final response = await http
           .get(
-            Uri.parse('$baseUrl/quizzes/$quizId'),
+            Uri.parse('$baseUrl/quizzes/$quizId?user_id=$userId'),
             headers: {'Content-Type': 'application/json'},
           )
           .timeout(
@@ -124,10 +127,81 @@ class QuizService {
           'Failed to fetch quiz (${response.statusCode}): ${response.body}',
         );
       }
-    } on SocketException catch (e) {
+    } on SocketException {
       throw Exception('Network error: Please check your connection');
     } catch (e) {
       throw Exception('Error fetching questions: $e');
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>> fetchQuizzesByCreator(
+    String userId,
+  ) async {
+    try {
+      print('Fetching quizzes for user: $userId');
+      final response = await http
+          .get(
+            Uri.parse('$baseUrl/quizzes/library/$userId'),
+            headers: {'Content-Type': 'application/json'},
+          )
+          .timeout(
+            Duration(seconds: 15),
+            onTimeout: () {
+              throw Exception('Request timed out');
+            },
+          );
+
+      print('Library response status: ${response.statusCode}');
+      print('Library response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+        return List<Map<String, dynamic>>.from(responseData['data'] ?? []);
+      } else {
+        throw Exception(
+          'Failed to fetch quizzes (${response.statusCode}): ${response.body}',
+        );
+      }
+    } on SocketException {
+      throw Exception('Network error: Please check your connection');
+    } catch (e) {
+      print('Error fetching quizzes: $e');
+      throw Exception('Error fetching quizzes: $e');
+    }
+  }
+
+  static Future<bool> deleteQuiz(String quizId) async {
+    try {
+      print('Deleting quiz: $quizId');
+      final response = await http
+          .delete(
+            Uri.parse('$baseUrl/quizzes/$quizId'),
+            headers: {'Content-Type': 'application/json'},
+          )
+          .timeout(
+            Duration(seconds: 15),
+            onTimeout: () {
+              throw Exception('Request timed out');
+            },
+          );
+
+      print('Delete response status: ${response.statusCode}');
+      print('Delete response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        return true;
+      } else if (response.statusCode == 404) {
+        throw Exception('Quiz not found');
+      } else {
+        throw Exception(
+          'Failed to delete quiz (${response.statusCode}): ${response.body}',
+        );
+      }
+    } on SocketException {
+      throw Exception('Network error: Please check your connection');
+    } catch (e) {
+      print('Error deleting quiz: $e');
+      throw Exception('Error deleting quiz: $e');
     }
   }
 }

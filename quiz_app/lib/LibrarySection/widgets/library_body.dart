@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:quiz_app/CreateSection/screens/quiz_details.dart';
+import 'package:quiz_app/CreateSection/services/quiz_service.dart';
 import 'package:quiz_app/LibrarySection/widgets/item_card.dart';
 import 'package:quiz_app/LibrarySection/widgets/quiz_library_item.dart';
 import 'package:quiz_app/utils/animations/page_transition.dart';
@@ -186,29 +187,148 @@ Widget buildLibraryBody({
   return SliverPadding(
     padding: const EdgeInsets.all(20),
     sliver: SliverToBoxAdapter(
-      child: Column(
-        children: List.generate(
-          filteredQuizzes.length,
-          (index) => Container(
+      child: _AnimatedQuizList(quizzes: filteredQuizzes),
+    ),
+  );
+}
+
+class _AnimatedQuizList extends StatefulWidget {
+  final List<QuizLibraryItem> quizzes;
+
+  const _AnimatedQuizList({required this.quizzes});
+
+  @override
+  State<_AnimatedQuizList> createState() => _AnimatedQuizListState();
+}
+
+class _AnimatedQuizListState extends State<_AnimatedQuizList> {
+  final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
+  late List<QuizLibraryItem> _quizzes;
+
+  @override
+  void initState() {
+    super.initState();
+    _quizzes = List.from(widget.quizzes);
+  }
+
+  @override
+  void didUpdateWidget(_AnimatedQuizList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.quizzes.length != _quizzes.length) {
+      _quizzes = List.from(widget.quizzes);
+    }
+  }
+
+  Future<void> _removeItem(int index) async {
+    final removedQuiz = _quizzes[index];
+    _quizzes.removeAt(index);
+
+    _listKey.currentState?.removeItem(
+      index,
+      (context, animation) => _buildQuizCard(removedQuiz, animation, index),
+      duration: const Duration(milliseconds: 400),
+    );
+  }
+
+  Widget _buildQuizCard(
+    QuizLibraryItem quiz,
+    Animation<double> animation,
+    int index,
+  ) {
+    return SizeTransition(
+      sizeFactor: animation,
+      child: FadeTransition(
+        opacity: animation,
+        child: SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0, -0.1),
+            end: Offset.zero,
+          ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOut)),
+          child: Container(
             margin: const EdgeInsets.only(bottom: 16),
             child: ItemCard(
-              quiz: filteredQuizzes[index],
+              quiz: quiz,
               onView: () {
-                _privateNavigator(
-                  context,
-                  filteredQuizzes[index],
-                  AnimationType.fade,
-                );
+                _privateNavigator(context, quiz, AnimationType.fade);
               },
-              onDelete: () {
-                // Handle delete action, e.g., show confirmation and delete item
+              onDelete: () async {
+                // Show confirmation dialog
+                final confirmed = await showDialog<bool>(
+                  context: context,
+                  builder:
+                      (context) => AlertDialog(
+                        title: const Text('Delete Quiz'),
+                        content: Text(
+                          'Are you sure you want to delete "${quiz.title}"?',
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            child: const Text('Cancel'),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, true),
+                            style: TextButton.styleFrom(
+                              foregroundColor: Colors.red,
+                            ),
+                            child: const Text('Delete'),
+                          ),
+                        ],
+                      ),
+                );
+
+                if (confirmed == true) {
+                  try {
+                    // Delete from backend
+                    await QuizService.deleteQuiz(quiz.id);
+
+                    // Remove item with animation
+                    await _removeItem(index);
+
+                    // Show success message
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Quiz deleted successfully'),
+                          backgroundColor: Colors.green,
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    }
+                  } catch (e) {
+                    // Show error message
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Failed to delete quiz: $e'),
+                          backgroundColor: Colors.red,
+                          duration: const Duration(seconds: 3),
+                        ),
+                      );
+                    }
+                  }
+                }
               },
             ),
           ),
         ),
       ),
-    ),
-  );
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedList(
+      key: _listKey,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      initialItemCount: _quizzes.length,
+      itemBuilder: (context, index, animation) {
+        if (index >= _quizzes.length) return const SizedBox.shrink();
+        return _buildQuizCard(_quizzes[index], animation, index);
+      },
+    );
+  }
 }
 
 void _privateNavigator(
