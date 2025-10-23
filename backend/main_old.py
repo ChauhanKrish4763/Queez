@@ -20,7 +20,7 @@ from app.main import app
 __all__ = ['app']
 
 # MongoDB connection
-MONGODB_URL = os.getenv("MONGODB_URL", "mongodb+srv://admin:test123_@cluster0.tr8mdna.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+MONGODB_URL = os.getenv("MONGODB_URL", "")
 MONGODB_DB_NAME = os.getenv("MONGODB_DB_NAME", "quiz_app")
 client = AsyncIOMotorClient(MONGODB_URL)
 db = client[MONGODB_DB_NAME]
