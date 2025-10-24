@@ -20,6 +20,7 @@ class Quiz(BaseModel):
     category: str
     coverImagePath: Optional[str] = None
     creatorId: str
+    originalOwner: Optional[str] = None  # For quizzes added from other users
     questions: List[Question]
     createdAt: Optional[str] = None  # string instead of datetime
 
@@ -37,6 +38,8 @@ class QuizLibraryItem(BaseModel):
     questionCount: int
     language: str
     category: str
+    originalOwner: Optional[str] = None
+    originalOwnerUsername: Optional[str] = None  # Fetched from Firestore
 
 
 class QuizLibraryResponse(BaseModel):

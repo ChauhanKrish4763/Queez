@@ -37,6 +37,10 @@ async def create_quiz(quiz: Quiz):
         now = datetime.utcnow()
         quiz_dict["createdAt"] = now.strftime("%B, %Y")
 
+        # Set originalOwner to creatorId if not provided (user created the quiz themselves)
+        if not quiz_dict.get("originalOwner"):
+            quiz_dict["originalOwner"] = quiz_dict["creatorId"]
+
         # Set default cover image based on category if not provided
         if not quiz_dict.get("coverImagePath"):
             category = quiz_dict.get("category", "others").lower()
@@ -72,7 +76,8 @@ async def get_quiz_library_by_user(user_id: str):
                 "language": 1,
                 "category": 1,
                 "_id": 1,
-                "creatorId": 1
+                "creatorId": 1,
+                "originalOwner": 1
             }
         ).sort("createdAt", -1)
 
@@ -90,6 +95,8 @@ async def get_quiz_library_by_user(user_id: str):
                 questionCount=len(quiz.get("questions", [])),
                 language=quiz.get("language", ""),
                 category=quiz.get("category", ""),
+                originalOwner=quiz.get("originalOwner"),
+                originalOwnerUsername=None  # Will be fetched in Flutter
             )
             for quiz in quizzes
         ]
@@ -360,3 +367,96 @@ async def get_quiz_by_id(quiz_id: str, user_id: str = Query(..., description="Th
         return quiz
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/add-to-library")
+async def add_quiz_to_library(data: dict):
+    """Add a quiz to user's library using a session code"""
+    try:
+        user_id = data.get("user_id")
+        quiz_code = data.get("quiz_code")
+        
+        if not user_id or not quiz_code:
+            raise HTTPException(status_code=400, detail="user_id and quiz_code are required")
+        
+        # Import sessions_collection and users_collection here to avoid circular imports
+        from app.core.database import sessions_collection, users_collection
+        
+        # Find the session by code
+        session = await sessions_collection.find_one({"session_code": quiz_code})
+        
+        if not session:
+            raise HTTPException(status_code=404, detail="Quiz code not found or session expired")
+        
+        quiz_id = session.get("quiz_id")
+        mode = session.get("mode")
+        
+        # Get the quiz details
+        quiz = await collection.find_one({"_id": ObjectId(quiz_id)})
+        
+        if not quiz:
+            raise HTTPException(status_code=404, detail="Quiz not found")
+        
+        # For live_multiplayer mode, don't save to library
+        if mode == "live_multiplayer":
+            return {
+                "success": True,
+                "mode": mode,
+                "quiz_id": quiz_id,
+                "quiz_title": quiz.get("title", "Untitled Quiz"),
+                "message": "Live multiplayer session - not saved to library"
+            }
+        
+        # For self_paced and timed_individual, save a copy to user's library
+        # Check if user already has this quiz
+        original_creator_id = quiz.get("creatorId")
+        existing = await collection.find_one({
+            "creatorId": user_id,
+            "originalOwner": original_creator_id,
+            "title": quiz.get("title")
+        })
+        
+        if existing:
+            raise HTTPException(status_code=400, detail="You already have this quiz in your library")
+        
+        # Create a copy of the quiz for the user
+        new_quiz = {
+            "title": quiz.get("title"),
+            "description": quiz.get("description"),
+            "language": quiz.get("language"),
+            "category": quiz.get("category"),
+            "coverImagePath": quiz.get("coverImagePath"),
+            "creatorId": user_id,  # The user who is adding it
+            "originalOwner": original_creator_id,  # The original creator
+            "questions": quiz.get("questions"),
+            "createdAt": datetime.utcnow().strftime("%B, %Y")
+        }
+        
+        result = await collection.insert_one(new_quiz)
+        new_quiz_id = str(result.inserted_id)
+        
+        return {
+            "success": True,
+            "mode": mode,
+            "quiz_id": new_quiz_id,
+            "quiz_title": new_quiz.get("title", "Untitled Quiz"),
+            "message": "Quiz added to your library successfully",
+            # Return full quiz details for local addition
+            "quiz_details": {
+                "id": new_quiz_id,
+                "title": new_quiz.get("title"),
+                "description": new_quiz.get("description", ""),
+                "coverImagePath": new_quiz.get("coverImagePath"),
+                "createdAt": new_quiz.get("createdAt"),
+                "questionCount": len(new_quiz.get("questions", [])),
+                "language": new_quiz.get("language", ""),
+                "category": new_quiz.get("category", ""),
+                "originalOwner": new_quiz.get("originalOwner"),
+                "originalOwnerUsername": None  # Will be fetched in Flutter
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error adding quiz to library: {str(e)}")

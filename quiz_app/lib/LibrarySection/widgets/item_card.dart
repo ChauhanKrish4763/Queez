@@ -174,6 +174,34 @@ class ItemCard extends StatelessWidget {
                 ],
               ),
             ),
+            // Author info (if available)
+            if (quiz.originalOwnerUsername != null &&
+                quiz.originalOwnerUsername!.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.person_outline_rounded,
+                      size: 16,
+                      color: AppColors.textSecondary.withOpacity(0.7),
+                    ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        quiz.originalOwnerUsername!,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: AppColors.textSecondary.withOpacity(0.8),
+                          fontWeight: FontWeight.w500,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             // Description
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),

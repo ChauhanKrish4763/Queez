@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:quiz_app/CreateSection/services/quiz_service.dart';
 import 'package:quiz_app/providers/auth_provider.dart';
@@ -18,10 +19,50 @@ class QuizLibrary extends _$QuizLibrary {
     // Only fetch if the user is logged in.
     if (authState.value?.loggedIn == true && user != null) {
       final quizzesData = await QuizService.fetchQuizzesByCreator(user.uid);
-      return quizzesData.map((data) => QuizLibraryItem.fromJson(data)).toList();
+      final quizzes =
+          quizzesData.map((data) => QuizLibraryItem.fromJson(data)).toList();
+
+      // Fetch usernames from Firestore for quizzes with originalOwner
+      await _fetchUsernames(quizzes);
+
+      return quizzes;
     } else {
       // Return an empty list if not logged in.
       return [];
+    }
+  }
+
+  /// Fetch usernames from Firestore for originalOwner
+  Future<void> _fetchUsernames(List<QuizLibraryItem> quizzes) async {
+    final firestore = FirebaseFirestore.instance;
+
+    for (var i = 0; i < quizzes.length; i++) {
+      final quiz = quizzes[i];
+      if (quiz.originalOwner != null && quiz.originalOwner!.isNotEmpty) {
+        try {
+          final userDoc =
+              await firestore.collection('users').doc(quiz.originalOwner).get();
+
+          if (userDoc.exists) {
+            final username = userDoc.data()?['username'] as String?;
+            // Create a new instance with the username
+            quizzes[i] = QuizLibraryItem(
+              id: quiz.id,
+              title: quiz.title,
+              description: quiz.description,
+              coverImagePath: quiz.coverImagePath,
+              createdAt: quiz.createdAt,
+              questionCount: quiz.questionCount,
+              language: quiz.language,
+              category: quiz.category,
+              originalOwner: quiz.originalOwner,
+              originalOwnerUsername: username ?? 'Unknown User',
+            );
+          }
+        } catch (e) {
+          print('Error fetching username for ${quiz.originalOwner}: $e');
+        }
+      }
     }
   }
 

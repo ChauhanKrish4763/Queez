@@ -4,7 +4,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:quiz_app/utils/color.dart';
-import 'package:quiz_app/providers/auth_provider.dart';
 import 'package:quiz_app/utils/animations/page_transition.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
@@ -67,8 +66,30 @@ class _LoginPageState extends ConsumerState<LoginPage>
   }
 
   Future<bool> _isProfileSetup(String uid) async {
-    final doc = await _firestore.collection('users').doc(uid).get();
-    return doc.exists && doc.data() != null;
+    try {
+      final doc = await _firestore.collection('users').doc(uid).get();
+
+      if (!doc.exists || doc.data() == null) {
+        return false;
+      }
+
+      // Check if essential profile fields exist
+      final data = doc.data()!;
+      final hasName =
+          data.containsKey('name') &&
+          data['name'] != null &&
+          data['name'].toString().isNotEmpty;
+      final hasRole =
+          data.containsKey('role') &&
+          data['role'] != null &&
+          data['role'].toString().isNotEmpty;
+
+      // Profile is complete only if it has at least name and role
+      return hasName && hasRole;
+    } catch (e) {
+      print('Error checking profile: $e');
+      return false; // On error, assume profile not setup
+    }
   }
 
   Future<void> _login() async {
@@ -97,22 +118,29 @@ class _LoginPageState extends ConsumerState<LoginPage>
       // Check if profile is set up
       final hasProfile = await _isProfileSetup(uid);
 
-      // Use auth provider to handle login state
+      print('Login check - UID: $uid, Has Profile: $hasProfile');
+
+      // Save login state to SharedPreferences directly
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('loggedIn', true);
+
       if (hasProfile) {
         // Profile is already set up, go to dashboard
-        await ref
-            .read(appAuthProvider.notifier)
-            .login(profileCompleted: true, lastRoute: '/dashboard');
-        // Use customNavigateReplacement directly instead of callback
+        print('Navigating to dashboard - profile exists');
+        await prefs.setBool('profileSetupCompleted', true);
+        await prefs.setString('lastRoute', '/dashboard');
+
+        // Navigate to dashboard
         if (mounted) {
           customNavigateReplacement(context, '/dashboard', AnimationType.fade);
         }
       } else {
         // Profile not set up, go to profile setup
-        await ref
-            .read(appAuthProvider.notifier)
-            .login(profileCompleted: false, lastRoute: '/profile_welcome');
-        // Use customNavigateReplacement directly instead of callback
+        print('Navigating to profile setup - profile incomplete');
+        await prefs.setBool('profileSetupCompleted', false);
+        await prefs.setString('lastRoute', '/profile_welcome');
+
+        // Navigate to profile setup
         if (mounted) {
           customNavigateReplacement(
             context,
@@ -122,12 +150,15 @@ class _LoginPageState extends ConsumerState<LoginPage>
         }
       }
 
-      // Still call the callback for backward compatibility
+      // Call the callback for backward compatibility
       widget.onLoginSuccess();
     } on FirebaseAuthException catch (e) {
       _showMessage('Login failed: ${e.message}');
+    } on FirebaseException catch (e) {
+      _showMessage('Firebase error: ${e.message}');
     } catch (e) {
-      _showMessage('An unexpected error occurred');
+      _showMessage('An unexpected error occurred: $e');
+      print('Login error details: $e');
     } finally {
       if (mounted) {
         setState(() => _loading = false);

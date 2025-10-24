@@ -8,21 +8,41 @@ import 'package:quiz_app/utils/color.dart';
 
 Widget buildSearchSection({
   required String searchQuery,
+  required TextEditingController searchController,
   required ValueChanged<String> onQueryChanged,
+  required BuildContext context,
+  required VoidCallback onAddQuiz,
 }) {
   return Container(
     margin: const EdgeInsets.all(20),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Your Library',
-          style: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.w800,
-            color: AppColors.textPrimary,
-            height: 1.2,
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Your Library',
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w800,
+                color: AppColors.textPrimary,
+                height: 1.2,
+              ),
+            ),
+            IconButton(
+              onPressed: onAddQuiz,
+              icon: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.add, color: AppColors.white, size: 24),
+              ),
+              tooltip: 'Add a quiz',
+            ),
+          ],
         ),
         const SizedBox(height: 24),
         Container(
@@ -38,6 +58,7 @@ Widget buildSearchSection({
             ],
           ),
           child: TextField(
+            controller: searchController,
             onChanged: onQueryChanged,
             decoration: InputDecoration(
               hintText: 'Search quizzes...',

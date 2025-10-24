@@ -1,5 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 part 'auth_provider.g.dart';
 
@@ -43,34 +45,110 @@ class AppState {
 }
 
 /// Provider for SharedPreferences instance
-@riverpod
+@Riverpod(keepAlive: true)
 Future<SharedPreferences> sharedPreferences(ref) async {
   return await SharedPreferences.getInstance();
 }
 
 /// Provider for app authentication state
-@riverpod
+@Riverpod(keepAlive: true)
 class AppAuth extends _$AppAuth {
   @override
   Future<AppState> build() async {
     final prefs = await ref.watch(sharedPreferencesProvider.future);
-    final loggedIn = prefs.getBool('loggedIn') ?? false;
-    final lastRoute = prefs.getString('lastRoute') ?? '/login';
+
+    // Check Firebase Auth state first
+    final firebaseUser = FirebaseAuth.instance.currentUser;
+
+    // If Firebase user is null, user is definitely logged out
+    if (firebaseUser == null) {
+      // Clear any stale SharedPreferences
+      await prefs.setBool('loggedIn', false);
+      await prefs.setString('lastRoute', '/login');
+
+      return AppState(
+        isLoading: false,
+        loggedIn: false,
+        profileSetupCompleted: false,
+        lastRoute: '/login',
+      );
+    }
+
+    // Firebase user exists, check profile setup status
     final profileSetupCompleted =
         prefs.getBool('profileSetupCompleted') ?? false;
 
-    String navigationRoute = '/login';
-    if (loggedIn && !profileSetupCompleted) {
-      navigationRoute = '/profile_welcome';
-    } else if (loggedIn) {
-      navigationRoute = lastRoute;
+    // If profile setup status is not in SharedPreferences, check Firestore
+    if (!profileSetupCompleted) {
+      try {
+        final userDoc =
+            await FirebaseFirestore.instance
+                .collection('users')
+                .doc(firebaseUser.uid)
+                .get();
+
+        // Check if profile is properly setup with essential fields
+        bool hasCompleteProfile = false;
+        if (userDoc.exists && userDoc.data() != null) {
+          final data = userDoc.data()!;
+          final hasName =
+              data.containsKey('name') &&
+              data['name'] != null &&
+              data['name'].toString().isNotEmpty;
+          final hasRole =
+              data.containsKey('role') &&
+              data['role'] != null &&
+              data['role'].toString().isNotEmpty;
+
+          hasCompleteProfile = hasName && hasRole;
+        }
+
+        if (hasCompleteProfile) {
+          // Profile exists in Firestore with essential fields, mark as completed
+          await prefs.setBool('profileSetupCompleted', true);
+          await prefs.setBool('loggedIn', true);
+          await prefs.setString('lastRoute', '/dashboard');
+
+          return AppState(
+            isLoading: false,
+            loggedIn: true,
+            profileSetupCompleted: true,
+            lastRoute: '/dashboard',
+          );
+        } else {
+          // Profile doesn't exist or incomplete, needs setup
+          await prefs.setBool('loggedIn', true);
+          await prefs.setBool('profileSetupCompleted', false);
+          await prefs.setString('lastRoute', '/profile_welcome');
+
+          return AppState(
+            isLoading: false,
+            loggedIn: true,
+            profileSetupCompleted: false,
+            lastRoute: '/profile_welcome',
+          );
+        }
+      } catch (e) {
+        print('Error checking profile: $e');
+        // On error, assume profile not setup
+        return AppState(
+          isLoading: false,
+          loggedIn: true,
+          profileSetupCompleted: false,
+          lastRoute: '/profile_welcome',
+        );
+      }
     }
+
+    // User is logged in and profile is setup
+    final lastRoute = prefs.getString('lastRoute') ?? '/dashboard';
+    await prefs.setBool('loggedIn', true);
 
     return AppState(
       isLoading: false,
-      loggedIn: loggedIn,
-      profileSetupCompleted: profileSetupCompleted,
-      lastRoute: navigationRoute,
+      loggedIn: true,
+      profileSetupCompleted: true,
+      lastRoute: lastRoute,
     );
   }
 

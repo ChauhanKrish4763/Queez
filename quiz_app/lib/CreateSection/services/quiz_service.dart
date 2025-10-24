@@ -204,4 +204,50 @@ class QuizService {
       throw Exception('Error deleting quiz: $e');
     }
   }
+
+  static Future<Map<String, dynamic>> addQuizToLibrary(
+    String userId,
+    String quizCode,
+  ) async {
+    try {
+      print('Adding quiz to library for user: $userId with code: $quizCode');
+      final response = await http
+          .post(
+            Uri.parse('$baseUrl/quizzes/add-to-library'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({'user_id': userId, 'quiz_code': quizCode}),
+          )
+          .timeout(
+            Duration(seconds: 15),
+            onTimeout: () {
+              throw Exception('Request timed out');
+            },
+          );
+
+      print('Add to library response status: ${response.statusCode}');
+      print('Add to library response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data;
+      } else if (response.statusCode == 404) {
+        throw Exception('Quiz code not found or session expired');
+      } else if (response.statusCode == 400) {
+        final data = jsonDecode(response.body);
+        throw Exception(data['detail'] ?? 'Invalid quiz code');
+      } else {
+        throw Exception(
+          'Failed to add quiz (${response.statusCode}): ${response.body}',
+        );
+      }
+    } on SocketException {
+      throw Exception('Network error: Please check your connection');
+    } catch (e) {
+      print('Error adding quiz to library: $e');
+      if (e.toString().contains('Exception:')) {
+        rethrow;
+      }
+      throw Exception('Error adding quiz to library: $e');
+    }
+  }
 }

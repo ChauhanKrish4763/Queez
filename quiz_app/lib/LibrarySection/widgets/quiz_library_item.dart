@@ -1,4 +1,3 @@
-
 class QuizLibraryItem {
   final String id;
   final String title;
@@ -8,6 +7,8 @@ class QuizLibraryItem {
   final int questionCount;
   final String language;
   final String category;
+  final String? originalOwner;
+  final String? originalOwnerUsername;
 
   QuizLibraryItem({
     required this.id,
@@ -18,6 +19,8 @@ class QuizLibraryItem {
     required this.questionCount,
     required this.language,
     required this.category,
+    this.originalOwner,
+    this.originalOwnerUsername,
   });
 
   factory QuizLibraryItem.fromJson(Map<String, dynamic> json) {
@@ -30,6 +33,8 @@ class QuizLibraryItem {
       questionCount: json['questionCount'] ?? 0,
       language: json['language'] ?? '',
       category: json['category'] ?? '',
+      originalOwner: json['originalOwner'],
+      originalOwnerUsername: json['originalOwnerUsername'],
     );
   }
 }
