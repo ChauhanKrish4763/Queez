@@ -5,7 +5,6 @@ import 'package:quiz_app/CreateSection/screens/quiz_questions.dart';
 import 'package:quiz_app/main.dart'; // or wherever your widgets are
 import 'package:quiz_app/screens/dashboard.dart';
 import 'package:quiz_app/screens/login_page.dart';
-import 'package:quiz_app/utils/animations/page_transition.dart';
 import 'package:quiz_app/ProfileSetup/profile_setup_routes.dart';
 
 // Use typedef for clarity
@@ -17,7 +16,8 @@ final Map<String, RouteBuilder> routeMap = {
   '/login':
       (context) => LoginPage(
         onLoginSuccess: () {
-          customNavigateReplacement(context, '/dashboard', AnimationType.fade);
+          // Navigation is handled by LoginPage itself based on profile status
+          // No need to navigate here to avoid conflicts
         },
       ),
   '/assessment_page': (context) => const AssessmentPage(),

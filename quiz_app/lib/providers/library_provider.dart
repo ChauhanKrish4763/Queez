@@ -57,6 +57,7 @@ class QuizLibrary extends _$QuizLibrary {
               category: quiz.category,
               originalOwner: quiz.originalOwner,
               originalOwnerUsername: username ?? 'Unknown User',
+              sharedMode: quiz.sharedMode, // IMPORTANT: Preserve the sharedMode
             );
           }
         } catch (e) {

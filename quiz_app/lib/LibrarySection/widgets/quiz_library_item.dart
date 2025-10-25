@@ -9,6 +9,8 @@ class QuizLibraryItem {
   final String category;
   final String? originalOwner;
   final String? originalOwnerUsername;
+  final String?
+  sharedMode; // Mode used when quiz was shared (share, self_paced, timed_individual, live_multiplayer)
 
   QuizLibraryItem({
     required this.id,
@@ -21,6 +23,7 @@ class QuizLibraryItem {
     required this.category,
     this.originalOwner,
     this.originalOwnerUsername,
+    this.sharedMode,
   });
 
   factory QuizLibraryItem.fromJson(Map<String, dynamic> json) {
@@ -35,6 +38,7 @@ class QuizLibraryItem {
       category: json['category'] ?? '',
       originalOwner: json['originalOwner'],
       originalOwnerUsername: json['originalOwnerUsername'],
+      sharedMode: json['sharedMode'],
     );
   }
 }

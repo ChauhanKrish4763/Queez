@@ -21,6 +21,7 @@ class Quiz(BaseModel):
     coverImagePath: Optional[str] = None
     creatorId: str
     originalOwner: Optional[str] = None  # For quizzes added from other users
+    sharedMode: Optional[str] = None  # Mode used when quiz was shared (share, self_paced, timed_individual, live_multiplayer)
     questions: List[Question]
     createdAt: Optional[str] = None  # string instead of datetime
 
@@ -40,6 +41,7 @@ class QuizLibraryItem(BaseModel):
     category: str
     originalOwner: Optional[str] = None
     originalOwnerUsername: Optional[str] = None  # Fetched from Firestore
+    sharedMode: Optional[str] = None  # Mode used when quiz was shared
 
 
 class QuizLibraryResponse(BaseModel):

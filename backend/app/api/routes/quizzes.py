@@ -77,7 +77,8 @@ async def get_quiz_library_by_user(user_id: str):
                 "category": 1,
                 "_id": 1,
                 "creatorId": 1,
-                "originalOwner": 1
+                "originalOwner": 1,
+                "sharedMode": 1
             }
         ).sort("createdAt", -1)
 
@@ -96,7 +97,8 @@ async def get_quiz_library_by_user(user_id: str):
                 language=quiz.get("language", ""),
                 category=quiz.get("category", ""),
                 originalOwner=quiz.get("originalOwner"),
-                originalOwnerUsername=None  # Will be fetched in Flutter
+                originalOwnerUsername=None,  # Will be fetched in Flutter
+                sharedMode=quiz.get("sharedMode")
             )
             for quiz in quizzes
         ]
@@ -428,6 +430,7 @@ async def add_quiz_to_library(data: dict):
             "coverImagePath": quiz.get("coverImagePath"),
             "creatorId": user_id,  # The user who is adding it
             "originalOwner": original_creator_id,  # The original creator
+            "sharedMode": mode,  # Track which mode was used to share the quiz
             "questions": quiz.get("questions"),
             "createdAt": datetime.utcnow().strftime("%B, %Y")
         }
@@ -452,7 +455,8 @@ async def add_quiz_to_library(data: dict):
                 "language": new_quiz.get("language", ""),
                 "category": new_quiz.get("category", ""),
                 "originalOwner": new_quiz.get("originalOwner"),
-                "originalOwnerUsername": None  # Will be fetched in Flutter
+                "originalOwnerUsername": None,  # Will be fetched in Flutter
+                "sharedMode": new_quiz.get("sharedMode")
             }
         }
         

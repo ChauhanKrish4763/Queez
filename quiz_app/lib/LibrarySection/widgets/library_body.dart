@@ -32,14 +32,7 @@ Widget buildSearchSection({
             ),
             IconButton(
               onPressed: onAddQuiz,
-              icon: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(Icons.add, color: AppColors.white, size: 24),
-              ),
+              icon: const Icon(Icons.add, size: 24),
               tooltip: 'Add a quiz',
             ),
           ],
@@ -81,7 +74,10 @@ Widget buildSearchSection({
                           Icons.clear_rounded,
                           color: AppColors.iconInactive,
                         ),
-                        onPressed: () => onQueryChanged(''),
+                        onPressed: () {
+                          searchController.clear();
+                          onQueryChanged('');
+                        },
                       )
                       : null,
               border: InputBorder.none,
