@@ -32,7 +32,7 @@ final class SharedPreferencesProvider
         argument: null,
         retry: null,
         name: r'sharedPreferencesProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -52,7 +52,7 @@ final class SharedPreferencesProvider
   }
 }
 
-String _$sharedPreferencesHash() => r'a2e33dc9fa8ab78049dab3549e2dfb444921fc4c';
+String _$sharedPreferencesHash() => r'f04ae52b39f02c2fb9c884b17023fd6113b8f67a';
 
 /// Provider for app authentication state
 
@@ -68,7 +68,7 @@ final class AppAuthProvider extends $AsyncNotifierProvider<AppAuth, AppState> {
         argument: null,
         retry: null,
         name: r'appAuthProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -81,7 +81,7 @@ final class AppAuthProvider extends $AsyncNotifierProvider<AppAuth, AppState> {
   AppAuth create() => AppAuth();
 }
 
-String _$appAuthHash() => r'57338b7749f212f9b5f8928869d838a0cdfb2a18';
+String _$appAuthHash() => r'7d965758128a6a9cb20348bf34c1646935f5bc11';
 
 /// Provider for app authentication state
 

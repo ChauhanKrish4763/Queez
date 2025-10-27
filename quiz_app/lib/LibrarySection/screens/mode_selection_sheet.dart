@@ -61,6 +61,18 @@ class ModeSelectionSheet extends StatelessWidget {
               ),
               const SizedBox(height: 24),
 
+              // Share Mode
+              _buildModeCard(
+                context: context,
+                icon: Icons.share,
+                title: 'Share',
+                description:
+                    'Share this quiz with others and add it to their library for later access',
+                color: AppColors.primary,
+                mode: 'share',
+              ),
+              const SizedBox(height: 16),
+
               // Live Multiplayer Mode
               _buildModeCard(
                 context: context,
@@ -68,7 +80,7 @@ class ModeSelectionSheet extends StatelessWidget {
                 title: 'Live Multiplayer',
                 description:
                     'Host a live quiz session where all participants answer together in real-time',
-                color: AppColors.primary,
+                color: AppColors.secondary,
                 mode: 'live_multiplayer',
               ),
               const SizedBox(height: 16),
@@ -79,8 +91,8 @@ class ModeSelectionSheet extends StatelessWidget {
                 icon: Icons.person,
                 title: 'Self-Paced',
                 description:
-                    'Participants can join and complete the quiz at their own pace',
-                color: AppColors.secondary,
+                    'Play the quiz at your own pace without time pressure',
+                color: AppColors.accentBright,
                 mode: 'self_paced',
               ),
               const SizedBox(height: 16),
@@ -91,8 +103,8 @@ class ModeSelectionSheet extends StatelessWidget {
                 icon: Icons.timer,
                 title: 'Timed Individual',
                 description:
-                    'Participants complete the quiz individually within a time limit',
-                color: AppColors.accentBright,
+                    'Challenge yourself to complete the quiz within a time limit',
+                color: Colors.orange,
                 mode: 'timed_individual',
               ),
               const SizedBox(height: 16),

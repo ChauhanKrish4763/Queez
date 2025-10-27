@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quiz_app/LibrarySection/widgets/library_body.dart';
 import 'package:quiz_app/LibrarySection/widgets/quiz_library_item.dart';
+import 'package:quiz_app/LibrarySection/widgets/add_quiz_modal.dart';
 import 'package:quiz_app/providers/library_provider.dart';
 import 'package:quiz_app/utils/color.dart';
 
@@ -18,12 +19,18 @@ class LibraryPage extends ConsumerStatefulWidget {
   static void reloadItems() {
     libraryPageKey.currentState?._reloadItems();
   }
+
+  /// 🔍 Static method to set search query
+  static void setSearchQuery(String query) {
+    libraryPageKey.currentState?._setSearchQuery(query);
+  }
 }
 
 class _LibraryPageState extends ConsumerState<LibraryPage>
     with TickerProviderStateMixin {
   late AnimationController _fadeController;
   String _searchQuery = '';
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -38,12 +45,21 @@ class _LibraryPageState extends ConsumerState<LibraryPage>
   @override
   void dispose() {
     _fadeController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
   /// 🔁 Reload items from server
   Future<void> _reloadItems() async {
     await ref.read(quizLibraryProvider.notifier).reload();
+  }
+
+  /// 🔍 Set search query
+  void _setSearchQuery(String query) {
+    setState(() {
+      _searchQuery = query;
+      _searchController.text = query;
+    });
   }
 
   void _filterQuizzes(String query) {
@@ -91,7 +107,12 @@ class _LibraryPageState extends ConsumerState<LibraryPage>
           SliverToBoxAdapter(
             child: buildSearchSection(
               searchQuery: _searchQuery,
+              searchController: _searchController,
               onQueryChanged: _filterQuizzes,
+              context: context,
+              onAddQuiz: () {
+                showAddQuizModal(context, _reloadItems);
+              },
             ),
           ),
           buildLibraryBody(

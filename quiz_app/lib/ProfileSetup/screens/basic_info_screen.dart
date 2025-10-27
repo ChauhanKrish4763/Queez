@@ -14,6 +14,7 @@ class BasicInfoScreen extends StatefulWidget {
 
 class _BasicInfoScreenState extends State<BasicInfoScreen> {
   final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _ageController = TextEditingController();
   final TextEditingController _dobController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
@@ -39,6 +40,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
   @override
   void dispose() {
     _nameController.dispose();
+    _usernameController.dispose();
     _ageController.dispose();
     _dobController.dispose();
     super.dispose();
@@ -56,6 +58,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
         AnimationType.slideLeft,
         arguments: {
           'name': _nameController.text,
+          'username': _usernameController.text,
           'age': int.parse(_ageController.text),
           'dateOfBirth': _dobController.text,
           'role': _selectedRole,
@@ -72,6 +75,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
         await _firestore.collection('users').doc(currentUser.uid).set({
           'uid': currentUser.uid,
           'name': _nameController.text,
+          'username': _usernameController.text,
           'age': int.parse(_ageController.text),
           'dateOfBirth': _dobController.text,
           'role': _selectedRole,
@@ -154,6 +158,32 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Please enter your name';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 24),
+                        const Text(
+                          'Username',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        _buildTextField(
+                          controller: _usernameController,
+                          hintText: 'Enter your username',
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter a username';
+                            }
+                            if (value.length < 3) {
+                              return 'Username must be at least 3 characters';
+                            }
+                            if (!RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(value)) {
+                              return 'Username can only contain letters, numbers, and underscores';
                             }
                             return null;
                           },

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:quiz_app/models/user_model.dart';
 import 'package:quiz_app/utils/color.dart';
 import 'package:quiz_app/utils/animations/page_transition.dart';
@@ -50,13 +51,24 @@ class _ProfilePageState extends State<ProfilePage> {
 
   void _signOut() async {
     try {
+      // Clear SharedPreferences first
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('loggedIn', false);
+      await prefs.setBool('profileSetupCompleted', false);
+      await prefs.setString('lastRoute', '/login');
+
+      // Sign out from Firebase
       await _auth.signOut();
+
       // Navigate to login page
       if (mounted) {
         customNavigateReplacement(context, '/login', AnimationType.fade);
       }
     } catch (e) {
       print('Error signing out: $e');
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error signing out: $e')));
     }
   }
 

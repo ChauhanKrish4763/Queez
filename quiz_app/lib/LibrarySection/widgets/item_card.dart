@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:quiz_app/LibrarySection/widgets/quiz_library_item.dart';
 import 'package:quiz_app/utils/color.dart';
 import 'package:quiz_app/LibrarySection/screens/mode_selection_sheet.dart';
+import 'package:quiz_app/LibrarySection/PlaySection/screens/quiz_play_screen.dart';
+import 'package:quiz_app/utils/animations/page_transition.dart';
 
 class ItemCard extends StatelessWidget {
   final QuizLibraryItem quiz;
@@ -20,6 +22,17 @@ class ItemCard extends StatelessWidget {
   Widget build(BuildContext context) {
     // Soft red color for icon background
     final Color softRed = Colors.red.shade50;
+
+    // Check if this quiz was shared in a restrictive mode (self_paced or timed_individual)
+    final isRestrictiveMode =
+        quiz.sharedMode == 'self_paced' ||
+        quiz.sharedMode == 'timed_individual';
+
+    // Show full features if:
+    // 1. No sharedMode (quiz was created by user, not added via code)
+    // 2. sharedMode is 'share' or 'live_multiplayer' (non-restrictive sharing)
+    // Hide features only if sharedMode is 'self_paced' or 'timed_individual'
+    final showFullFeatures = !isRestrictiveMode;
 
     return GestureDetector(
       child: Container(
@@ -162,18 +175,47 @@ class ItemCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  // View icon
-                  IconButton(
-                    icon: const Icon(
-                      Icons.visibility_rounded,
-                      color: AppColors.iconInactive,
+                  // View icon (only show if showFullFeatures is true)
+                  if (showFullFeatures)
+                    IconButton(
+                      icon: const Icon(
+                        Icons.visibility_rounded,
+                        color: AppColors.iconInactive,
+                      ),
+                      onPressed: onView,
+                      tooltip: 'View',
                     ),
-                    onPressed: onView,
-                    tooltip: 'View',
-                  ),
                 ],
               ),
             ),
+            // Author info (if available)
+            if (quiz.originalOwnerUsername != null &&
+                quiz.originalOwnerUsername!.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.person_outline_rounded,
+                      size: 16,
+                      color: AppColors.textSecondary.withOpacity(0.7),
+                    ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        quiz.originalOwnerUsername!,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: AppColors.textSecondary.withOpacity(0.8),
+                          fontWeight: FontWeight.w500,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             // Description
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
@@ -188,38 +230,127 @@ class ItemCard extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            // Host Quiz Button
+            // Share and Play Buttons
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-              child: SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    final hostId =
-                        FirebaseAuth.instance.currentUser?.uid ?? 'anonymous';
-                    showModeSelection(
-                      context: context,
-                      quizId: quiz.id,
-                      quizTitle: quiz.title,
-                      hostId: hostId,
-                    );
-                  },
-                  icon: const Icon(Icons.rocket_launch, size: 20),
-                  label: const Text(
-                    'Host This Quiz',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: AppColors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-              ),
+              child:
+                  showFullFeatures
+                      ? Row(
+                        children: [
+                          // Share Button (only for showFullFeatures)
+                          Expanded(
+                            child: SizedBox(
+                              height: 48,
+                              child: ElevatedButton.icon(
+                                onPressed: () {
+                                  final hostId =
+                                      FirebaseAuth.instance.currentUser?.uid ??
+                                      'anonymous';
+                                  showModeSelection(
+                                    context: context,
+                                    quizId: quiz.id,
+                                    quizTitle: quiz.title,
+                                    hostId: hostId,
+                                  );
+                                },
+                                icon: const Icon(
+                                  Icons.share,
+                                  size: 20,
+                                  color: AppColors.white,
+                                ),
+                                label: const Text(
+                                  'Share',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.secondary,
+                                  foregroundColor: AppColors.white,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          // Play Button
+                          Expanded(
+                            child: SizedBox(
+                              height: 48,
+                              child: ElevatedButton.icon(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    customRoute(
+                                      QuizPlayScreen(quizItem: quiz),
+                                      AnimationType.slideUp,
+                                    ),
+                                  );
+                                },
+                                icon: const Icon(
+                                  Icons.play_arrow,
+                                  size: 20,
+                                  color: AppColors.white,
+                                ),
+                                label: const Text(
+                                  'Play',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.secondary,
+                                  foregroundColor: AppColors.white,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      )
+                      : SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              customRoute(
+                                QuizPlayScreen(quizItem: quiz),
+                                AnimationType.slideUp,
+                              ),
+                            );
+                          },
+                          icon: const Icon(
+                            Icons.play_arrow,
+                            size: 20,
+                            color: AppColors.white,
+                          ),
+                          label: const Text(
+                            'Play',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.secondary,
+                            foregroundColor: AppColors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      ),
             ),
           ],
         ),

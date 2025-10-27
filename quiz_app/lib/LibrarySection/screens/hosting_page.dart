@@ -266,6 +266,8 @@ class _HostingPageState extends State<HostingPage> {
     switch (widget.mode) {
       case 'live_multiplayer':
         return 'Live Multiplayer';
+      case 'share':
+        return 'Share Quiz';
       case 'self_paced':
         return 'Self-Paced';
       case 'timed_individual':
@@ -435,27 +437,6 @@ class _HostingPageState extends State<HostingPage> {
                 _buildParticipantsSection(),
                 const SizedBox(height: 32),
               ],
-
-              // Start Quiz Button
-              ElevatedButton.icon(
-                onPressed: () {
-                  // TODO: Implement start quiz logic
-                },
-                icon: const Icon(Icons.play_arrow_rounded, size: 28),
-                label: const Text('Start Quiz'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: AppColors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  textStyle: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
-              ),
             ],
           ),
         ),

@@ -8,21 +8,34 @@ import 'package:quiz_app/utils/color.dart';
 
 Widget buildSearchSection({
   required String searchQuery,
+  required TextEditingController searchController,
   required ValueChanged<String> onQueryChanged,
+  required BuildContext context,
+  required VoidCallback onAddQuiz,
 }) {
   return Container(
     margin: const EdgeInsets.all(20),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Your Library',
-          style: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.w800,
-            color: AppColors.textPrimary,
-            height: 1.2,
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Your Library',
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w800,
+                color: AppColors.textPrimary,
+                height: 1.2,
+              ),
+            ),
+            IconButton(
+              onPressed: onAddQuiz,
+              icon: const Icon(Icons.add, size: 24),
+              tooltip: 'Add a quiz',
+            ),
+          ],
         ),
         const SizedBox(height: 24),
         Container(
@@ -38,6 +51,7 @@ Widget buildSearchSection({
             ],
           ),
           child: TextField(
+            controller: searchController,
             onChanged: onQueryChanged,
             decoration: InputDecoration(
               hintText: 'Search quizzes...',
@@ -60,7 +74,10 @@ Widget buildSearchSection({
                           Icons.clear_rounded,
                           color: AppColors.iconInactive,
                         ),
-                        onPressed: () => onQueryChanged(''),
+                        onPressed: () {
+                          searchController.clear();
+                          onQueryChanged('');
+                        },
                       )
                       : null,
               border: InputBorder.none,
