@@ -28,7 +28,7 @@ class ItemCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: AppColors.primary.withOpacity(0.08),
+              color: AppColors.primary.withValues(alpha: 0.08),
               blurRadius: 20,
               offset: const Offset(0, 8),
             ),
@@ -50,7 +50,7 @@ class ItemCard extends StatelessWidget {
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.07),
+                      color: AppColors.primary.withValues(alpha: 0.07),
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Row(

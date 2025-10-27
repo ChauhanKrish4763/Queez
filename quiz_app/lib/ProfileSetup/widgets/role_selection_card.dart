@@ -34,7 +34,7 @@ class RoleSelectionCard extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: AppColors.secondary.withOpacity(0.1),
+              color: AppColors.secondary.withValues(alpha: 0.1),
               spreadRadius: 1,
               blurRadius: 8,
               offset: const Offset(0, 2),
@@ -77,7 +77,7 @@ class RoleSelectionCard extends StatelessWidget {
                       fontSize: 14,
                       color:
                           isSelected
-                              ? AppColors.white.withOpacity(0.8)
+                              ? AppColors.white.withValues(alpha: 0.8)
                               : AppColors.textSecondary,
                     ),
                   ),

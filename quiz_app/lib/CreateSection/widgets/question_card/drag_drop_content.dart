@@ -131,7 +131,7 @@ class DragDropContent extends StatelessWidget {
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 border: Border.all(
-                  color: AppColors.primary.withOpacity(0.3),
+                  color: AppColors.primary.withValues(alpha: 0.3),
                   width: 1.5,
                 ),
                 borderRadius: BorderRadius.circular(8),
@@ -167,7 +167,7 @@ class DragDropContent extends StatelessWidget {
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   border: Border.all(
-                    color: AppColors.error.withOpacity(0.3),
+                    color: AppColors.error.withValues(alpha: 0.3),
                     width: 1.5,
                   ),
                   borderRadius: BorderRadius.circular(8),

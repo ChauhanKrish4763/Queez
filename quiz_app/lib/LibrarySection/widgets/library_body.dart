@@ -31,7 +31,7 @@ Widget buildSearchSection({
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primary.withOpacity(0.08),
+                color: AppColors.primary.withValues(alpha: 0.08),
                 blurRadius: 20,
                 offset: const Offset(0, 4),
               ),
@@ -42,7 +42,7 @@ Widget buildSearchSection({
             decoration: InputDecoration(
               hintText: 'Search quizzes...',
               hintStyle: TextStyle(
-                color: AppColors.textSecondary.withOpacity(0.6),
+                color: AppColors.textSecondary.withValues(alpha: 0.6),
                 fontWeight: FontWeight.w500,
               ),
               prefixIcon: Container(
@@ -123,7 +123,7 @@ Widget buildLibraryBody({
               'Please wait a moment',
               style: TextStyle(
                 fontSize: 14,
-                color: AppColors.textSecondary.withOpacity(0.7),
+                color: AppColors.textSecondary.withValues(alpha: 0.7),
               ),
             ),
           ],

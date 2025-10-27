@@ -133,17 +133,17 @@ class _BottomNavbar extends StatelessWidget {
       borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.primaryLight.withOpacity(0.65),
+          color: AppColors.primaryLight.withValues(alpha: 0.65),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withValues(alpha: 0.08),
               offset: const Offset(0, -4),
               blurRadius: 16,
               spreadRadius: 1,
             ),
           ],
           border: Border(
-            top: BorderSide(color: Colors.white.withOpacity(0.15), width: 0.8),
+            top: BorderSide(color: Colors.white.withValues(alpha: 0.15), width: 0.8),
           ),
         ),
         child: BackdropFilter(
@@ -186,7 +186,7 @@ class _BottomNavbar extends StatelessWidget {
         decoration: BoxDecoration(
           color:
               isActive
-                  ? AppColors.accentBright.withOpacity(0.15)
+                  ? AppColors.accentBright.withValues(alpha: 0.15)
                   : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
         ),

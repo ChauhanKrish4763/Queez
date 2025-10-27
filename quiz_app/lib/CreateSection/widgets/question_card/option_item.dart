@@ -41,12 +41,12 @@ class OptionItem extends StatelessWidget {
               margin: const EdgeInsets.only(bottom: 16),
               decoration: BoxDecoration(
                 color: isCorrect
-                    ? AppColors.success.withOpacity(0.08)
+                    ? AppColors.success.withValues(alpha: 0.08)
                     : AppColors.background,
                 border: Border.all(
                   color: isCorrect
                       ? AppColors.success
-                      : AppColors.primaryLight.withOpacity(0.3),
+                      : AppColors.primaryLight.withValues(alpha: 0.3),
                   width: isCorrect ? 2 : 1,
                 ),
                 borderRadius: BorderRadius.circular(16),

@@ -15,12 +15,12 @@ class HostingPage extends StatefulWidget {
   final String hostId;
 
   const HostingPage({
-    Key? key,
+    super.key,
     required this.quizId,
     required this.quizTitle,
     required this.mode,
     required this.hostId,
-  }) : super(key: key);
+  });
 
   @override
   State<HostingPage> createState() => _HostingPageState();
@@ -284,7 +284,7 @@ class _HostingPageState extends State<HostingPage> {
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [AppColors.primary, AppColors.primary.withOpacity(0.8)],
+              colors: [AppColors.primary, AppColors.primary.withValues(alpha: 0.8)],
             ),
           ),
           child: const Center(
@@ -648,7 +648,7 @@ class _HostingPageState extends State<HostingPage> {
                 children: [
                   CircleAvatar(
                     radius: 28,
-                    backgroundColor: avatarColor.withOpacity(0.2),
+                    backgroundColor: avatarColor.withValues(alpha: 0.2),
                     child: Text(
                       firstLetter,
                       style: TextStyle(

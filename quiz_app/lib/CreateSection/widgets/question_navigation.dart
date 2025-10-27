@@ -109,7 +109,7 @@ class _QuestionNavigationState extends State<QuestionNavigation>
           color: AppColors.white,
           boxShadow: [
             BoxShadow(
-              color: AppColors.primary.withOpacity(0.08),
+              color: AppColors.primary.withValues(alpha: 0.08),
               blurRadius: 20,
               offset: const Offset(0, -8),
             ),
@@ -178,7 +178,7 @@ class _QuestionNavigationState extends State<QuestionNavigation>
                           inactiveTrackColor: AppColors.primaryLighter,
                           thumbColor: AppColors.primary,
                           overlayColor:
-                              AppColors.primary.withOpacity(0.2),
+                              AppColors.primary.withValues(alpha: 0.2),
                         ),
                         child: Slider(
                           value: widget.currentIndex.toDouble(),
@@ -215,7 +215,7 @@ class _QuestionNavigationState extends State<QuestionNavigation>
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: widget.currentIndex > 0
                                     ? AppColors.secondary
-                                    : AppColors.iconInactive.withOpacity(0.3),
+                                    : AppColors.iconInactive.withValues(alpha: 0.3),
                                 foregroundColor: AppColors.white,
                                 padding: const EdgeInsets.symmetric(
                                     vertical: 8, horizontal: 6),
@@ -246,7 +246,7 @@ class _QuestionNavigationState extends State<QuestionNavigation>
                                 backgroundColor: widget.currentIndex <
                                         widget.totalQuestions - 1
                                     ? AppColors.secondary
-                                    : AppColors.iconInactive.withOpacity(0.3),
+                                    : AppColors.iconInactive.withValues(alpha: 0.3),
                                 foregroundColor: AppColors.white,
                                 padding: const EdgeInsets.symmetric(
                                     vertical: 8, horizontal: 6),

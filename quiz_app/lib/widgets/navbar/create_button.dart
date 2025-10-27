@@ -21,7 +21,7 @@ class CreateButton extends StatelessWidget {
             shape: const CircleBorder(),
             elevation: 10,
             highlightElevation: 14,
-            splashColor: AppColors.primaryDark.withOpacity(0.2),
+            splashColor: AppColors.primaryDark.withValues(alpha: 0.2),
             child: const Icon(
               Icons.add,
               size: 36,

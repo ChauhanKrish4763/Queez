@@ -216,7 +216,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: AppColors.secondary.withOpacity(0.1),
+            color: AppColors.secondary.withValues(alpha: 0.1),
             spreadRadius: 1,
             blurRadius: 8,
             offset: const Offset(0, 2),
@@ -290,7 +290,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: AppColors.secondary.withOpacity(0.1),
+            color: AppColors.secondary.withValues(alpha: 0.1),
             spreadRadius: 1,
             blurRadius: 8,
             offset: const Offset(0, 2),
@@ -395,7 +395,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
               _selectedInterests.map((interest) {
                 return Chip(
                   label: Text(interest),
-                  backgroundColor: AppColors.primary.withOpacity(0.2),
+                  backgroundColor: AppColors.primary.withValues(alpha: 0.2),
                   labelStyle: const TextStyle(color: AppColors.primary),
                   deleteIcon: const Icon(Icons.close, size: 18),
                   onDeleted: () => _toggleInterest(interest),
@@ -416,12 +416,12 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
       backgroundColor: AppColors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: AppColors.primary.withOpacity(0.3)),
+        side: BorderSide(color: AppColors.primary.withValues(alpha: 0.3)),
       ),
       labelStyle: TextStyle(
         color: isSelected ? AppColors.primary : AppColors.textPrimary,
       ),
-      selectedColor: AppColors.primary.withOpacity(0.2),
+      selectedColor: AppColors.primary.withValues(alpha: 0.2),
       checkmarkColor: AppColors.primary,
     );
   }
