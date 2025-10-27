@@ -153,7 +153,7 @@ class _AddQuizModalContentState extends State<AddQuizModalContent> {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: AppColors.textSecondary.withOpacity(0.3),
+                    color: AppColors.textSecondary.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -185,7 +185,7 @@ class _AddQuizModalContentState extends State<AddQuizModalContent> {
                 decoration: InputDecoration(
                   hintText: 'Enter quiz code',
                   hintStyle: TextStyle(
-                    color: AppColors.textSecondary.withOpacity(0.6),
+                    color: AppColors.textSecondary.withValues(alpha: 0.6),
                     fontWeight: FontWeight.w500,
                   ),
                   filled: true,
@@ -240,7 +240,7 @@ class _AddQuizModalContentState extends State<AddQuizModalContent> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    disabledBackgroundColor: AppColors.primary.withOpacity(0.6),
+                    disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.6),
                   ),
                   child:
                       _isLoading

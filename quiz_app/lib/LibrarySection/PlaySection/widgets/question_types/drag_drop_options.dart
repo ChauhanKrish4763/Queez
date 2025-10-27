@@ -173,7 +173,7 @@ class _DragDropOptionsState extends State<DragDropOptions> {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColors.primary.withOpacity(0.1),
+            color: AppColors.primary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
@@ -238,9 +238,9 @@ class _DragDropOptionsState extends State<DragDropOptions> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.success.withOpacity(0.1),
+              color: AppColors.success.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.success.withOpacity(0.3)),
+              border: Border.all(color: AppColors.success.withValues(alpha: 0.3)),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -275,9 +275,9 @@ class _DragDropOptionsState extends State<DragDropOptions> {
           decoration: BoxDecoration(
             color:
                 placedItem != null
-                    ? AppColors.primary.withOpacity(0.1)
+                    ? AppColors.primary.withValues(alpha: 0.1)
                     : isHovering
-                    ? AppColors.secondary.withOpacity(0.1)
+                    ? AppColors.secondary.withValues(alpha: 0.1)
                     : AppColors.surface,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
@@ -286,7 +286,7 @@ class _DragDropOptionsState extends State<DragDropOptions> {
                       ? AppColors.primary
                       : isHovering
                       ? AppColors.secondary
-                      : AppColors.textSecondary.withOpacity(0.3),
+                      : AppColors.textSecondary.withValues(alpha: 0.3),
               width: 2,
             ),
           ),
@@ -309,7 +309,7 @@ class _DragDropOptionsState extends State<DragDropOptions> {
               // Arrow
               Icon(
                 Icons.arrow_forward,
-                color: AppColors.textSecondary.withOpacity(0.5),
+                color: AppColors.textSecondary.withValues(alpha: 0.5),
                 size: 20,
               ),
               const SizedBox(width: 12),
@@ -363,7 +363,7 @@ class _DragDropOptionsState extends State<DragDropOptions> {
                             color: Colors.transparent,
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                              color: AppColors.textSecondary.withOpacity(0.3),
+                              color: AppColors.textSecondary.withValues(alpha: 0.3),
                               style: BorderStyle.solid,
                             ),
                           ),
@@ -372,7 +372,7 @@ class _DragDropOptionsState extends State<DragDropOptions> {
                               'Drop here',
                               style: TextStyle(
                                 fontSize: 14,
-                                color: AppColors.textSecondary.withOpacity(0.5),
+                                color: AppColors.textSecondary.withValues(alpha: 0.5),
                                 fontStyle: FontStyle.italic,
                               ),
                             ),
@@ -401,7 +401,7 @@ class _DragDropOptionsState extends State<DragDropOptions> {
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: AppColors.secondary.withOpacity(0.3),
+                color: AppColors.secondary.withValues(alpha: 0.3),
                 blurRadius: 8,
                 offset: const Offset(0, 4),
               ),
@@ -430,7 +430,7 @@ class _DragDropOptionsState extends State<DragDropOptions> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: AppColors.secondary.withOpacity(0.2),
+            color: AppColors.secondary.withValues(alpha: 0.2),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),

@@ -34,9 +34,9 @@ class OptionCard extends StatelessWidget {
       case OptionState.selected:
         return AppColors.primaryLighter;
       case OptionState.correct:
-        return AppColors.success.withOpacity(0.1);
+        return AppColors.success.withValues(alpha: 0.1);
       case OptionState.incorrect:
-        return AppColors.error.withOpacity(0.1);
+        return AppColors.error.withValues(alpha: 0.1);
       case OptionState.neutral:
       default:
         return AppColors.surface;

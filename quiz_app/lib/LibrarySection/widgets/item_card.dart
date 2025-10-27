@@ -198,7 +198,7 @@ class ItemCard extends StatelessWidget {
                     Icon(
                       Icons.person_outline_rounded,
                       size: 16,
-                      color: AppColors.textSecondary.withOpacity(0.7),
+                      color: AppColors.textSecondary.withValues(alpha: 0.7),
                     ),
                     const SizedBox(width: 6),
                     Expanded(
@@ -206,7 +206,7 @@ class ItemCard extends StatelessWidget {
                         quiz.originalOwnerUsername!,
                         style: TextStyle(
                           fontSize: 13,
-                          color: AppColors.textSecondary.withOpacity(0.8),
+                          color: AppColors.textSecondary.withValues(alpha: 0.8),
                           fontWeight: FontWeight.w500,
                         ),
                         maxLines: 1,
