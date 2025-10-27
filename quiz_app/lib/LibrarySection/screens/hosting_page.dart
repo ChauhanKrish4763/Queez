@@ -150,13 +150,18 @@ class _HostingPageState extends State<HostingPage> {
       final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
       final pngBytes = byteData!.buffer.asUint8List();
 
-      await Share.shareXFiles([
-        XFile.fromData(
-          pngBytes,
-          name: 'quiz_qr_code.png',
-          mimeType: 'image/png',
+      await SharePlus.instance.share(
+        ShareParams(
+          text: 'Join my quiz with code: $sessionCode',
+          files: [
+            XFile.fromData(
+              pngBytes,
+              name: 'quiz_qr_code.png',
+              mimeType: 'image/png',
+            ),
+          ],
         ),
-      ], text: 'Join my quiz with code: $sessionCode');
+      );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(
@@ -262,21 +267,6 @@ class _HostingPageState extends State<HostingPage> {
     final minutes = seconds ~/ 60;
     final secs = seconds % 60;
     return '${minutes.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
-  }
-
-  String _getModeText() {
-    switch (widget.mode) {
-      case 'live_multiplayer':
-        return 'Live Multiplayer';
-      case 'share':
-        return 'Share Quiz';
-      case 'self_paced':
-        return 'Self-Paced';
-      case 'timed_individual':
-        return 'Timed Individual';
-      default:
-        return widget.mode;
-    }
   }
 
   @override

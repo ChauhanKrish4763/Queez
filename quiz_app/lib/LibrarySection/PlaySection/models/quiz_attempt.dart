@@ -23,7 +23,7 @@ class QuizAttempt {
       if (userAnswer == null) continue;
 
       bool isCorrect = false;
-      if (question.type == 'multiMcq') {
+      if (question.type == QuestionType.multiMcq) {
         // For multi-select, compare sorted lists
         List<int> userSelection = List<int>.from(userAnswer)..sort();
         List<int> correctSelection = List<int>.from(

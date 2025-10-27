@@ -371,40 +371,6 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
     );
   }
 
-  Widget _buildSelectedInterests() {
-    if (_selectedInterests.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Selected Interests',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children:
-              _selectedInterests.map((interest) {
-                return Chip(
-                  label: Text(interest),
-                  backgroundColor: AppColors.primary.withValues(alpha: 0.2),
-                  labelStyle: const TextStyle(color: AppColors.primary),
-                  deleteIcon: const Icon(Icons.close, size: 18),
-                  onDeleted: () => _toggleInterest(interest),
-                );
-              }).toList(),
-        ),
-      ],
-    );
-  }
 
   Widget _buildInterestChip(String label) {
     final bool isSelected = _selectedInterests.contains(label);
