@@ -8,11 +8,11 @@ class TrueFalseOptions extends StatelessWidget {
   final ValueChanged<int> onAnswerSelected;
 
   const TrueFalseOptions({
-    Key? key,
+    super.key,
     required this.question,
     required this.userAnswer,
     required this.onAnswerSelected,
-  }) : super(key: key);
+  });
 
   OptionState _getOptionState(int index) {
     if (userAnswer != null) {

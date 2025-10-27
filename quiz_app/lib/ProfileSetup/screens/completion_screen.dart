@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:quiz_app/utils/animations/page_transition.dart';
 import 'package:quiz_app/utils/color.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -15,20 +15,20 @@ class CompletionScreen extends StatefulWidget {
 class _CompletionScreenState extends State<CompletionScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  
+
   // User data from previous screen
   Map<String, dynamic> _userData = {};
   bool _isLoading = true;
-  
+
   @override
   void initState() {
     super.initState();
     _loadUserData();
   }
-  
+
   void _loadUserData() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final Map<String, dynamic>? args = 
+      final Map<String, dynamic>? args =
           ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
       if (args != null) {
         setState(() {
@@ -40,15 +40,13 @@ class _CompletionScreenState extends State<CompletionScreen> {
       }
     });
   }
-  
+
   Future<void> _loadUserDataFromFirestore() async {
     try {
       final User? currentUser = _auth.currentUser;
       if (currentUser != null) {
-        final DocumentSnapshot userDoc = await _firestore
-            .collection('users')
-            .doc(currentUser.uid)
-            .get();
+        final DocumentSnapshot userDoc =
+            await _firestore.collection('users').doc(currentUser.uid).get();
 
         if (userDoc.exists) {
           setState(() {
@@ -62,7 +60,7 @@ class _CompletionScreenState extends State<CompletionScreen> {
         setState(() => _isLoading = false);
       }
     } catch (e) {
-      print('Error loading user data: $e');
+      debugPrint('Error loading user data: $e');
       setState(() => _isLoading = false);
     }
   }
@@ -73,21 +71,22 @@ class _CompletionScreenState extends State<CompletionScreen> {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('profileSetupCompleted', true);
       await prefs.setString('lastRoute', '/dashboard');
-      
+
       // Ensure all user data is saved to Firestore
       final User? currentUser = _auth.currentUser;
       if (currentUser != null) {
-        await _firestore.collection('users').doc(currentUser.uid).set(
-          _userData,
-          SetOptions(merge: true),
-        );
+        await _firestore
+            .collection('users')
+            .doc(currentUser.uid)
+            .set(_userData, SetOptions(merge: true));
       }
-
-      // Navigate to dashboard - using customNavigateReplacement instead of customNavigate
-      // to prevent going back to profile setup screens
-      customNavigateReplacement(context, '/dashboard', AnimationType.fade);
+      if (context.mounted) {
+        // Navigate to dashboard - using customNavigateReplacement instead of customNavigate
+        // to prevent going back to profile setup screens
+        customNavigateReplacement(context, '/dashboard', AnimationType.fade);
+      }
     } catch (e) {
-      print('Error completing profile setup: $e');
+      debugPrint('Error completing profile setup: $e');
     }
   }
 
@@ -99,7 +98,7 @@ class _CompletionScreenState extends State<CompletionScreen> {
         body: Center(child: CircularProgressIndicator()),
       );
     }
-    
+
     // Get user data from state
     final String name = _userData['name'] ?? 'User';
     final String role = _userData['role'] ?? 'User';

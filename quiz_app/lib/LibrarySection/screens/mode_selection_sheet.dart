@@ -11,11 +11,11 @@ class ModeSelectionSheet extends StatelessWidget {
   final String hostId;
 
   const ModeSelectionSheet({
-    Key? key,
+    super.key,
     required this.quizId,
     required this.quizTitle,
     required this.hostId,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

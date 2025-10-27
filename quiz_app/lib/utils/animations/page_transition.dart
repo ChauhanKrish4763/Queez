@@ -102,9 +102,9 @@ Route customRoute(Widget page, AnimationType animationType) {
   return PageRouteBuilder(
     pageBuilder: (context, animation, secondaryAnimation) {
       return PageTransition(
-        child: page,
         animation: animation,
         animationType: animationType,
+        child: page,
       );
     },
     transitionDuration: const Duration(milliseconds: 300),
@@ -126,9 +126,9 @@ void customNavigate(
         settings: RouteSettings(arguments: arguments),
         pageBuilder: (context, animation, secondaryAnimation) {
           return PageTransition(
-            child: builder(context),
             animation: animation,
             animationType: animationType,
+            child: builder(context),
           );
         },
         transitionDuration: const Duration(milliseconds: 300),
@@ -154,9 +154,9 @@ void customNavigateReplacement(
         settings: RouteSettings(arguments: arguments),
         pageBuilder: (context, animation, secondaryAnimation) {
           return PageTransition(
-            child: builder(context),
             animation: animation,
             animationType: animationType,
+            child: builder(context),
           );
         },
         transitionDuration: const Duration(milliseconds: 300),

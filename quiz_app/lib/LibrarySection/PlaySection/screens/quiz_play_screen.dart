@@ -13,7 +13,7 @@ import 'package:quiz_app/utils/color.dart';
 class QuizPlayScreen extends StatefulWidget {
   final QuizLibraryItem quizItem;
 
-  const QuizPlayScreen({Key? key, required this.quizItem}) : super(key: key);
+  const QuizPlayScreen({super.key, required this.quizItem});
 
   @override
   State<QuizPlayScreen> createState() => _QuizPlayScreenState();

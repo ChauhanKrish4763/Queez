@@ -9,12 +9,12 @@ class DragDropPair extends StatelessWidget {
   final bool isLocked;
 
   const DragDropPair({
-    Key? key,
+    super.key,
     required this.index,
     this.dragController,
     this.dropController,
     this.isLocked = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -8,11 +8,11 @@ class QuizSavedDialog extends StatefulWidget {
   final VoidCallback? onDismiss;
 
   const QuizSavedDialog({
-    Key? key,
+    super.key,
     required this.title,
     required this.message,
     this.onDismiss,
-  }) : super(key: key);
+  });
 
   @override
   State<QuizSavedDialog> createState() => _QuizSavedDialogState();

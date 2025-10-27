@@ -12,12 +12,12 @@ class PlayQuestionCard extends StatelessWidget {
   final ScrollController? scrollController;
 
   const PlayQuestionCard({
-    Key? key,
+    super.key,
     required this.question,
     required this.userAnswer,
     required this.onAnswerSelected,
     this.scrollController,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

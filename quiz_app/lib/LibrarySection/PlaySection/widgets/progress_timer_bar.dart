@@ -7,11 +7,11 @@ class ProgressTimerBar extends StatelessWidget {
   final int total;
 
   const ProgressTimerBar({
-    Key? key,
+    super.key,
     required this.controller,
     required this.currentIndex,
     required this.total,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

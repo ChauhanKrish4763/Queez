@@ -10,13 +10,13 @@ class DragDropContent extends StatelessWidget {
   final bool isLocked;
 
   const DragDropContent({
-    Key? key,
+    super.key,
     required this.dragItemControllers,
     required this.dropTargetControllers,
     required this.onAddPair,
     required this.onRemovePair,
     this.isLocked = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

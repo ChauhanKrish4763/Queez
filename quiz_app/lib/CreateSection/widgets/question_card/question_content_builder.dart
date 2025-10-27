@@ -17,7 +17,7 @@ class QuestionContentBuilder extends StatelessWidget {
   final bool isLocked;
 
   const QuestionContentBuilder({
-    Key? key,
+    super.key,
     required this.question,
     required this.optionControllers,
     required this.dragItemControllers,
@@ -28,7 +28,7 @@ class QuestionContentBuilder extends StatelessWidget {
     required this.onAddDragDropPair,
     required this.onRemoveDragDropPair,
     this.isLocked = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

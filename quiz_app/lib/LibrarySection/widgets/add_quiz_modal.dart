@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:quiz_app/utils/color.dart';
+import 'package:flutter/material.dart';
 import 'package:quiz_app/CreateSection/services/quiz_service.dart';
+import 'package:quiz_app/CreateSection/widgets/quiz_saved_dialog.dart';
 import 'package:quiz_app/LibrarySection/LiveMode/screens/live_multiplayer_dashboard.dart';
 import 'package:quiz_app/LibrarySection/screens/library_page.dart';
-import 'package:quiz_app/CreateSection/widgets/quiz_saved_dialog.dart';
 import 'package:quiz_app/utils/animations/page_transition.dart';
+import 'package:quiz_app/utils/color.dart';
 
 void showAddQuizModal(
   BuildContext context,
@@ -22,8 +22,7 @@ void showAddQuizModal(
 class AddQuizModalContent extends StatefulWidget {
   final Future<void> Function() onQuizAdded;
 
-  const AddQuizModalContent({Key? key, required this.onQuizAdded})
-    : super(key: key);
+  const AddQuizModalContent({super.key, required this.onQuizAdded});
 
   @override
   State<AddQuizModalContent> createState() => _AddQuizModalContentState();
@@ -94,16 +93,17 @@ class _AddQuizModalContentState extends State<AddQuizModalContent> {
 
         // Show success dialog (without auto-dismiss callback)
         final dialogContext = context;
-
-        // Show the dialog but don't wait for it
-        QuizSavedDialog.show(
-          dialogContext,
-          title: 'Success!',
-          message: 'Quiz "$quizTitle" has been added to your library!',
-          onDismiss: () {
-            // This will be called when dialog auto-dismisses
-          },
-        );
+        if (context.mounted) {
+          // Show the dialog but don't wait for it
+          QuizSavedDialog.show(
+            dialogContext,
+            title: 'Success!',
+            message: 'Quiz "$quizTitle" has been added to your library!',
+            onDismiss: () {
+              // This will be called when dialog auto-dismisses
+            },
+          );
+        }
 
         // Reload quizzes from server in background
         await widget.onQuizAdded();
@@ -113,10 +113,11 @@ class _AddQuizModalContentState extends State<AddQuizModalContent> {
 
         // Set the search query to the quiz title
         LibraryPage.setSearchQuery(quizTitle);
-
-        // Close the dialog after setting search
-        if (Navigator.canPop(dialogContext)) {
-          Navigator.of(dialogContext).pop();
+        if (context.mounted) {
+          // Close the dialog after setting search
+          if (Navigator.canPop(dialogContext)) {
+            Navigator.of(dialogContext).pop();
+          }
         }
       }
     } catch (e) {
@@ -240,7 +241,9 @@ class _AddQuizModalContentState extends State<AddQuizModalContent> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.6),
+                    disabledBackgroundColor: AppColors.primary.withValues(
+                      alpha: 0.6,
+                    ),
                   ),
                   child:
                       _isLoading

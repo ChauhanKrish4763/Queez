@@ -10,12 +10,12 @@ class McqOptions extends StatefulWidget {
   final bool isMultiSelect;
 
   const McqOptions({
-    Key? key,
+    super.key,
     required this.question,
     required this.userAnswer,
     required this.onAnswerSelected,
     this.isMultiSelect = false,
-  }) : super(key: key);
+  });
 
   @override
   State<McqOptions> createState() => _McqOptionsState();

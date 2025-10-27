@@ -25,7 +25,7 @@ class MyApp extends StatelessWidget {
 }
 
 class AppEntryPoint extends ConsumerWidget {
-  const AppEntryPoint({Key? key}) : super(key: key);
+  const AppEntryPoint({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

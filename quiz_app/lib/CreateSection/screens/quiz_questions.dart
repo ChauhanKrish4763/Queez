@@ -13,7 +13,7 @@ import 'package:quiz_app/utils/globals.dart';
 class QuizQuestions extends StatefulWidget {
   final List<Question>? questions;
 
-  const QuizQuestions({Key? key, this.questions}) : super(key: key);
+  const QuizQuestions({super.key, this.questions});
   @override
   State<QuizQuestions> createState() => _QuizQuestionsState();
 }
@@ -146,14 +146,14 @@ class _QuizQuestionsState extends State<QuizQuestions> {
   }
 
   Future<void> _saveQuiz() async {
-    print('Starting _saveQuiz');
+    debugPrint('Starting _saveQuiz');
     try {
       // Update questions in cache
-      print('Updating questions in cache');
+      debugPrint('Updating questions in cache');
       QuizCacheManager.instance.updateQuestions(questions);
 
       // Get the complete quiz from cache
-      print('Retrieving quiz from cache');
+      debugPrint('Retrieving quiz from cache');
       final quiz = QuizCacheManager.instance.currentQuiz;
 
       if (quiz == null) {
@@ -166,7 +166,7 @@ class _QuizQuestionsState extends State<QuizQuestions> {
       }
 
       // Save to backend with timeout
-      print('Saving quiz to backend');
+      debugPrint('Saving quiz to backend');
       String quizId;
 
       // Call createQuiz() for new quiz
@@ -175,7 +175,7 @@ class _QuizQuestionsState extends State<QuizQuestions> {
         onTimeout: () => throw Exception('Request timed out'),
       );
 
-      print('Quiz saved with ID: $quizId');
+      debugPrint('Quiz saved with ID: $quizId');
 
       // Show success dialog
       if (mounted) {
@@ -184,9 +184,9 @@ class _QuizQuestionsState extends State<QuizQuestions> {
           title: 'Success!',
           message: 'Your quiz has been saved successfully and is ready to use!',
           onDismiss: () {
-            print('Success dialog dismissed');
+            debugPrint('Success dialog dismissed');
             QuizCacheManager.instance.clearCache();
-            print('Cache cleared');
+            debugPrint('Cache cleared');
             if (mounted) {
               Navigator.of(context).popUntil((route) => route.isFirst);
               WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -198,10 +198,10 @@ class _QuizQuestionsState extends State<QuizQuestions> {
             }
           },
         );
-        print('Success dialog shown');
+        debugPrint('Success dialog shown');
       }
     } catch (e, stackTrace) {
-      print('Error in _saveQuiz: $e\n$stackTrace');
+      debugPrint('Error in _saveQuiz: $e\n$stackTrace');
       // Show error dialog
       if (mounted) {
         await showDialog(
@@ -221,7 +221,7 @@ class _QuizQuestionsState extends State<QuizQuestions> {
                     onPressed: () {
                       if (mounted) {
                         Navigator.of(dialogContext).pop();
-                        print('Error dialog dismissed');
+                        debugPrint('Error dialog dismissed');
                       }
                     },
                     child: Text('OK'),

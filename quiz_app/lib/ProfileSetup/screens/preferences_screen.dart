@@ -84,7 +84,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
         });
       }
     } catch (e) {
-      print('Error saving preferences: $e');
+      debugPrint('Error saving preferences: $e');
     }
   }
 
@@ -224,7 +224,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
         ],
       ),
       child: DropdownButtonFormField<String>(
-        value: _selectedExperience,
+        initialValue: _selectedExperience,
         items:
             _experienceLevels
                 .map(

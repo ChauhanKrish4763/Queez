@@ -13,7 +13,7 @@ class OptionItem extends StatelessWidget {
   final bool isLocked;
 
   const OptionItem({
-    Key? key,
+    super.key,
     required this.index,
     required this.question,
     required this.controller,
@@ -21,7 +21,7 @@ class OptionItem extends StatelessWidget {
     required this.multiCorrectAnswersNotifier,
     required this.onCorrectAnswerSelected,
     this.isLocked = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

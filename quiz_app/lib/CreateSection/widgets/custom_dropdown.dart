@@ -93,7 +93,7 @@ class _CustomDropdownState extends State<CustomDropdown> {
             fontWeight: FontWeight.w400,
           ),
         ),
-        value: widget.value,
+        initialValue: widget.value,
         isExpanded: true,
         icon: AnimatedRotation(
           turns: _isOpen ? 0.5 : 0,

@@ -6,10 +6,10 @@ class LiveMultiplayerDashboard extends StatelessWidget {
   final String sessionCode;
 
   const LiveMultiplayerDashboard({
-    Key? key,
+    super.key,
     required this.quizId,
     required this.sessionCode,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

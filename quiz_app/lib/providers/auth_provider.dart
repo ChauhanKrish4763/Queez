@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -129,7 +130,7 @@ class AppAuth extends _$AppAuth {
           );
         }
       } catch (e) {
-        print('Error checking profile: $e');
+        debugPrint('Error checking profile: $e');
         // On error, assume profile not setup
         return AppState(
           isLoading: false,

@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:quiz_app/CreateSection/models/question.dart';
 import 'package:quiz_app/CreateSection/screens/quiz_questions.dart';
 import 'package:quiz_app/CreateSection/services/quiz_cache_manager.dart';
@@ -9,9 +9,9 @@ import 'package:quiz_app/CreateSection/widgets/custom_text_field.dart';
 import 'package:quiz_app/CreateSection/widgets/image_picker.dart';
 import 'package:quiz_app/CreateSection/widgets/primary_button.dart';
 import 'package:quiz_app/CreateSection/widgets/section_title.dart';
+import 'package:quiz_app/LibrarySection/widgets/quiz_library_item.dart';
 import 'package:quiz_app/utils/animations/page_transition.dart';
 import 'package:quiz_app/utils/color.dart';
-import 'package:quiz_app/LibrarySection/widgets/quiz_library_item.dart';
 
 class QuizDetails extends StatefulWidget {
   final QuizLibraryItem? quizItem;
@@ -19,10 +19,10 @@ class QuizDetails extends StatefulWidget {
   const QuizDetails({super.key, this.quizItem});
 
   @override
-  _QuizDetailsState createState() => _QuizDetailsState();
+  QuizDetailsState createState() => QuizDetailsState();
 }
 
-class _QuizDetailsState extends State<QuizDetails> {
+class QuizDetailsState extends State<QuizDetails> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
@@ -70,7 +70,8 @@ class _QuizDetailsState extends State<QuizDetails> {
         questions = fetchedQuestions;
       });
     } catch (e) {
-      print('Error fetching questions: $e');
+      debugPrint('Error fetching questions: $e');
+      if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Error fetching questions: $e')));

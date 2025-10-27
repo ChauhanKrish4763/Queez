@@ -1,12 +1,13 @@
 import 'dart:async';
 import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:quiz_app/utils/color.dart';
 import 'package:quiz_app/LibrarySection/services/session_service.dart';
+import 'package:quiz_app/utils/color.dart';
+import 'package:share_plus/share_plus.dart';
 
 class HostingPage extends StatefulWidget {
   final String quizId;
@@ -157,6 +158,7 @@ class _HostingPageState extends State<HostingPage> {
         ),
       ], text: 'Join my quiz with code: $sessionCode');
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Error sharing: ${e.toString()}')));
@@ -286,7 +288,10 @@ class _HostingPageState extends State<HostingPage> {
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [AppColors.primary, AppColors.primary.withValues(alpha: 0.8)],
+              colors: [
+                AppColors.primary,
+                AppColors.primary.withValues(alpha: 0.8),
+              ],
             ),
           ),
           child: const Center(

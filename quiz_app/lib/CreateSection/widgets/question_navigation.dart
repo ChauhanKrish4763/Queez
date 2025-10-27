@@ -11,7 +11,7 @@ class QuestionNavigation extends StatefulWidget {
   final bool isLocked;
 
   const QuestionNavigation({
-    Key? key,
+    super.key,
     required this.currentIndex,
     required this.totalQuestions,
     required this.onIndexChanged,
@@ -19,7 +19,7 @@ class QuestionNavigation extends StatefulWidget {
     required this.onToggleExpanded,
     this.isExpanded = false,
     required this.isLocked,
-  }) : super(key: key);
+  });
 
   @override
   State<QuestionNavigation> createState() => _QuestionNavigationState();
@@ -234,14 +234,6 @@ class _QuestionNavigationState extends State<QuestionNavigation>
                                   ? () => widget.onIndexChanged(
                                       widget.currentIndex + 1)
                                   : null,
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: const [
-                                  Text('Next', style: TextStyle(fontSize: 12)),
-                                  SizedBox(width: 4),
-                                  Icon(Icons.arrow_forward_ios_rounded, size: 12),
-                                ],
-                              ),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: widget.currentIndex <
                                         widget.totalQuestions - 1
@@ -257,6 +249,14 @@ class _QuestionNavigationState extends State<QuestionNavigation>
                                     widget.currentIndex < widget.totalQuestions - 1
                                         ? 1
                                         : 0,
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: const [
+                                  Text('Next', style: TextStyle(fontSize: 12)),
+                                  SizedBox(width: 4),
+                                  Icon(Icons.arrow_forward_ios_rounded, size: 12),
+                                ],
                               ),
                             ),
                           ),

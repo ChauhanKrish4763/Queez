@@ -1,6 +1,7 @@
 // lib/services/quiz_service.dart
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:quiz_app/CreateSection/models/question.dart';
 import '../models/quiz.dart';
@@ -11,8 +12,8 @@ class QuizService {
 
   static Future<String> createQuiz(Quiz quiz) async {
     try {
-      print('Starting quiz creation...');
-      print('Quiz data: ${quiz.toJson()}');
+      debugPrint('Starting quiz creation...');
+      debugPrint('Quiz data: ${quiz.toJson()}');
 
       final response = await http
           .post(
@@ -29,8 +30,8 @@ class QuizService {
             },
           );
 
-      print('Response status code: ${response.statusCode}');
-      print('Response body: ${response.body}');
+      debugPrint('Response status code: ${response.statusCode}');
+      debugPrint('Response body: ${response.body}');
 
       // Check for successful status codes (200 or 201)
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -43,31 +44,31 @@ class QuizService {
           }
 
           final quizId = data['id'].toString();
-          print('Quiz created successfully with ID: $quizId');
+          debugPrint('Quiz created successfully with ID: $quizId');
           return quizId;
         } catch (e) {
-          print('JSON parsing error: $e');
+          debugPrint('JSON parsing error: $e');
           throw Exception('Invalid response format from server');
         }
       } else {
-        print('Failed with status code: ${response.statusCode}');
+        debugPrint('Failed with status code: ${response.statusCode}');
         throw Exception(
           'Server error (${response.statusCode}): ${response.body}',
         );
       }
     } on SocketException {
-      print('Network error');
+      debugPrint('Network error');
       throw Exception(
         'Network error. Please check your internet connection and server status.',
       );
     } on FormatException catch (e) {
-      print('JSON format error: $e');
+      debugPrint('JSON format error: $e');
       throw Exception('Invalid response format from server');
     } on Exception catch (e) {
-      print('Exception: $e');
+      debugPrint('Exception: $e');
       rethrow; // Re-throw custom exceptions as-is
     } catch (e) {
-      print('Unexpected error: $e');
+      debugPrint('Unexpected error: $e');
       throw Exception('Unexpected error occurred: $e');
     }
   }
@@ -138,7 +139,7 @@ class QuizService {
     String userId,
   ) async {
     try {
-      print('Fetching quizzes for user: $userId');
+      debugPrint('Fetching quizzes for user: $userId');
       final response = await http
           .get(
             Uri.parse('$baseUrl/quizzes/library/$userId'),
@@ -151,8 +152,8 @@ class QuizService {
             },
           );
 
-      print('Library response status: ${response.statusCode}');
-      print('Library response body: ${response.body}');
+      debugPrint('Library response status: ${response.statusCode}');
+      debugPrint('Library response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
@@ -165,14 +166,14 @@ class QuizService {
     } on SocketException {
       throw Exception('Network error: Please check your connection');
     } catch (e) {
-      print('Error fetching quizzes: $e');
+      debugPrint('Error fetching quizzes: $e');
       throw Exception('Error fetching quizzes: $e');
     }
   }
 
   static Future<bool> deleteQuiz(String quizId) async {
     try {
-      print('Deleting quiz: $quizId');
+      debugPrint('Deleting quiz: $quizId');
       final response = await http
           .delete(
             Uri.parse('$baseUrl/quizzes/$quizId'),
@@ -185,8 +186,8 @@ class QuizService {
             },
           );
 
-      print('Delete response status: ${response.statusCode}');
-      print('Delete response body: ${response.body}');
+      debugPrint('Delete response status: ${response.statusCode}');
+      debugPrint('Delete response body: ${response.body}');
 
       if (response.statusCode == 200) {
         return true;
@@ -200,7 +201,7 @@ class QuizService {
     } on SocketException {
       throw Exception('Network error: Please check your connection');
     } catch (e) {
-      print('Error deleting quiz: $e');
+      debugPrint('Error deleting quiz: $e');
       throw Exception('Error deleting quiz: $e');
     }
   }
@@ -210,7 +211,7 @@ class QuizService {
     String quizCode,
   ) async {
     try {
-      print('Adding quiz to library for user: $userId with code: $quizCode');
+      debugPrint('Adding quiz to library for user: $userId with code: $quizCode');
       final response = await http
           .post(
             Uri.parse('$baseUrl/quizzes/add-to-library'),
@@ -224,8 +225,8 @@ class QuizService {
             },
           );
 
-      print('Add to library response status: ${response.statusCode}');
-      print('Add to library response body: ${response.body}');
+      debugPrint('Add to library response status: ${response.statusCode}');
+      debugPrint('Add to library response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -243,7 +244,7 @@ class QuizService {
     } on SocketException {
       throw Exception('Network error: Please check your connection');
     } catch (e) {
-      print('Error adding quiz to library: $e');
+      debugPrint('Error adding quiz to library: $e');
       if (e.toString().contains('Exception:')) {
         rethrow;
       }

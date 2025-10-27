@@ -12,11 +12,11 @@ class ItemCard extends StatelessWidget {
   final VoidCallback onView;
 
   const ItemCard({
-    Key? key,
+    super.key,
     required this.quiz,
     required this.onDelete,
     required this.onView,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

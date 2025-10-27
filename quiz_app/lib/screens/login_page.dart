@@ -1,10 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:quiz_app/utils/color.dart';
 import 'package:quiz_app/utils/animations/page_transition.dart';
+import 'package:quiz_app/utils/color.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   final VoidCallback onLoginSuccess;
@@ -87,7 +87,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
       // Profile is complete only if it has at least name and role
       return hasName && hasRole;
     } catch (e) {
-      print('Error checking profile: $e');
+      debugPrint('Error checking profile: $e');
       return false; // On error, assume profile not setup
     }
   }
@@ -118,7 +118,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
       // Check if profile is set up
       final hasProfile = await _isProfileSetup(uid);
 
-      print('Login check - UID: $uid, Has Profile: $hasProfile');
+      debugPrint('Login check - UID: $uid, Has Profile: $hasProfile');
 
       // Save login state to SharedPreferences directly
       final prefs = await SharedPreferences.getInstance();
@@ -126,7 +126,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
 
       if (hasProfile) {
         // Profile is already set up, go to dashboard
-        print('Navigating to dashboard - profile exists');
+        debugPrint('Navigating to dashboard - profile exists');
         await prefs.setBool('profileSetupCompleted', true);
         await prefs.setString('lastRoute', '/dashboard');
 
@@ -136,7 +136,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
         }
       } else {
         // Profile not set up, go to profile setup
-        print('Navigating to profile setup - profile incomplete');
+        debugPrint('Navigating to profile setup - profile incomplete');
         await prefs.setBool('profileSetupCompleted', false);
         await prefs.setString('lastRoute', '/profile_welcome');
 
@@ -158,7 +158,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
       _showMessage('Firebase error: ${e.message}');
     } catch (e) {
       _showMessage('An unexpected error occurred: $e');
-      print('Login error details: $e');
+      debugPrint('Login error details: $e');
     } finally {
       if (mounted) {
         setState(() => _loading = false);
@@ -200,7 +200,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
       await prefs.setBool('loggedIn', true);
       await prefs.setBool('profileSetupCompleted', false);
       await prefs.setString('lastRoute', '/profile_welcome');
-
+      if (!mounted) return;
       // Use customNavigateReplacement directly instead of callback
       customNavigateReplacement(
         context,

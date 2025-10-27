@@ -6,14 +6,14 @@ import 'package:quiz_app/LibrarySection/widgets/add_quiz_modal.dart';
 import 'package:quiz_app/providers/library_provider.dart';
 import 'package:quiz_app/utils/color.dart';
 
-final GlobalKey<_LibraryPageState> libraryPageKey =
-    GlobalKey<_LibraryPageState>();
+final GlobalKey<LibraryPageState> libraryPageKey =
+    GlobalKey<LibraryPageState>();
 
 class LibraryPage extends ConsumerStatefulWidget {
   LibraryPage({Key? key}) : super(key: libraryPageKey);
 
   @override
-  ConsumerState<LibraryPage> createState() => _LibraryPageState();
+  ConsumerState<LibraryPage> createState() => LibraryPageState();
 
   /// ✅ Static method to call reload from anywhere
   static void reloadItems() {
@@ -26,7 +26,7 @@ class LibraryPage extends ConsumerStatefulWidget {
   }
 }
 
-class _LibraryPageState extends ConsumerState<LibraryPage>
+class LibraryPageState extends ConsumerState<LibraryPage>
     with TickerProviderStateMixin {
   late AnimationController _fadeController;
   String _searchQuery = '';

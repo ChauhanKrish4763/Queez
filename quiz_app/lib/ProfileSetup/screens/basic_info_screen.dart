@@ -82,7 +82,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
         }, SetOptions(merge: true));
       }
     } catch (e) {
-      print('Error saving basic info: $e');
+      debugPrint('Error saving basic info: $e');
     }
   }
 

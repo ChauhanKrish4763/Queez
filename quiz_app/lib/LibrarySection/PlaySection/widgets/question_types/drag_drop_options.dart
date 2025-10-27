@@ -10,12 +10,12 @@ class DragDropOptions extends StatefulWidget {
   final ScrollController? scrollController;
 
   const DragDropOptions({
-    Key? key,
+    super.key,
     required this.question,
     this.userAnswer,
     required this.onAnswerSelected,
     this.scrollController,
-  }) : super(key: key);
+  });
 
   @override
   State<DragDropOptions> createState() => _DragDropOptionsState();
@@ -211,7 +211,7 @@ class _DragDropOptionsState extends State<DragDropOptions> {
             padding: const EdgeInsets.only(bottom: 16),
             child: _buildDropTarget(target, _dropTargetValues[target]),
           );
-        }).toList(),
+        }),
 
         const SizedBox(height: 32),
 
@@ -265,8 +265,8 @@ class _DragDropOptionsState extends State<DragDropOptions> {
 
   Widget _buildDropTarget(String target, String? placedItem) {
     return DragTarget<String>(
-      onWillAccept: (data) => true,
-      onAccept: (data) => _onDragItemPlaced(target, data),
+      onWillAcceptWithDetails: (data) => true,
+      onAcceptWithDetails: (data) => _onDragItemPlaced(target, data as String),
       builder: (context, candidateData, rejectedData) {
         final isHovering = candidateData.isNotEmpty;
 

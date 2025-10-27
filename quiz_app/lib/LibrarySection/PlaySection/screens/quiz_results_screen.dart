@@ -13,10 +13,10 @@ class QuizResultsScreen extends StatefulWidget {
   final QuizAttempt quizAttempt;
 
   const QuizResultsScreen({
-    Key? key,
+    super.key,
     required this.quizItem,
     required this.quizAttempt,
-  }) : super(key: key);
+  });
 
   @override
   State<QuizResultsScreen> createState() => _QuizResultsScreenState();
@@ -40,7 +40,7 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
         // No need to show a snackbar, it's expected behavior.
       } catch (e) {
         // Optionally handle error if deletion fails
-        print("Failed to delete quiz from library: $e");
+        debugPrint("Failed to delete quiz from library: $e");
       }
     }
   }

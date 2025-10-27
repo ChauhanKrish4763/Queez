@@ -12,11 +12,11 @@ class QuestionCard extends StatefulWidget {
   final bool isLocked;
 
   const QuestionCard({
-    Key? key,
+    super.key,
     required this.question,
     required this.onQuestionUpdated,
     this.isLocked = false,
-  }) : super(key: key);
+  });
 
   @override
   State<QuestionCard> createState() => _QuestionCardState();

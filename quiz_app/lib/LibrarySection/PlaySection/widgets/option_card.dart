@@ -9,11 +9,11 @@ class OptionCard extends StatelessWidget {
   final VoidCallback onTap;
 
   const OptionCard({
-    Key? key,
+    super.key,
     required this.text,
     this.state = OptionState.neutral,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   Color _getBorderColor() {
     switch (state) {
@@ -24,8 +24,7 @@ class OptionCard extends StatelessWidget {
       case OptionState.incorrect:
         return AppColors.error;
       case OptionState.neutral:
-      default:
-        return AppColors.surface;
+      return AppColors.surface;
     }
   }
 
@@ -38,8 +37,7 @@ class OptionCard extends StatelessWidget {
       case OptionState.incorrect:
         return AppColors.error.withValues(alpha: 0.1);
       case OptionState.neutral:
-      default:
-        return AppColors.surface;
+      return AppColors.surface;
     }
   }
 
