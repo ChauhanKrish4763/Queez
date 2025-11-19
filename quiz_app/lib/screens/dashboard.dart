@@ -25,10 +25,47 @@ class _DashboardState extends ConsumerState<Dashboard> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: Appbar(),
-      body: BottomNavbarController(key: bottomNavbarKey),
-      backgroundColor: AppColors.background,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        
+        // Try to pop from the current nested navigator first
+        final navbarState = bottomNavbarKey.currentState;
+        if (navbarState != null && navbarState.canPopCurrentNavigator()) {
+          navbarState.popCurrentNavigator();
+        } else {
+          // If no nested route to pop, exit the app
+          if (context.mounted) {
+            final shouldExit = await showDialog<bool>(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text('Exit App'),
+                content: const Text('Do you want to exit the app?'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: const Text('Cancel'),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    child: const Text('Exit'),
+                  ),
+                ],
+              ),
+            );
+            
+            if (shouldExit == true && context.mounted) {
+              Navigator.of(context).pop();
+            }
+          }
+        }
+      },
+      child: Scaffold(
+        appBar: Appbar(),
+        body: BottomNavbarController(key: bottomNavbarKey),
+        backgroundColor: AppColors.background,
+      ),
     );
   }
 }

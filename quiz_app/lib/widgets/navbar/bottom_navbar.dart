@@ -119,6 +119,18 @@ class BottomNavbarControllerState extends ConsumerState<BottomNavbarController>
   void setIndex(int index) {
     _onNavItemTapped(index);
   }
+
+  bool canPopCurrentNavigator() {
+    final selectedIndex = ref.read(bottomNavIndexProvider);
+    final navigatorKey = navigatorKeys[selectedIndex];
+    return navigatorKey.currentState?.canPop() ?? false;
+  }
+
+  void popCurrentNavigator() {
+    final selectedIndex = ref.read(bottomNavIndexProvider);
+    final navigatorKey = navigatorKeys[selectedIndex];
+    navigatorKey.currentState?.pop();
+  }
 }
 
 class _BottomNavbar extends StatelessWidget {
