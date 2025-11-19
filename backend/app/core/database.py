@@ -14,3 +14,13 @@ users_collection = db.users
 reviews_collection = db.quiz_reviews
 results_collection = db.quiz_results
 tags_collection = db.tags
+
+# Live multiplayer collections
+live_sessions_collection = db.live_multiplayer_sessions
+live_game_results_collection = db.live_game_results
+
+# Redis client
+import redis.asyncio as redis
+from app.core.config import REDIS_URL
+
+redis_client = redis.from_url(REDIS_URL, decode_responses=True)

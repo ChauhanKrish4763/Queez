@@ -1,14 +1,21 @@
 // lib/services/quiz_service.dart
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:quiz_app/CreateSection/models/question.dart';
+
 import '../models/quiz.dart';
 
 class QuizService {
   static const String baseUrl =
-      'https://quizapp2024.loca.lt'; // Public tunnel URL
+      'https://generous-main-saved-bracelets.trycloudflare.com'; // Public tunnel URL
+
+  static Map<String, String> get _headers => {
+    'Content-Type': 'application/json',
+    'Bypass-Tunnel-Reminder': 'true', // THIS IS CRITICAL
+  };
 
   static Future<String> createQuiz(Quiz quiz) async {
     try {
@@ -18,7 +25,7 @@ class QuizService {
       final response = await http
           .post(
             Uri.parse('$baseUrl/quizzes'),
-            headers: {'Content-Type': 'application/json'},
+            headers: _headers,
             body: jsonEncode(quiz.toJson()),
           )
           .timeout(
@@ -76,10 +83,7 @@ class QuizService {
   static Future<Quiz> getQuiz(String id) async {
     try {
       final response = await http
-          .get(
-            Uri.parse('$baseUrl/quizzes/$id'),
-            headers: {'Content-Type': 'application/json'},
-          )
+          .get(Uri.parse('$baseUrl/quizzes/$id'), headers: _headers)
           .timeout(
             Duration(seconds: 15),
             onTimeout: () {
@@ -110,7 +114,7 @@ class QuizService {
       final response = await http
           .get(
             Uri.parse('$baseUrl/quizzes/$quizId?user_id=$userId'),
-            headers: {'Content-Type': 'application/json'},
+            headers: _headers,
           )
           .timeout(
             Duration(seconds: 15),
@@ -141,10 +145,7 @@ class QuizService {
     try {
       debugPrint('Fetching quizzes for user: $userId');
       final response = await http
-          .get(
-            Uri.parse('$baseUrl/quizzes/library/$userId'),
-            headers: {'Content-Type': 'application/json'},
-          )
+          .get(Uri.parse('$baseUrl/quizzes/library/$userId'), headers: _headers)
           .timeout(
             Duration(seconds: 15),
             onTimeout: () {
@@ -175,10 +176,7 @@ class QuizService {
     try {
       debugPrint('Deleting quiz: $quizId');
       final response = await http
-          .delete(
-            Uri.parse('$baseUrl/quizzes/$quizId'),
-            headers: {'Content-Type': 'application/json'},
-          )
+          .delete(Uri.parse('$baseUrl/quizzes/$quizId'), headers: _headers)
           .timeout(
             Duration(seconds: 15),
             onTimeout: () {
@@ -211,11 +209,13 @@ class QuizService {
     String quizCode,
   ) async {
     try {
-      debugPrint('Adding quiz to library for user: $userId with code: $quizCode');
+      debugPrint(
+        'Adding quiz to library for user: $userId with code: $quizCode',
+      );
       final response = await http
           .post(
             Uri.parse('$baseUrl/quizzes/add-to-library'),
-            headers: {'Content-Type': 'application/json'},
+            headers: _headers,
             body: jsonEncode({'user_id': userId, 'quiz_code': quizCode}),
           )
           .timeout(

@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:quiz_app/utils/color.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:quiz_app/providers/session_provider.dart';
+import 'package:quiz_app/LibrarySection/LiveMode/screens/live_multiplayer_lobby.dart';
+import 'package:quiz_app/widgets/sci_fi/sci_fi_transition.dart';
 
-class LiveMultiplayerDashboard extends StatelessWidget {
+class LiveMultiplayerDashboard extends ConsumerStatefulWidget {
   final String quizId;
   final String sessionCode;
 
@@ -10,6 +15,54 @@ class LiveMultiplayerDashboard extends StatelessWidget {
     required this.quizId,
     required this.sessionCode,
   });
+
+  @override
+  ConsumerState<LiveMultiplayerDashboard> createState() => _LiveMultiplayerDashboardState();
+}
+
+class _LiveMultiplayerDashboardState extends ConsumerState<LiveMultiplayerDashboard> {
+  bool _isJoining = false;
+
+  Future<void> _joinSession() async {
+    setState(() => _isJoining = true);
+
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      final userId = user?.uid ?? 'user_${DateTime.now().millisecondsSinceEpoch}';
+      final username = user?.displayName ?? 'Guest ${userId.substring(userId.length > 4 ? userId.length - 4 : 0)}';
+
+      await ref.read(sessionProvider.notifier).joinSession(
+            widget.sessionCode,
+            userId,
+            username,
+          );
+
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          SciFiPageTransition(
+            child: LiveMultiplayerLobby(
+              sessionCode: widget.sessionCode,
+              isHost: false, // Assuming joiner is not host for now
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to join: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isJoining = false);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,7 +141,7 @@ class LiveMultiplayerDashboard extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            sessionCode,
+                            widget.sessionCode,
                             style: const TextStyle(
                               fontSize: 32,
                               fontWeight: FontWeight.w900,
@@ -111,19 +164,20 @@ class LiveMultiplayerDashboard extends StatelessWidget {
                     ),
                     const SizedBox(height: 32),
                     ElevatedButton.icon(
-                      onPressed: () {
-                        // TODO: Implement join session logic
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Join functionality coming soon!'),
-                            backgroundColor: AppColors.primary,
-                          ),
-                        );
-                      },
-                      icon: const Icon(Icons.login, size: 20),
-                      label: const Text(
-                        'Join Session',
-                        style: TextStyle(
+                      onPressed: _isJoining ? null : _joinSession,
+                      icon: _isJoining
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: AppColors.white,
+                              ),
+                            )
+                          : const Icon(Icons.login, size: 20),
+                      label: Text(
+                        _isJoining ? 'Joining...' : 'Join Session',
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
                         ),

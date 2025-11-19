@@ -58,6 +58,8 @@ async def create_quiz(quiz: Quiz):
             id=str(result.inserted_id),
             message="Quiz created successfully"
         )
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -133,6 +135,8 @@ async def update_quiz(quiz_id: str, quiz: Quiz):
             "message": "Quiz updated successfully",
             "id": quiz_id
         }
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -158,6 +162,8 @@ async def partial_update_quiz(quiz_id: str, update_data: dict):
             "id": quiz_id,
             "updated_fields": list(update_data.keys())
         }
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -176,6 +182,8 @@ async def delete_quiz(quiz_id: str):
             "message": "Quiz deleted successfully",
             "id": quiz_id
         }
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -367,6 +375,8 @@ async def get_quiz_by_id(quiz_id: str, user_id: str = Query(..., description="Th
         quiz.pop("_id")
 
         return quiz
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

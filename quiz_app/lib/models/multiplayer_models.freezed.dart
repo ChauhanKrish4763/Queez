@@ -1,0 +1,1464 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
+// ignore_for_file: type=lint
+// ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
+
+part of 'multiplayer_models.dart';
+
+// **************************************************************************
+// FreezedGenerator
+// **************************************************************************
+
+// dart format off
+T _$identity<T>(T value) => value;
+
+/// @nodoc
+mixin _$Participant {
+
+ String get userId; String get username; String get joinedAt; bool get connected; int get score; List<Map<String, dynamic>> get answers;
+/// Create a copy of Participant
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$ParticipantCopyWith<Participant> get copyWith => _$ParticipantCopyWithImpl<Participant>(this as Participant, _$identity);
+
+  /// Serializes this Participant to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Participant&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.username, username) || other.username == username)&&(identical(other.joinedAt, joinedAt) || other.joinedAt == joinedAt)&&(identical(other.connected, connected) || other.connected == connected)&&(identical(other.score, score) || other.score == score)&&const DeepCollectionEquality().equals(other.answers, answers));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,userId,username,joinedAt,connected,score,const DeepCollectionEquality().hash(answers));
+
+@override
+String toString() {
+  return 'Participant(userId: $userId, username: $username, joinedAt: $joinedAt, connected: $connected, score: $score, answers: $answers)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $ParticipantCopyWith<$Res>  {
+  factory $ParticipantCopyWith(Participant value, $Res Function(Participant) _then) = _$ParticipantCopyWithImpl;
+@useResult
+$Res call({
+ String userId, String username, String joinedAt, bool connected, int score, List<Map<String, dynamic>> answers
+});
+
+
+
+
+}
+/// @nodoc
+class _$ParticipantCopyWithImpl<$Res>
+    implements $ParticipantCopyWith<$Res> {
+  _$ParticipantCopyWithImpl(this._self, this._then);
+
+  final Participant _self;
+  final $Res Function(Participant) _then;
+
+/// Create a copy of Participant
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? userId = null,Object? username = null,Object? joinedAt = null,Object? connected = null,Object? score = null,Object? answers = null,}) {
+  return _then(_self.copyWith(
+userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
+as String,username: null == username ? _self.username : username // ignore: cast_nullable_to_non_nullable
+as String,joinedAt: null == joinedAt ? _self.joinedAt : joinedAt // ignore: cast_nullable_to_non_nullable
+as String,connected: null == connected ? _self.connected : connected // ignore: cast_nullable_to_non_nullable
+as bool,score: null == score ? _self.score : score // ignore: cast_nullable_to_non_nullable
+as int,answers: null == answers ? _self.answers : answers // ignore: cast_nullable_to_non_nullable
+as List<Map<String, dynamic>>,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [Participant].
+extension ParticipantPatterns on Participant {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _Participant value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _Participant() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _Participant value)  $default,){
+final _that = this;
+switch (_that) {
+case _Participant():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _Participant value)?  $default,){
+final _that = this;
+switch (_that) {
+case _Participant() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String userId,  String username,  String joinedAt,  bool connected,  int score,  List<Map<String, dynamic>> answers)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _Participant() when $default != null:
+return $default(_that.userId,_that.username,_that.joinedAt,_that.connected,_that.score,_that.answers);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String userId,  String username,  String joinedAt,  bool connected,  int score,  List<Map<String, dynamic>> answers)  $default,) {final _that = this;
+switch (_that) {
+case _Participant():
+return $default(_that.userId,_that.username,_that.joinedAt,_that.connected,_that.score,_that.answers);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String userId,  String username,  String joinedAt,  bool connected,  int score,  List<Map<String, dynamic>> answers)?  $default,) {final _that = this;
+switch (_that) {
+case _Participant() when $default != null:
+return $default(_that.userId,_that.username,_that.joinedAt,_that.connected,_that.score,_that.answers);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _Participant implements Participant {
+  const _Participant({required this.userId, required this.username, required this.joinedAt, this.connected = true, this.score = 0, final  List<Map<String, dynamic>> answers = const []}): _answers = answers;
+  factory _Participant.fromJson(Map<String, dynamic> json) => _$ParticipantFromJson(json);
+
+@override final  String userId;
+@override final  String username;
+@override final  String joinedAt;
+@override@JsonKey() final  bool connected;
+@override@JsonKey() final  int score;
+ final  List<Map<String, dynamic>> _answers;
+@override@JsonKey() List<Map<String, dynamic>> get answers {
+  if (_answers is EqualUnmodifiableListView) return _answers;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_answers);
+}
+
+
+/// Create a copy of Participant
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$ParticipantCopyWith<_Participant> get copyWith => __$ParticipantCopyWithImpl<_Participant>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$ParticipantToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Participant&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.username, username) || other.username == username)&&(identical(other.joinedAt, joinedAt) || other.joinedAt == joinedAt)&&(identical(other.connected, connected) || other.connected == connected)&&(identical(other.score, score) || other.score == score)&&const DeepCollectionEquality().equals(other._answers, _answers));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,userId,username,joinedAt,connected,score,const DeepCollectionEquality().hash(_answers));
+
+@override
+String toString() {
+  return 'Participant(userId: $userId, username: $username, joinedAt: $joinedAt, connected: $connected, score: $score, answers: $answers)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$ParticipantCopyWith<$Res> implements $ParticipantCopyWith<$Res> {
+  factory _$ParticipantCopyWith(_Participant value, $Res Function(_Participant) _then) = __$ParticipantCopyWithImpl;
+@override @useResult
+$Res call({
+ String userId, String username, String joinedAt, bool connected, int score, List<Map<String, dynamic>> answers
+});
+
+
+
+
+}
+/// @nodoc
+class __$ParticipantCopyWithImpl<$Res>
+    implements _$ParticipantCopyWith<$Res> {
+  __$ParticipantCopyWithImpl(this._self, this._then);
+
+  final _Participant _self;
+  final $Res Function(_Participant) _then;
+
+/// Create a copy of Participant
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? userId = null,Object? username = null,Object? joinedAt = null,Object? connected = null,Object? score = null,Object? answers = null,}) {
+  return _then(_Participant(
+userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
+as String,username: null == username ? _self.username : username // ignore: cast_nullable_to_non_nullable
+as String,joinedAt: null == joinedAt ? _self.joinedAt : joinedAt // ignore: cast_nullable_to_non_nullable
+as String,connected: null == connected ? _self.connected : connected // ignore: cast_nullable_to_non_nullable
+as bool,score: null == score ? _self.score : score // ignore: cast_nullable_to_non_nullable
+as int,answers: null == answers ? _self._answers : answers // ignore: cast_nullable_to_non_nullable
+as List<Map<String, dynamic>>,
+  ));
+}
+
+
+}
+
+
+/// @nodoc
+mixin _$SessionState {
+
+ String get sessionCode; String get quizId; String get hostId; String get status;// waiting, active, completed
+ String get mode; int get currentQuestionIndex; String get quizTitle; int get totalQuestions; List<Participant> get participants; int get participantCount;
+/// Create a copy of SessionState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$SessionStateCopyWith<SessionState> get copyWith => _$SessionStateCopyWithImpl<SessionState>(this as SessionState, _$identity);
+
+  /// Serializes this SessionState to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SessionState&&(identical(other.sessionCode, sessionCode) || other.sessionCode == sessionCode)&&(identical(other.quizId, quizId) || other.quizId == quizId)&&(identical(other.hostId, hostId) || other.hostId == hostId)&&(identical(other.status, status) || other.status == status)&&(identical(other.mode, mode) || other.mode == mode)&&(identical(other.currentQuestionIndex, currentQuestionIndex) || other.currentQuestionIndex == currentQuestionIndex)&&(identical(other.quizTitle, quizTitle) || other.quizTitle == quizTitle)&&(identical(other.totalQuestions, totalQuestions) || other.totalQuestions == totalQuestions)&&const DeepCollectionEquality().equals(other.participants, participants)&&(identical(other.participantCount, participantCount) || other.participantCount == participantCount));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,sessionCode,quizId,hostId,status,mode,currentQuestionIndex,quizTitle,totalQuestions,const DeepCollectionEquality().hash(participants),participantCount);
+
+@override
+String toString() {
+  return 'SessionState(sessionCode: $sessionCode, quizId: $quizId, hostId: $hostId, status: $status, mode: $mode, currentQuestionIndex: $currentQuestionIndex, quizTitle: $quizTitle, totalQuestions: $totalQuestions, participants: $participants, participantCount: $participantCount)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $SessionStateCopyWith<$Res>  {
+  factory $SessionStateCopyWith(SessionState value, $Res Function(SessionState) _then) = _$SessionStateCopyWithImpl;
+@useResult
+$Res call({
+ String sessionCode, String quizId, String hostId, String status, String mode, int currentQuestionIndex, String quizTitle, int totalQuestions, List<Participant> participants, int participantCount
+});
+
+
+
+
+}
+/// @nodoc
+class _$SessionStateCopyWithImpl<$Res>
+    implements $SessionStateCopyWith<$Res> {
+  _$SessionStateCopyWithImpl(this._self, this._then);
+
+  final SessionState _self;
+  final $Res Function(SessionState) _then;
+
+/// Create a copy of SessionState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? sessionCode = null,Object? quizId = null,Object? hostId = null,Object? status = null,Object? mode = null,Object? currentQuestionIndex = null,Object? quizTitle = null,Object? totalQuestions = null,Object? participants = null,Object? participantCount = null,}) {
+  return _then(_self.copyWith(
+sessionCode: null == sessionCode ? _self.sessionCode : sessionCode // ignore: cast_nullable_to_non_nullable
+as String,quizId: null == quizId ? _self.quizId : quizId // ignore: cast_nullable_to_non_nullable
+as String,hostId: null == hostId ? _self.hostId : hostId // ignore: cast_nullable_to_non_nullable
+as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as String,mode: null == mode ? _self.mode : mode // ignore: cast_nullable_to_non_nullable
+as String,currentQuestionIndex: null == currentQuestionIndex ? _self.currentQuestionIndex : currentQuestionIndex // ignore: cast_nullable_to_non_nullable
+as int,quizTitle: null == quizTitle ? _self.quizTitle : quizTitle // ignore: cast_nullable_to_non_nullable
+as String,totalQuestions: null == totalQuestions ? _self.totalQuestions : totalQuestions // ignore: cast_nullable_to_non_nullable
+as int,participants: null == participants ? _self.participants : participants // ignore: cast_nullable_to_non_nullable
+as List<Participant>,participantCount: null == participantCount ? _self.participantCount : participantCount // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [SessionState].
+extension SessionStatePatterns on SessionState {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _SessionState value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _SessionState() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _SessionState value)  $default,){
+final _that = this;
+switch (_that) {
+case _SessionState():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _SessionState value)?  $default,){
+final _that = this;
+switch (_that) {
+case _SessionState() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String sessionCode,  String quizId,  String hostId,  String status,  String mode,  int currentQuestionIndex,  String quizTitle,  int totalQuestions,  List<Participant> participants,  int participantCount)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _SessionState() when $default != null:
+return $default(_that.sessionCode,_that.quizId,_that.hostId,_that.status,_that.mode,_that.currentQuestionIndex,_that.quizTitle,_that.totalQuestions,_that.participants,_that.participantCount);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String sessionCode,  String quizId,  String hostId,  String status,  String mode,  int currentQuestionIndex,  String quizTitle,  int totalQuestions,  List<Participant> participants,  int participantCount)  $default,) {final _that = this;
+switch (_that) {
+case _SessionState():
+return $default(_that.sessionCode,_that.quizId,_that.hostId,_that.status,_that.mode,_that.currentQuestionIndex,_that.quizTitle,_that.totalQuestions,_that.participants,_that.participantCount);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String sessionCode,  String quizId,  String hostId,  String status,  String mode,  int currentQuestionIndex,  String quizTitle,  int totalQuestions,  List<Participant> participants,  int participantCount)?  $default,) {final _that = this;
+switch (_that) {
+case _SessionState() when $default != null:
+return $default(_that.sessionCode,_that.quizId,_that.hostId,_that.status,_that.mode,_that.currentQuestionIndex,_that.quizTitle,_that.totalQuestions,_that.participants,_that.participantCount);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _SessionState implements SessionState {
+  const _SessionState({required this.sessionCode, required this.quizId, required this.hostId, required this.status, required this.mode, required this.currentQuestionIndex, required this.quizTitle, required this.totalQuestions, final  List<Participant> participants = const [], this.participantCount = 0}): _participants = participants;
+  factory _SessionState.fromJson(Map<String, dynamic> json) => _$SessionStateFromJson(json);
+
+@override final  String sessionCode;
+@override final  String quizId;
+@override final  String hostId;
+@override final  String status;
+// waiting, active, completed
+@override final  String mode;
+@override final  int currentQuestionIndex;
+@override final  String quizTitle;
+@override final  int totalQuestions;
+ final  List<Participant> _participants;
+@override@JsonKey() List<Participant> get participants {
+  if (_participants is EqualUnmodifiableListView) return _participants;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_participants);
+}
+
+@override@JsonKey() final  int participantCount;
+
+/// Create a copy of SessionState
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$SessionStateCopyWith<_SessionState> get copyWith => __$SessionStateCopyWithImpl<_SessionState>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$SessionStateToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SessionState&&(identical(other.sessionCode, sessionCode) || other.sessionCode == sessionCode)&&(identical(other.quizId, quizId) || other.quizId == quizId)&&(identical(other.hostId, hostId) || other.hostId == hostId)&&(identical(other.status, status) || other.status == status)&&(identical(other.mode, mode) || other.mode == mode)&&(identical(other.currentQuestionIndex, currentQuestionIndex) || other.currentQuestionIndex == currentQuestionIndex)&&(identical(other.quizTitle, quizTitle) || other.quizTitle == quizTitle)&&(identical(other.totalQuestions, totalQuestions) || other.totalQuestions == totalQuestions)&&const DeepCollectionEquality().equals(other._participants, _participants)&&(identical(other.participantCount, participantCount) || other.participantCount == participantCount));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,sessionCode,quizId,hostId,status,mode,currentQuestionIndex,quizTitle,totalQuestions,const DeepCollectionEquality().hash(_participants),participantCount);
+
+@override
+String toString() {
+  return 'SessionState(sessionCode: $sessionCode, quizId: $quizId, hostId: $hostId, status: $status, mode: $mode, currentQuestionIndex: $currentQuestionIndex, quizTitle: $quizTitle, totalQuestions: $totalQuestions, participants: $participants, participantCount: $participantCount)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$SessionStateCopyWith<$Res> implements $SessionStateCopyWith<$Res> {
+  factory _$SessionStateCopyWith(_SessionState value, $Res Function(_SessionState) _then) = __$SessionStateCopyWithImpl;
+@override @useResult
+$Res call({
+ String sessionCode, String quizId, String hostId, String status, String mode, int currentQuestionIndex, String quizTitle, int totalQuestions, List<Participant> participants, int participantCount
+});
+
+
+
+
+}
+/// @nodoc
+class __$SessionStateCopyWithImpl<$Res>
+    implements _$SessionStateCopyWith<$Res> {
+  __$SessionStateCopyWithImpl(this._self, this._then);
+
+  final _SessionState _self;
+  final $Res Function(_SessionState) _then;
+
+/// Create a copy of SessionState
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? sessionCode = null,Object? quizId = null,Object? hostId = null,Object? status = null,Object? mode = null,Object? currentQuestionIndex = null,Object? quizTitle = null,Object? totalQuestions = null,Object? participants = null,Object? participantCount = null,}) {
+  return _then(_SessionState(
+sessionCode: null == sessionCode ? _self.sessionCode : sessionCode // ignore: cast_nullable_to_non_nullable
+as String,quizId: null == quizId ? _self.quizId : quizId // ignore: cast_nullable_to_non_nullable
+as String,hostId: null == hostId ? _self.hostId : hostId // ignore: cast_nullable_to_non_nullable
+as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as String,mode: null == mode ? _self.mode : mode // ignore: cast_nullable_to_non_nullable
+as String,currentQuestionIndex: null == currentQuestionIndex ? _self.currentQuestionIndex : currentQuestionIndex // ignore: cast_nullable_to_non_nullable
+as int,quizTitle: null == quizTitle ? _self.quizTitle : quizTitle // ignore: cast_nullable_to_non_nullable
+as String,totalQuestions: null == totalQuestions ? _self.totalQuestions : totalQuestions // ignore: cast_nullable_to_non_nullable
+as int,participants: null == participants ? _self._participants : participants // ignore: cast_nullable_to_non_nullable
+as List<Participant>,participantCount: null == participantCount ? _self.participantCount : participantCount // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
+}
+
+
+}
+
+
+/// @nodoc
+mixin _$GameState {
+
+ Map<String, dynamic>? get currentQuestion; int get questionIndex; int get totalQuestions; int get timeRemaining; bool get hasAnswered; bool? get isCorrect; int? get pointsEarned; dynamic get correctAnswer; List<Map<String, dynamic>>? get rankings;
+/// Create a copy of GameState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$GameStateCopyWith<GameState> get copyWith => _$GameStateCopyWithImpl<GameState>(this as GameState, _$identity);
+
+  /// Serializes this GameState to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is GameState&&const DeepCollectionEquality().equals(other.currentQuestion, currentQuestion)&&(identical(other.questionIndex, questionIndex) || other.questionIndex == questionIndex)&&(identical(other.totalQuestions, totalQuestions) || other.totalQuestions == totalQuestions)&&(identical(other.timeRemaining, timeRemaining) || other.timeRemaining == timeRemaining)&&(identical(other.hasAnswered, hasAnswered) || other.hasAnswered == hasAnswered)&&(identical(other.isCorrect, isCorrect) || other.isCorrect == isCorrect)&&(identical(other.pointsEarned, pointsEarned) || other.pointsEarned == pointsEarned)&&const DeepCollectionEquality().equals(other.correctAnswer, correctAnswer)&&const DeepCollectionEquality().equals(other.rankings, rankings));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(currentQuestion),questionIndex,totalQuestions,timeRemaining,hasAnswered,isCorrect,pointsEarned,const DeepCollectionEquality().hash(correctAnswer),const DeepCollectionEquality().hash(rankings));
+
+@override
+String toString() {
+  return 'GameState(currentQuestion: $currentQuestion, questionIndex: $questionIndex, totalQuestions: $totalQuestions, timeRemaining: $timeRemaining, hasAnswered: $hasAnswered, isCorrect: $isCorrect, pointsEarned: $pointsEarned, correctAnswer: $correctAnswer, rankings: $rankings)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $GameStateCopyWith<$Res>  {
+  factory $GameStateCopyWith(GameState value, $Res Function(GameState) _then) = _$GameStateCopyWithImpl;
+@useResult
+$Res call({
+ Map<String, dynamic>? currentQuestion, int questionIndex, int totalQuestions, int timeRemaining, bool hasAnswered, bool? isCorrect, int? pointsEarned, dynamic correctAnswer, List<Map<String, dynamic>>? rankings
+});
+
+
+
+
+}
+/// @nodoc
+class _$GameStateCopyWithImpl<$Res>
+    implements $GameStateCopyWith<$Res> {
+  _$GameStateCopyWithImpl(this._self, this._then);
+
+  final GameState _self;
+  final $Res Function(GameState) _then;
+
+/// Create a copy of GameState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? currentQuestion = freezed,Object? questionIndex = null,Object? totalQuestions = null,Object? timeRemaining = null,Object? hasAnswered = null,Object? isCorrect = freezed,Object? pointsEarned = freezed,Object? correctAnswer = freezed,Object? rankings = freezed,}) {
+  return _then(_self.copyWith(
+currentQuestion: freezed == currentQuestion ? _self.currentQuestion : currentQuestion // ignore: cast_nullable_to_non_nullable
+as Map<String, dynamic>?,questionIndex: null == questionIndex ? _self.questionIndex : questionIndex // ignore: cast_nullable_to_non_nullable
+as int,totalQuestions: null == totalQuestions ? _self.totalQuestions : totalQuestions // ignore: cast_nullable_to_non_nullable
+as int,timeRemaining: null == timeRemaining ? _self.timeRemaining : timeRemaining // ignore: cast_nullable_to_non_nullable
+as int,hasAnswered: null == hasAnswered ? _self.hasAnswered : hasAnswered // ignore: cast_nullable_to_non_nullable
+as bool,isCorrect: freezed == isCorrect ? _self.isCorrect : isCorrect // ignore: cast_nullable_to_non_nullable
+as bool?,pointsEarned: freezed == pointsEarned ? _self.pointsEarned : pointsEarned // ignore: cast_nullable_to_non_nullable
+as int?,correctAnswer: freezed == correctAnswer ? _self.correctAnswer : correctAnswer // ignore: cast_nullable_to_non_nullable
+as dynamic,rankings: freezed == rankings ? _self.rankings : rankings // ignore: cast_nullable_to_non_nullable
+as List<Map<String, dynamic>>?,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [GameState].
+extension GameStatePatterns on GameState {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _GameState value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _GameState() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _GameState value)  $default,){
+final _that = this;
+switch (_that) {
+case _GameState():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _GameState value)?  $default,){
+final _that = this;
+switch (_that) {
+case _GameState() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( Map<String, dynamic>? currentQuestion,  int questionIndex,  int totalQuestions,  int timeRemaining,  bool hasAnswered,  bool? isCorrect,  int? pointsEarned,  dynamic correctAnswer,  List<Map<String, dynamic>>? rankings)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _GameState() when $default != null:
+return $default(_that.currentQuestion,_that.questionIndex,_that.totalQuestions,_that.timeRemaining,_that.hasAnswered,_that.isCorrect,_that.pointsEarned,_that.correctAnswer,_that.rankings);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( Map<String, dynamic>? currentQuestion,  int questionIndex,  int totalQuestions,  int timeRemaining,  bool hasAnswered,  bool? isCorrect,  int? pointsEarned,  dynamic correctAnswer,  List<Map<String, dynamic>>? rankings)  $default,) {final _that = this;
+switch (_that) {
+case _GameState():
+return $default(_that.currentQuestion,_that.questionIndex,_that.totalQuestions,_that.timeRemaining,_that.hasAnswered,_that.isCorrect,_that.pointsEarned,_that.correctAnswer,_that.rankings);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( Map<String, dynamic>? currentQuestion,  int questionIndex,  int totalQuestions,  int timeRemaining,  bool hasAnswered,  bool? isCorrect,  int? pointsEarned,  dynamic correctAnswer,  List<Map<String, dynamic>>? rankings)?  $default,) {final _that = this;
+switch (_that) {
+case _GameState() when $default != null:
+return $default(_that.currentQuestion,_that.questionIndex,_that.totalQuestions,_that.timeRemaining,_that.hasAnswered,_that.isCorrect,_that.pointsEarned,_that.correctAnswer,_that.rankings);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _GameState implements GameState {
+  const _GameState({final  Map<String, dynamic>? currentQuestion, this.questionIndex = 0, this.totalQuestions = 0, this.timeRemaining = 30, this.hasAnswered = false, this.isCorrect, this.pointsEarned, this.correctAnswer, final  List<Map<String, dynamic>>? rankings}): _currentQuestion = currentQuestion,_rankings = rankings;
+  factory _GameState.fromJson(Map<String, dynamic> json) => _$GameStateFromJson(json);
+
+ final  Map<String, dynamic>? _currentQuestion;
+@override Map<String, dynamic>? get currentQuestion {
+  final value = _currentQuestion;
+  if (value == null) return null;
+  if (_currentQuestion is EqualUnmodifiableMapView) return _currentQuestion;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableMapView(value);
+}
+
+@override@JsonKey() final  int questionIndex;
+@override@JsonKey() final  int totalQuestions;
+@override@JsonKey() final  int timeRemaining;
+@override@JsonKey() final  bool hasAnswered;
+@override final  bool? isCorrect;
+@override final  int? pointsEarned;
+@override final  dynamic correctAnswer;
+ final  List<Map<String, dynamic>>? _rankings;
+@override List<Map<String, dynamic>>? get rankings {
+  final value = _rankings;
+  if (value == null) return null;
+  if (_rankings is EqualUnmodifiableListView) return _rankings;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(value);
+}
+
+
+/// Create a copy of GameState
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$GameStateCopyWith<_GameState> get copyWith => __$GameStateCopyWithImpl<_GameState>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$GameStateToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GameState&&const DeepCollectionEquality().equals(other._currentQuestion, _currentQuestion)&&(identical(other.questionIndex, questionIndex) || other.questionIndex == questionIndex)&&(identical(other.totalQuestions, totalQuestions) || other.totalQuestions == totalQuestions)&&(identical(other.timeRemaining, timeRemaining) || other.timeRemaining == timeRemaining)&&(identical(other.hasAnswered, hasAnswered) || other.hasAnswered == hasAnswered)&&(identical(other.isCorrect, isCorrect) || other.isCorrect == isCorrect)&&(identical(other.pointsEarned, pointsEarned) || other.pointsEarned == pointsEarned)&&const DeepCollectionEquality().equals(other.correctAnswer, correctAnswer)&&const DeepCollectionEquality().equals(other._rankings, _rankings));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_currentQuestion),questionIndex,totalQuestions,timeRemaining,hasAnswered,isCorrect,pointsEarned,const DeepCollectionEquality().hash(correctAnswer),const DeepCollectionEquality().hash(_rankings));
+
+@override
+String toString() {
+  return 'GameState(currentQuestion: $currentQuestion, questionIndex: $questionIndex, totalQuestions: $totalQuestions, timeRemaining: $timeRemaining, hasAnswered: $hasAnswered, isCorrect: $isCorrect, pointsEarned: $pointsEarned, correctAnswer: $correctAnswer, rankings: $rankings)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$GameStateCopyWith<$Res> implements $GameStateCopyWith<$Res> {
+  factory _$GameStateCopyWith(_GameState value, $Res Function(_GameState) _then) = __$GameStateCopyWithImpl;
+@override @useResult
+$Res call({
+ Map<String, dynamic>? currentQuestion, int questionIndex, int totalQuestions, int timeRemaining, bool hasAnswered, bool? isCorrect, int? pointsEarned, dynamic correctAnswer, List<Map<String, dynamic>>? rankings
+});
+
+
+
+
+}
+/// @nodoc
+class __$GameStateCopyWithImpl<$Res>
+    implements _$GameStateCopyWith<$Res> {
+  __$GameStateCopyWithImpl(this._self, this._then);
+
+  final _GameState _self;
+  final $Res Function(_GameState) _then;
+
+/// Create a copy of GameState
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? currentQuestion = freezed,Object? questionIndex = null,Object? totalQuestions = null,Object? timeRemaining = null,Object? hasAnswered = null,Object? isCorrect = freezed,Object? pointsEarned = freezed,Object? correctAnswer = freezed,Object? rankings = freezed,}) {
+  return _then(_GameState(
+currentQuestion: freezed == currentQuestion ? _self._currentQuestion : currentQuestion // ignore: cast_nullable_to_non_nullable
+as Map<String, dynamic>?,questionIndex: null == questionIndex ? _self.questionIndex : questionIndex // ignore: cast_nullable_to_non_nullable
+as int,totalQuestions: null == totalQuestions ? _self.totalQuestions : totalQuestions // ignore: cast_nullable_to_non_nullable
+as int,timeRemaining: null == timeRemaining ? _self.timeRemaining : timeRemaining // ignore: cast_nullable_to_non_nullable
+as int,hasAnswered: null == hasAnswered ? _self.hasAnswered : hasAnswered // ignore: cast_nullable_to_non_nullable
+as bool,isCorrect: freezed == isCorrect ? _self.isCorrect : isCorrect // ignore: cast_nullable_to_non_nullable
+as bool?,pointsEarned: freezed == pointsEarned ? _self.pointsEarned : pointsEarned // ignore: cast_nullable_to_non_nullable
+as int?,correctAnswer: freezed == correctAnswer ? _self.correctAnswer : correctAnswer // ignore: cast_nullable_to_non_nullable
+as dynamic,rankings: freezed == rankings ? _self._rankings : rankings // ignore: cast_nullable_to_non_nullable
+as List<Map<String, dynamic>>?,
+  ));
+}
+
+
+}
+
+
+/// @nodoc
+mixin _$LeaderboardEntry {
+
+ int get rank; String get userId; int get score;
+/// Create a copy of LeaderboardEntry
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$LeaderboardEntryCopyWith<LeaderboardEntry> get copyWith => _$LeaderboardEntryCopyWithImpl<LeaderboardEntry>(this as LeaderboardEntry, _$identity);
+
+  /// Serializes this LeaderboardEntry to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is LeaderboardEntry&&(identical(other.rank, rank) || other.rank == rank)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.score, score) || other.score == score));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,rank,userId,score);
+
+@override
+String toString() {
+  return 'LeaderboardEntry(rank: $rank, userId: $userId, score: $score)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $LeaderboardEntryCopyWith<$Res>  {
+  factory $LeaderboardEntryCopyWith(LeaderboardEntry value, $Res Function(LeaderboardEntry) _then) = _$LeaderboardEntryCopyWithImpl;
+@useResult
+$Res call({
+ int rank, String userId, int score
+});
+
+
+
+
+}
+/// @nodoc
+class _$LeaderboardEntryCopyWithImpl<$Res>
+    implements $LeaderboardEntryCopyWith<$Res> {
+  _$LeaderboardEntryCopyWithImpl(this._self, this._then);
+
+  final LeaderboardEntry _self;
+  final $Res Function(LeaderboardEntry) _then;
+
+/// Create a copy of LeaderboardEntry
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? rank = null,Object? userId = null,Object? score = null,}) {
+  return _then(_self.copyWith(
+rank: null == rank ? _self.rank : rank // ignore: cast_nullable_to_non_nullable
+as int,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
+as String,score: null == score ? _self.score : score // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [LeaderboardEntry].
+extension LeaderboardEntryPatterns on LeaderboardEntry {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _LeaderboardEntry value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _LeaderboardEntry() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _LeaderboardEntry value)  $default,){
+final _that = this;
+switch (_that) {
+case _LeaderboardEntry():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _LeaderboardEntry value)?  $default,){
+final _that = this;
+switch (_that) {
+case _LeaderboardEntry() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int rank,  String userId,  int score)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _LeaderboardEntry() when $default != null:
+return $default(_that.rank,_that.userId,_that.score);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int rank,  String userId,  int score)  $default,) {final _that = this;
+switch (_that) {
+case _LeaderboardEntry():
+return $default(_that.rank,_that.userId,_that.score);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int rank,  String userId,  int score)?  $default,) {final _that = this;
+switch (_that) {
+case _LeaderboardEntry() when $default != null:
+return $default(_that.rank,_that.userId,_that.score);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _LeaderboardEntry implements LeaderboardEntry {
+  const _LeaderboardEntry({required this.rank, required this.userId, required this.score});
+  factory _LeaderboardEntry.fromJson(Map<String, dynamic> json) => _$LeaderboardEntryFromJson(json);
+
+@override final  int rank;
+@override final  String userId;
+@override final  int score;
+
+/// Create a copy of LeaderboardEntry
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$LeaderboardEntryCopyWith<_LeaderboardEntry> get copyWith => __$LeaderboardEntryCopyWithImpl<_LeaderboardEntry>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$LeaderboardEntryToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _LeaderboardEntry&&(identical(other.rank, rank) || other.rank == rank)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.score, score) || other.score == score));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,rank,userId,score);
+
+@override
+String toString() {
+  return 'LeaderboardEntry(rank: $rank, userId: $userId, score: $score)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$LeaderboardEntryCopyWith<$Res> implements $LeaderboardEntryCopyWith<$Res> {
+  factory _$LeaderboardEntryCopyWith(_LeaderboardEntry value, $Res Function(_LeaderboardEntry) _then) = __$LeaderboardEntryCopyWithImpl;
+@override @useResult
+$Res call({
+ int rank, String userId, int score
+});
+
+
+
+
+}
+/// @nodoc
+class __$LeaderboardEntryCopyWithImpl<$Res>
+    implements _$LeaderboardEntryCopyWith<$Res> {
+  __$LeaderboardEntryCopyWithImpl(this._self, this._then);
+
+  final _LeaderboardEntry _self;
+  final $Res Function(_LeaderboardEntry) _then;
+
+/// Create a copy of LeaderboardEntry
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? rank = null,Object? userId = null,Object? score = null,}) {
+  return _then(_LeaderboardEntry(
+rank: null == rank ? _self.rank : rank // ignore: cast_nullable_to_non_nullable
+as int,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
+as String,score: null == score ? _self.score : score // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
+}
+
+
+}
+
+
+/// @nodoc
+mixin _$LeaderboardState {
+
+ List<LeaderboardEntry> get rankings; LeaderboardEntry? get currentUserEntry;
+/// Create a copy of LeaderboardState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$LeaderboardStateCopyWith<LeaderboardState> get copyWith => _$LeaderboardStateCopyWithImpl<LeaderboardState>(this as LeaderboardState, _$identity);
+
+  /// Serializes this LeaderboardState to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is LeaderboardState&&const DeepCollectionEquality().equals(other.rankings, rankings)&&(identical(other.currentUserEntry, currentUserEntry) || other.currentUserEntry == currentUserEntry));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(rankings),currentUserEntry);
+
+@override
+String toString() {
+  return 'LeaderboardState(rankings: $rankings, currentUserEntry: $currentUserEntry)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $LeaderboardStateCopyWith<$Res>  {
+  factory $LeaderboardStateCopyWith(LeaderboardState value, $Res Function(LeaderboardState) _then) = _$LeaderboardStateCopyWithImpl;
+@useResult
+$Res call({
+ List<LeaderboardEntry> rankings, LeaderboardEntry? currentUserEntry
+});
+
+
+$LeaderboardEntryCopyWith<$Res>? get currentUserEntry;
+
+}
+/// @nodoc
+class _$LeaderboardStateCopyWithImpl<$Res>
+    implements $LeaderboardStateCopyWith<$Res> {
+  _$LeaderboardStateCopyWithImpl(this._self, this._then);
+
+  final LeaderboardState _self;
+  final $Res Function(LeaderboardState) _then;
+
+/// Create a copy of LeaderboardState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? rankings = null,Object? currentUserEntry = freezed,}) {
+  return _then(_self.copyWith(
+rankings: null == rankings ? _self.rankings : rankings // ignore: cast_nullable_to_non_nullable
+as List<LeaderboardEntry>,currentUserEntry: freezed == currentUserEntry ? _self.currentUserEntry : currentUserEntry // ignore: cast_nullable_to_non_nullable
+as LeaderboardEntry?,
+  ));
+}
+/// Create a copy of LeaderboardState
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$LeaderboardEntryCopyWith<$Res>? get currentUserEntry {
+    if (_self.currentUserEntry == null) {
+    return null;
+  }
+
+  return $LeaderboardEntryCopyWith<$Res>(_self.currentUserEntry!, (value) {
+    return _then(_self.copyWith(currentUserEntry: value));
+  });
+}
+}
+
+
+/// Adds pattern-matching-related methods to [LeaderboardState].
+extension LeaderboardStatePatterns on LeaderboardState {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _LeaderboardState value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _LeaderboardState() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _LeaderboardState value)  $default,){
+final _that = this;
+switch (_that) {
+case _LeaderboardState():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _LeaderboardState value)?  $default,){
+final _that = this;
+switch (_that) {
+case _LeaderboardState() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<LeaderboardEntry> rankings,  LeaderboardEntry? currentUserEntry)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _LeaderboardState() when $default != null:
+return $default(_that.rankings,_that.currentUserEntry);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<LeaderboardEntry> rankings,  LeaderboardEntry? currentUserEntry)  $default,) {final _that = this;
+switch (_that) {
+case _LeaderboardState():
+return $default(_that.rankings,_that.currentUserEntry);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<LeaderboardEntry> rankings,  LeaderboardEntry? currentUserEntry)?  $default,) {final _that = this;
+switch (_that) {
+case _LeaderboardState() when $default != null:
+return $default(_that.rankings,_that.currentUserEntry);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _LeaderboardState implements LeaderboardState {
+  const _LeaderboardState({final  List<LeaderboardEntry> rankings = const [], this.currentUserEntry}): _rankings = rankings;
+  factory _LeaderboardState.fromJson(Map<String, dynamic> json) => _$LeaderboardStateFromJson(json);
+
+ final  List<LeaderboardEntry> _rankings;
+@override@JsonKey() List<LeaderboardEntry> get rankings {
+  if (_rankings is EqualUnmodifiableListView) return _rankings;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_rankings);
+}
+
+@override final  LeaderboardEntry? currentUserEntry;
+
+/// Create a copy of LeaderboardState
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$LeaderboardStateCopyWith<_LeaderboardState> get copyWith => __$LeaderboardStateCopyWithImpl<_LeaderboardState>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$LeaderboardStateToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _LeaderboardState&&const DeepCollectionEquality().equals(other._rankings, _rankings)&&(identical(other.currentUserEntry, currentUserEntry) || other.currentUserEntry == currentUserEntry));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_rankings),currentUserEntry);
+
+@override
+String toString() {
+  return 'LeaderboardState(rankings: $rankings, currentUserEntry: $currentUserEntry)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$LeaderboardStateCopyWith<$Res> implements $LeaderboardStateCopyWith<$Res> {
+  factory _$LeaderboardStateCopyWith(_LeaderboardState value, $Res Function(_LeaderboardState) _then) = __$LeaderboardStateCopyWithImpl;
+@override @useResult
+$Res call({
+ List<LeaderboardEntry> rankings, LeaderboardEntry? currentUserEntry
+});
+
+
+@override $LeaderboardEntryCopyWith<$Res>? get currentUserEntry;
+
+}
+/// @nodoc
+class __$LeaderboardStateCopyWithImpl<$Res>
+    implements _$LeaderboardStateCopyWith<$Res> {
+  __$LeaderboardStateCopyWithImpl(this._self, this._then);
+
+  final _LeaderboardState _self;
+  final $Res Function(_LeaderboardState) _then;
+
+/// Create a copy of LeaderboardState
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? rankings = null,Object? currentUserEntry = freezed,}) {
+  return _then(_LeaderboardState(
+rankings: null == rankings ? _self._rankings : rankings // ignore: cast_nullable_to_non_nullable
+as List<LeaderboardEntry>,currentUserEntry: freezed == currentUserEntry ? _self.currentUserEntry : currentUserEntry // ignore: cast_nullable_to_non_nullable
+as LeaderboardEntry?,
+  ));
+}
+
+/// Create a copy of LeaderboardState
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$LeaderboardEntryCopyWith<$Res>? get currentUserEntry {
+    if (_self.currentUserEntry == null) {
+    return null;
+  }
+
+  return $LeaderboardEntryCopyWith<$Res>(_self.currentUserEntry!, (value) {
+    return _then(_self.copyWith(currentUserEntry: value));
+  });
+}
+}
+
+// dart format on

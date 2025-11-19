@@ -13,6 +13,7 @@ import time
 # Configuration
 BASE_URL = "http://localhost:8000"
 RESULTS = {"passed": 0, "failed": 0, "tests": []}
+TEST_CREATOR_ID = "507f1f77bcf86cd799439011"
 
 # Colors for terminal output
 class Colors:
@@ -178,6 +179,7 @@ def test_2_quiz_crud():
         "description": "This quiz was created by automated testing script",
         "language": "English",
         "category": "Science and Technology",
+        "creatorId": TEST_CREATOR_ID,
         "questions": [
             {
                 "id": "1",
@@ -211,12 +213,11 @@ def test_2_quiz_crud():
     quiz_id = response["id"]
     print(f"\n{Colors.GREEN}{Colors.BOLD}✅ Quiz created successfully!{Colors.RESET}")
     print(f"{Colors.MAGENTA}   Quiz ID: {quiz_id}{Colors.RESET}")
-    print(f"{Colors.MAGENTA}   Title: {quiz_data['title']}{Colors.RESET}")
     
-    # Get All Quizzes
+    # Get All Quizzes (Library)
     print(f"\n{Colors.CYAN}Step 2: Fetching all quizzes from library...{Colors.RESET}")
     response = test_endpoint(
-        "GET", "/quizzes/library",
+        "GET", f"/quizzes/library/{TEST_CREATOR_ID}",
         name="Get All Quizzes (Library)",
         expected_status=200,
         sleep_after=1.5
@@ -229,7 +230,7 @@ def test_2_quiz_crud():
     # Get Single Quiz
     print(f"\n{Colors.CYAN}Step 3: Retrieving the created quiz by ID...{Colors.RESET}")
     response = test_endpoint(
-        "GET", f"/quizzes/{quiz_id}",
+        "GET", f"/quizzes/{quiz_id}?user_id={TEST_CREATOR_ID}",
         name="Get Quiz by ID",
         expected_status=200,
         sleep_after=1.5
@@ -639,9 +640,9 @@ def test_10_cleanup(quiz_id):
     # Verify Deletion (should fail)
     print(f"\n{Colors.CYAN}Verifying quiz was deleted (should fail)...{Colors.RESET}")
     test_endpoint(
-        "GET", f"/quizzes/{quiz_id}",
+        "GET", f"/quizzes/{quiz_id}?user_id={TEST_CREATOR_ID}",
         name="Verify Quiz Deleted (Expected to fail)",
-        expected_status=500,  # Will be 500 because of ObjectId error
+        expected_status=404,  # Should be 404 Not Found
         sleep_after=1.5
     )
     print(f"{Colors.GREEN}   Confirmed: Quiz no longer exists{Colors.RESET}")
