@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quiz_app/LibrarySection/LiveMode/screens/live_multiplayer_lobby.dart';
 import 'package:quiz_app/providers/session_provider.dart';
 import 'package:quiz_app/utils/color.dart';
-import 'package:quiz_app/widgets/sci_fi/sci_fi_transition.dart';
 
 class LiveMultiplayerDashboard extends ConsumerStatefulWidget {
   final String quizId;
@@ -51,11 +50,12 @@ class _LiveMultiplayerDashboardState
       if (mounted) {
         Navigator.pushReplacement(
           context,
-          SciFiPageTransition(
-            child: LiveMultiplayerLobby(
-              sessionCode: widget.sessionCode,
-              isHost: false,
-            ),
+          MaterialPageRoute(
+            builder:
+                (context) => LiveMultiplayerLobby(
+                  sessionCode: widget.sessionCode,
+                  isHost: false,
+                ),
           ),
         );
       }

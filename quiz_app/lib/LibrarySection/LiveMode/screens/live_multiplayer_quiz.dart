@@ -5,13 +5,6 @@ import 'package:quiz_app/LibrarySection/LiveMode/widgets/leaderboard_widget.dart
 import 'package:quiz_app/LibrarySection/LiveMode/widgets/reconnection_overlay.dart';
 import 'package:quiz_app/providers/game_provider.dart';
 import 'package:quiz_app/providers/session_provider.dart';
-import 'package:quiz_app/widgets/sci_fi/sci_fi_background.dart';
-import 'package:quiz_app/widgets/sci_fi/sci_fi_button.dart';
-import 'package:quiz_app/widgets/sci_fi/sci_fi_dialog.dart';
-import 'package:quiz_app/widgets/sci_fi/sci_fi_panel.dart';
-import 'package:quiz_app/widgets/sci_fi/sci_fi_slider.dart';
-import 'package:quiz_app/widgets/sci_fi/sci_fi_theme.dart';
-import 'package:quiz_app/widgets/sci_fi/sci_fi_transition.dart';
 
 class LiveMultiplayerQuiz extends ConsumerStatefulWidget {
   const LiveMultiplayerQuiz({super.key});
@@ -28,7 +21,9 @@ class _LiveMultiplayerQuizState extends ConsumerState<LiveMultiplayerQuiz> {
       if (next != null && next.status == 'completed') {
         Navigator.pushReplacement(
           context,
-          SciFiPageTransition(child: const LiveMultiplayerResults()),
+          MaterialPageRoute(
+            builder: (context) => const LiveMultiplayerResults(),
+          ),
         );
       }
     });
@@ -42,16 +37,19 @@ class _LiveMultiplayerQuizState extends ConsumerState<LiveMultiplayerQuiz> {
           showDialog(
             context: context,
             builder:
-                (context) => SciFiDialog(
-                  title: 'ERROR',
-                  message: error,
-                  isDestructive: true,
-                  confirmText: 'OK',
-                  onConfirm: () {
-                    if (context.mounted) {
-                      Navigator.pop(context);
-                    }
-                  },
+                (context) => AlertDialog(
+                  title: const Text('ERROR'),
+                  content: Text(error),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        if (context.mounted) {
+                          Navigator.pop(context);
+                        }
+                      },
+                      child: const Text('OK'),
+                    ),
+                  ],
                 ),
           );
         }
@@ -63,10 +61,12 @@ class _LiveMultiplayerQuizState extends ConsumerState<LiveMultiplayerQuiz> {
     final currentUserId = ref.watch(currentUserProvider);
 
     if (currentQuestion == null) {
-      return const Scaffold(
-        backgroundColor: SciFiTheme.background,
+      return Scaffold(
+        backgroundColor: Colors.grey[900],
         body: Center(
-          child: CircularProgressIndicator(color: SciFiTheme.primary),
+          child: CircularProgressIndicator(
+            color: Theme.of(context).colorScheme.primary,
+          ),
         ),
       );
     }
@@ -74,167 +74,215 @@ class _LiveMultiplayerQuizState extends ConsumerState<LiveMultiplayerQuiz> {
     final options = List<String>.from(currentQuestion['options'] ?? []);
 
     return Scaffold(
-      body: SciFiBackground(
-        child: ReconnectionOverlay(
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Header: Timer and Question Count
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.timer,
-                              color:
-                                  gameState.timeRemaining < 10
-                                      ? SciFiTheme.error
-                                      : SciFiTheme.primary,
-                              size: 20,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: SciFiSlider(
+      backgroundColor: Colors.grey[900],
+      body: ReconnectionOverlay(
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Header: Timer and Question Count
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.timer,
+                            color:
+                                gameState.timeRemaining < 10
+                                    ? Colors.red
+                                    : Theme.of(context).colorScheme.primary,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: LinearProgressIndicator(
                                 value: gameState.timeRemaining / 30.0,
+                                backgroundColor: Colors.grey[700],
                                 color:
                                     gameState.timeRemaining < 10
-                                        ? SciFiTheme.error
-                                        : SciFiTheme.primary,
+                                        ? Colors.red
+                                        : Theme.of(context).colorScheme.primary,
+                                minHeight: 8,
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 24),
-                      Text(
-                        'Q ${gameState.questionIndex + 1} / ${gameState.totalQuestions}',
-                        style: SciFiTheme.subHeader.copyWith(
-                          color: SciFiTheme.textSecondary,
-                        ),
+                    ),
+                    const SizedBox(width: 24),
+                    Text(
+                      'Q ${gameState.questionIndex + 1} / ${gameState.totalQuestions}',
+                      style: TextStyle(
+                        color: Colors.grey[400],
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
 
-                  // Question Panel
-                  SciFiPanel(
+                // Question Panel
+                Card(
+                  elevation: 4,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(24.0),
                     child: Column(
                       children: [
                         Text(
                           currentQuestion['question'] ?? '',
-                          style: SciFiTheme.header.copyWith(fontSize: 20),
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                           textAlign: TextAlign.center,
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 32),
+                ),
+                const SizedBox(height: 32),
 
-                  // Options
+                // Options
+                Expanded(
+                  child: ListView.separated(
+                    itemCount: options.length,
+                    separatorBuilder:
+                        (context, index) => const SizedBox(height: 16),
+                    itemBuilder: (context, index) {
+                      final option = options[index];
+                      // final isCorrect = gameState.correctAnswer == option; // Unused for now
+
+                      return ElevatedButton(
+                        onPressed:
+                            gameState.hasAnswered
+                                ? null
+                                : () {
+                                  ref
+                                      .read(gameProvider.notifier)
+                                      .submitAnswer(option);
+                                },
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Text(
+                          option,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+
+                // Status Message or Leaderboard
+                if (gameState.rankings != null)
                   Expanded(
-                    child: ListView.separated(
-                      itemCount: options.length,
-                      separatorBuilder:
-                          (context, index) => const SizedBox(height: 16),
-                      itemBuilder: (context, index) {
-                        final option = options[index];
-                        // final isCorrect = gameState.correctAnswer == option; // Unused for now
-
-                        return SciFiButton(
-                          label: option,
-                          onPressed:
-                              gameState.hasAnswered
-                                  ? null
-                                  : () {
-                                    ref
-                                        .read(gameProvider.notifier)
-                                        .submitAnswer(option);
-                                  },
-                          isPrimary: true, // Default style
-                        );
-                      },
+                    child: LeaderboardWidget(
+                      rankings: gameState.rankings!,
+                      currentUserId: currentUserId ?? '',
+                    ),
+                  )
+                else if (gameState.hasAnswered &&
+                    gameState.correctAnswer == null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 16),
+                    child: Center(
+                      child: Text(
+                        'Waiting for other players...',
+                        style: TextStyle(
+                          color: Colors.grey[400],
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
                     ),
                   ),
 
-                  // Status Message or Leaderboard
-                  if (gameState.rankings != null)
-                    Expanded(
-                      child: LeaderboardWidget(
-                        rankings: gameState.rankings!,
-                        currentUserId: currentUserId ?? '',
-                      ),
-                    )
-                  else if (gameState.hasAnswered &&
-                      gameState.correctAnswer == null)
-                    const Padding(
-                      padding: EdgeInsets.only(top: 16),
-                      child: Center(
-                        child: Text(
-                          'Waiting for other players...',
-                          style: TextStyle(
-                            color: SciFiTheme.textSecondary,
-                            fontStyle: FontStyle.italic,
-                          ),
+                if (gameState.correctAnswer != null &&
+                    gameState.rankings == null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 16),
+                    child: Center(
+                      child: Text(
+                        gameState.isCorrect == true ? 'CORRECT!' : 'INCORRECT',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color:
+                              gameState.isCorrect == true
+                                  ? Colors.green
+                                  : Colors.red,
                         ),
                       ),
                     ),
+                  ),
 
-                  if (gameState.correctAnswer != null &&
-                      gameState.rankings == null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 16),
-                      child: Center(
-                        child: Text(
-                          gameState.isCorrect == true
-                              ? 'CORRECT!'
-                              : 'INCORRECT',
-                          style: SciFiTheme.header.copyWith(
-                            color:
-                                gameState.isCorrect == true
-                                    ? SciFiTheme.success
-                                    : SciFiTheme.error,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                  // Host Controls
-                  if (ref.watch(sessionProvider)?.hostId == currentUserId)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 24),
-                      child: SciFiButton(
-                        label: 'END QUIZ',
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder:
-                                (context) => SciFiDialog(
-                                  title: 'END QUIZ?',
-                                  message:
-                                      'Are you sure you want to end the quiz early? All progress will be saved.',
-                                  confirmText: 'END NOW',
-                                  cancelText: 'CANCEL',
-                                  isDestructive: true,
-                                  onConfirm: () {
-                                    Navigator.pop(context); // Close dialog
-                                    ref
-                                        .read(sessionProvider.notifier)
-                                        .endQuiz();
-                                  },
-                                  onCancel: () => Navigator.pop(context),
+                // Host Controls
+                if (ref.watch(sessionProvider)?.hostId == currentUserId)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 24),
+                    child: OutlinedButton(
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder:
+                              (context) => AlertDialog(
+                                title: const Text('END QUIZ?'),
+                                content: const Text(
+                                  'Are you sure you want to end the quiz early? All progress will be saved.',
                                 ),
-                          );
-                        },
-                        isPrimary: false,
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    child: const Text('CANCEL'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(context); // Close dialog
+                                      ref
+                                          .read(sessionProvider.notifier)
+                                          .endQuiz();
+                                    },
+                                    style: TextButton.styleFrom(
+                                      foregroundColor: Colors.red,
+                                    ),
+                                    child: const Text('END NOW'),
+                                  ),
+                                ],
+                              ),
+                        );
+                      },
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'END QUIZ',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                ],
-              ),
+                  ),
+              ],
             ),
           ),
         ),

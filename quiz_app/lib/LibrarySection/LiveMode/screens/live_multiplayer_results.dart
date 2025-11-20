@@ -3,11 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quiz_app/LibrarySection/LiveMode/widgets/leaderboard_widget.dart';
 import 'package:quiz_app/LibrarySection/LiveMode/widgets/reconnection_overlay.dart';
 import 'package:quiz_app/providers/session_provider.dart';
-import 'package:quiz_app/widgets/sci_fi/sci_fi_background.dart';
-import 'package:quiz_app/widgets/sci_fi/sci_fi_button.dart';
-import 'package:quiz_app/widgets/sci_fi/sci_fi_dialog.dart';
-import 'package:quiz_app/widgets/sci_fi/sci_fi_panel.dart';
-import 'package:quiz_app/widgets/sci_fi/sci_fi_theme.dart';
 
 class LiveMultiplayerResults extends ConsumerWidget {
   const LiveMultiplayerResults({super.key});
@@ -23,16 +18,19 @@ class LiveMultiplayerResults extends ConsumerWidget {
           showDialog(
             context: context,
             builder:
-                (context) => SciFiDialog(
-                  title: 'ERROR',
-                  message: error,
-                  isDestructive: true,
-                  confirmText: 'OK',
-                  onConfirm: () {
-                    if (context.mounted) {
-                      Navigator.pop(context);
-                    }
-                  },
+                (context) => AlertDialog(
+                  title: const Text('ERROR'),
+                  content: Text(error),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        if (context.mounted) {
+                          Navigator.pop(context);
+                        }
+                      },
+                      child: const Text('OK'),
+                    ),
+                  ],
                 ),
           );
         }
@@ -42,10 +40,12 @@ class LiveMultiplayerResults extends ConsumerWidget {
     final sessionState = ref.watch(sessionProvider);
 
     if (sessionState == null) {
-      return const Scaffold(
-        backgroundColor: SciFiTheme.background,
+      return Scaffold(
+        backgroundColor: Colors.grey[900],
         body: Center(
-          child: CircularProgressIndicator(color: SciFiTheme.primary),
+          child: CircularProgressIndicator(
+            color: Theme.of(context).colorScheme.primary,
+          ),
         ),
       );
     }
@@ -73,16 +73,22 @@ class LiveMultiplayerResults extends ConsumerWidget {
     final currentUserId = ref.watch(currentUserProvider);
 
     return Scaffold(
-      body: SciFiBackground(
-        child: ReconnectionOverlay(
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Header
-                  SciFiPanel(
+      backgroundColor: Colors.grey[900],
+      body: ReconnectionOverlay(
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Header
+                Card(
+                  elevation: 4,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(24.0),
                     child: Column(
                       children: [
                         const Icon(
@@ -93,37 +99,46 @@ class LiveMultiplayerResults extends ConsumerWidget {
                         const SizedBox(height: 16),
                         Text(
                           'QUIZ COMPLETED',
-                          style: SciFiTheme.header.copyWith(
+                          style: TextStyle(
                             fontSize: 32,
-                            color: SciFiTheme.primary,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.primary,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 32),
+                ),
+                const SizedBox(height: 32),
 
-                  // Leaderboard
-                  Expanded(
-                    child: LeaderboardWidget(
-                      rankings: rankings,
-                      currentUserId: currentUserId ?? '',
+                // Leaderboard
+                Expanded(
+                  child: LeaderboardWidget(
+                    rankings: rankings,
+                    currentUserId: currentUserId ?? '',
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                // Exit Button
+                ElevatedButton(
+                  onPressed: () {
+                    // Pop until we are back at the dashboard or library
+                    Navigator.of(context).popUntil((route) => route.isFirst);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-
-                  const SizedBox(height: 24),
-
-                  // Exit Button
-                  SciFiButton(
-                    label: 'RETURN TO LIBRARY',
-                    onPressed: () {
-                      // Pop until we are back at the dashboard or library
-                      Navigator.of(context).popUntil((route) => route.isFirst);
-                    },
-                    isPrimary: true,
+                  child: const Text(
+                    'RETURN TO LIBRARY',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),

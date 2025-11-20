@@ -11,7 +11,6 @@ import 'package:quiz_app/LibrarySection/LiveMode/screens/live_multiplayer_lobby.
 import 'package:quiz_app/LibrarySection/services/session_service.dart';
 import 'package:quiz_app/providers/session_provider.dart';
 import 'package:quiz_app/utils/color.dart';
-import 'package:quiz_app/widgets/sci_fi/sci_fi_transition.dart';
 import 'package:share_plus/share_plus.dart';
 
 class HostingPage extends ConsumerStatefulWidget {
@@ -197,11 +196,12 @@ class _HostingPageState extends ConsumerState<HostingPage> {
       if (mounted) {
         Navigator.pushReplacement(
           context,
-          SciFiPageTransition(
-            child: LiveMultiplayerLobby(
-              sessionCode: sessionCode!,
-              isHost: true,
-            ),
+          MaterialPageRoute(
+            builder:
+                (context) => LiveMultiplayerLobby(
+                  sessionCode: sessionCode!,
+                  isHost: true,
+                ),
           ),
         );
       }

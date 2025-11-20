@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quiz_app/providers/session_provider.dart';
 import 'package:quiz_app/services/websocket_service.dart';
-import 'package:quiz_app/widgets/sci_fi/sci_fi_panel.dart';
-import 'package:quiz_app/widgets/sci_fi/sci_fi_theme.dart';
-import 'package:quiz_app/widgets/sci_fi/sci_fi_dialog.dart';
 
 class ReconnectionOverlay extends ConsumerWidget {
   final Widget child;
@@ -38,35 +35,42 @@ class ReconnectionOverlay extends ConsumerWidget {
     return Container(
       color: Colors.black.withValues(alpha: 0.8),
       child: Center(
-        child: SciFiPanel(
-          glowColor: SciFiTheme.warning,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SizedBox(
-                width: 60,
-                height: 60,
-                child: CircularProgressIndicator(
-                  strokeWidth: 4,
-                  color: SciFiTheme.warning,
+        child: Card(
+          elevation: 8,
+          margin: const EdgeInsets.all(24.0),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(32.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  width: 60,
+                  height: 60,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 4,
+                    color: Colors.amber,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                'RECONNECTING...',
-                style: SciFiTheme.heading2.copyWith(
-                  color: SciFiTheme.warning,
+                const SizedBox(height: 20),
+                const Text(
+                  'RECONNECTING...',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.amber,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Please wait while we restore your connection',
-                style: SciFiTheme.body.copyWith(
-                  color: SciFiTheme.textSecondary,
+                const SizedBox(height: 8),
+                Text(
+                  'Please wait while we restore your connection',
+                  style: TextStyle(color: Colors.grey[400]),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -79,32 +83,38 @@ class ReconnectionOverlay extends ConsumerWidget {
       child: Center(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
-          child: SciFiPanel(
-            glowColor: SciFiTheme.error,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.signal_wifi_off,
-                  size: 80,
-                  color: SciFiTheme.error,
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  'CONNECTION LOST',
-                  style: SciFiTheme.heading1.copyWith(
-                    color: SciFiTheme.error,
+          child: Card(
+            elevation: 8,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(32.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.signal_wifi_off,
+                    size: 80,
+                    color: Colors.red,
                   ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Unable to connect to the server.\nPlease check your internet connection.',
-                  style: SciFiTheme.body.copyWith(
-                    color: SciFiTheme.textSecondary,
+                  const SizedBox(height: 20),
+                  const Text(
+                    'CONNECTION LOST',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.red,
+                    ),
                   ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
+                  const SizedBox(height: 12),
+                  Text(
+                    'Unable to connect to the server.\nPlease check your internet connection.',
+                    style: TextStyle(color: Colors.grey[400]),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -127,7 +137,7 @@ class _ErrorListenerState extends ConsumerState<ErrorListener> {
   @override
   void initState() {
     super.initState();
-    
+
     // Listen to error stream
     Future.microtask(() {
       final notifier = ref.read(sessionProvider.notifier);
@@ -142,12 +152,17 @@ class _ErrorListenerState extends ConsumerState<ErrorListener> {
   void _showErrorDialog(String message) {
     showDialog(
       context: context,
-      builder: (context) => SciFiDialog(
-        title: 'ERROR',
-        message: message,
-        confirmText: 'OK',
-        isDestructive: true,
-      ),
+      builder:
+          (context) => AlertDialog(
+            title: const Text('ERROR'),
+            content: Text(message),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
     );
   }
 
