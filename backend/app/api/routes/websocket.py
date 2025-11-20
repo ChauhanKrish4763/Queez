@@ -13,12 +13,20 @@ session_manager = SessionManager()
 game_controller = GameController()
 leaderboard_manager = LeaderboardManager()
 
-@router.websocket("/ws/{session_code}")
+@router.websocket("/api/ws/{session_code}")
 async def websocket_endpoint(websocket: WebSocket, session_code: str, user_id: str = Query(...)):
-    # Initial connection
-    # We require user_id query param to track the connection even before "join"
-    # But we won't add them to the session participants list until they send "join"
+    """
+    WebSocket endpoint for real-time quiz sessions
+    """
+    # === CRITICAL: Accept connection FIRST ===
+    try:
+        await websocket.accept()
+        logger.info(f"WebSocket accepted for session={session_code}, user={user_id}")
+    except Exception as e:
+        logger.error(f"Failed to accept WebSocket: {e}")
+        return
     
+    # Register connection with manager
     await manager.connect(websocket, session_code, user_id)
     
     try:
@@ -40,11 +48,13 @@ async def websocket_endpoint(websocket: WebSocket, session_code: str, user_id: s
                 await websocket.send_json({"type": "pong"})
                 
     except WebSocketDisconnect:
+        logger.info(f"WebSocket disconnected: session={session_code}, user={user_id}")
         manager.disconnect(websocket, session_code, user_id)
         await handle_disconnect(session_code, user_id)
     except Exception as e:
-        logger.error(f"WebSocket error: {e}")
+        logger.error(f"WebSocket error: {e}", exc_info=True)
         manager.disconnect(websocket, session_code, user_id)
+
 
 async def handle_join(websocket: WebSocket, session_code: str, user_id: str, payload: dict):
     username = payload.get("username", "Anonymous")

@@ -13,7 +13,8 @@ class ConnectionManager:
         self.user_connections: Dict[str, WebSocket] = {}
 
     async def connect(self, websocket: WebSocket, session_code: str, user_id: str):
-        await websocket.accept()
+        # ✅ DO NOT accept here - already accepted in endpoint
+        # Connection is already established when this method is called
         
         if session_code not in self.active_connections:
             self.active_connections[session_code] = []
@@ -58,5 +59,6 @@ class ConnectionManager:
                         await connection.send_json(message)
                     except Exception as e:
                         logger.error(f"Error broadcasting (except) to session {session_code}: {e}")
+
 
 manager = ConnectionManager()

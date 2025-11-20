@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 
 class SessionService {
   static const String baseUrl =
-      'https://generous-main-saved-bracelets.trycloudflare.com';
+      'https://transmitted-exhaust-prior-missed.trycloudflare.com';
 
   // Create a new quiz session
   static Future<Map<String, dynamic>> createSession({

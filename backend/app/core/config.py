@@ -30,11 +30,17 @@ APP_DESCRIPTION = "FastAPI Quiz Application Backend"
 # CORS origins
 # Note: When allow_credentials=True, you cannot use wildcard "*" for origins
 # You must explicitly list allowed origins
+# Add your cloudflared tunnel URL here if using cloudflared
+CORS_ORIGINS_ENV = os.getenv("CORS_ORIGINS", "")
 CORS_ORIGINS = [
     "http://localhost:8000",
-    "http://10.0.2.2:8000",  # Android emulator
+    "http://10.0.2.2:8000",      # Android emulator
     "http://127.0.0.1:8000",
 ]
+# Add any additional origins from environment variable
+if CORS_ORIGINS_ENV:
+    CORS_ORIGINS.extend([origin.strip() for origin in CORS_ORIGINS_ENV.split(",")])
+
 CORS_CREDENTIALS = True
 CORS_METHODS = ["*"]
 CORS_HEADERS = ["*"]
