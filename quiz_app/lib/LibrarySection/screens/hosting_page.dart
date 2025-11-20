@@ -1,15 +1,20 @@
 import 'dart:async';
 import 'dart:ui' as ui;
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:quiz_app/LibrarySection/LiveMode/screens/live_multiplayer_lobby.dart';
 import 'package:quiz_app/LibrarySection/services/session_service.dart';
+import 'package:quiz_app/providers/session_provider.dart';
 import 'package:quiz_app/utils/color.dart';
+import 'package:quiz_app/widgets/sci_fi/sci_fi_transition.dart';
 import 'package:share_plus/share_plus.dart';
 
-class HostingPage extends StatefulWidget {
+class HostingPage extends ConsumerStatefulWidget {
   final String quizId;
   final String quizTitle;
   final String mode;
@@ -24,10 +29,10 @@ class HostingPage extends StatefulWidget {
   });
 
   @override
-  State<HostingPage> createState() => _HostingPageState();
+  ConsumerState<HostingPage> createState() => _HostingPageState();
 }
 
-class _HostingPageState extends State<HostingPage> {
+class _HostingPageState extends ConsumerState<HostingPage> {
   String? sessionCode;
   int participantCount = 0;
   List<Map<String, dynamic>> participants = [];
@@ -76,6 +81,8 @@ class _HostingPageState extends State<HostingPage> {
 
         if (widget.mode == 'live_multiplayer') {
           _startParticipantPolling();
+          // Connect host to WebSocket
+          await _connectHostToWebSocket();
         }
       }
     } catch (e) {
@@ -83,6 +90,28 @@ class _HostingPageState extends State<HostingPage> {
         isLoading = false;
         errorMessage = e.toString().replaceAll('Exception: ', '');
       });
+    }
+  }
+
+  Future<void> _connectHostToWebSocket() async {
+    if (sessionCode == null) return;
+
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      final username =
+          user?.displayName?.trim().isNotEmpty == true
+              ? user!.displayName!
+              : (user?.email?.split('@')[0] ?? 'Host');
+
+      // Connect host as a participant via WebSocket
+      await ref
+          .read(sessionProvider.notifier)
+          .joinSession(sessionCode!, widget.hostId, username);
+
+      debugPrint('✅ Host connected to WebSocket');
+    } catch (e) {
+      debugPrint('⚠️ Host WebSocket connection failed: $e');
+      // Don't block the UI, just log the error
     }
   }
 
@@ -139,6 +168,55 @@ class _HostingPageState extends State<HostingPage> {
           duration: const Duration(seconds: 2),
         ),
       );
+    }
+  }
+
+  Future<void> _startQuiz() async {
+    if (sessionCode == null) return;
+
+    // For testing: Allow starting with 1 participant (host only)
+    // if (participantCount < 2) {
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //     const SnackBar(
+    //       content: Text('At least 2 participants required to start the quiz'),
+    //       backgroundColor: AppColors.error,
+    //       duration: Duration(seconds: 3),
+    //     ),
+    //   );
+    //   return;
+    // }
+
+    try {
+      // Call backend API to start the session
+      await SessionService.startSession(
+        sessionCode: sessionCode!,
+        hostId: widget.hostId,
+      );
+
+      // Navigate to lobby - the WebSocket will receive quiz_started and navigate to quiz
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          SciFiPageTransition(
+            child: LiveMultiplayerLobby(
+              sessionCode: sessionCode!,
+              isHost: true,
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Failed to start quiz: ${e.toString().replaceAll('Exception: ', '')}',
+            ),
+            backgroundColor: AppColors.error,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
     }
   }
 
@@ -650,6 +728,48 @@ class _HostingPageState extends State<HostingPage> {
               );
             },
           ),
+        // START QUIZ Button (for host to start the quiz for all participants)
+        if (participantCount >= 1) ...[
+          const SizedBox(height: 24),
+          ElevatedButton.icon(
+            onPressed: participantCount >= 1 ? _startQuiz : null,
+            icon: const Icon(Icons.play_arrow, size: 24),
+            label: const Text(
+              'START QUIZ',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1.2,
+              ),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor:
+                  participantCount >= 1
+                      ? AppColors.success
+                      : AppColors.iconInactive,
+              foregroundColor: AppColors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
+              elevation: participantCount >= 1 ? 4 : 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              minimumSize: const Size(double.infinity, 64),
+            ),
+          ),
+          if (participantCount < 1)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(
+                'Waiting for participants...',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: AppColors.textSecondary,
+                  fontStyle: FontStyle.italic,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+        ],
       ],
     );
   }

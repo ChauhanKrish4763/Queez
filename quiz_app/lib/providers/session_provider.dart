@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quiz_app/models/multiplayer_models.dart';
 import 'package:quiz_app/services/websocket_service.dart';
@@ -27,6 +28,7 @@ final connectionStatusProvider = StreamProvider<ConnectionStatus>((ref) {
 
 class SessionNotifier extends Notifier<SessionState?> {
   late final WebSocketService _wsService;
+  Completer<void>? _joinCompleter;
 
   @override
   SessionState? build() {
@@ -38,6 +40,9 @@ class SessionNotifier extends Notifier<SessionState?> {
   }
 
   Future<void> joinSession(String sessionCode, String userId, String username) async {
+    debugPrint('🔍 FLUTTER - Joining with username: "$username", userId: $userId');
+    _joinCompleter = Completer<void>();
+    
     ref.read(currentUserProvider.notifier).setUser(userId);
     await _wsService.connect(sessionCode, userId);
     
@@ -47,6 +52,19 @@ class SessionNotifier extends Notifier<SessionState?> {
       'user_id': userId,
       'username': username,
     });
+    
+    // Wait for session_state response (with timeout)
+    try {
+      await _joinCompleter!.future.timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          throw TimeoutException('Failed to join session: timeout waiting for server response');
+        },
+      );
+    } catch (e) {
+      _joinCompleter = null;
+      rethrow;
+    }
   }
 
   void startQuiz() {
@@ -65,9 +83,20 @@ class SessionNotifier extends Notifier<SessionState?> {
     final payload = message['payload'];
 
     if (type == 'error') {
-      _errorController.add(payload['message'] ?? 'An unknown error occurred');
+      final errorMessage = payload['message'] ?? 'An unknown error occurred';
+      _errorController.add(errorMessage);
+      // Complete join with error if waiting
+      if (_joinCompleter != null && !_joinCompleter!.isCompleted) {
+        _joinCompleter!.completeError(Exception(errorMessage));
+        _joinCompleter = null;
+      }
     } else if (type == 'session_state') {
       state = SessionState.fromJson(payload);
+      // Complete join successfully if waiting
+      if (_joinCompleter != null && !_joinCompleter!.isCompleted) {
+        _joinCompleter!.complete();
+        _joinCompleter = null;
+      }
     } else if (type == 'session_update') {
       if (state != null) {
         state = state!.copyWith(

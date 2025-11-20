@@ -7,9 +7,9 @@ part of 'multiplayer_models.dart';
 // **************************************************************************
 
 _Participant _$ParticipantFromJson(Map<String, dynamic> json) => _Participant(
-  userId: json['userId'] as String,
+  userId: json['user_id'] as String,
   username: json['username'] as String,
-  joinedAt: json['joinedAt'] as String,
+  joinedAt: json['joined_at'] as String,
   connected: json['connected'] as bool? ?? true,
   score: (json['score'] as num?)?.toInt() ?? 0,
   answers:
@@ -21,9 +21,9 @@ _Participant _$ParticipantFromJson(Map<String, dynamic> json) => _Participant(
 
 Map<String, dynamic> _$ParticipantToJson(_Participant instance) =>
     <String, dynamic>{
-      'userId': instance.userId,
+      'user_id': instance.userId,
       'username': instance.username,
-      'joinedAt': instance.joinedAt,
+      'joined_at': instance.joinedAt,
       'connected': instance.connected,
       'score': instance.score,
       'answers': instance.answers,
@@ -31,45 +31,45 @@ Map<String, dynamic> _$ParticipantToJson(_Participant instance) =>
 
 _SessionState _$SessionStateFromJson(Map<String, dynamic> json) =>
     _SessionState(
-      sessionCode: json['sessionCode'] as String,
-      quizId: json['quizId'] as String,
-      hostId: json['hostId'] as String,
+      sessionCode: json['session_code'] as String,
+      quizId: json['quiz_id'] as String,
+      hostId: json['host_id'] as String,
       status: json['status'] as String,
       mode: json['mode'] as String,
-      currentQuestionIndex: (json['currentQuestionIndex'] as num).toInt(),
-      quizTitle: json['quizTitle'] as String,
-      totalQuestions: (json['totalQuestions'] as num).toInt(),
+      currentQuestionIndex: (json['current_question_index'] as num).toInt(),
+      quizTitle: json['quiz_title'] as String,
+      totalQuestions: (json['total_questions'] as num).toInt(),
       participants:
           (json['participants'] as List<dynamic>?)
               ?.map((e) => Participant.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
-      participantCount: (json['participantCount'] as num?)?.toInt() ?? 0,
+      participantCount: (json['participant_count'] as num?)?.toInt() ?? 0,
     );
 
 Map<String, dynamic> _$SessionStateToJson(_SessionState instance) =>
     <String, dynamic>{
-      'sessionCode': instance.sessionCode,
-      'quizId': instance.quizId,
-      'hostId': instance.hostId,
+      'session_code': instance.sessionCode,
+      'quiz_id': instance.quizId,
+      'host_id': instance.hostId,
       'status': instance.status,
       'mode': instance.mode,
-      'currentQuestionIndex': instance.currentQuestionIndex,
-      'quizTitle': instance.quizTitle,
-      'totalQuestions': instance.totalQuestions,
+      'current_question_index': instance.currentQuestionIndex,
+      'quiz_title': instance.quizTitle,
+      'total_questions': instance.totalQuestions,
       'participants': instance.participants,
-      'participantCount': instance.participantCount,
+      'participant_count': instance.participantCount,
     };
 
 _GameState _$GameStateFromJson(Map<String, dynamic> json) => _GameState(
-  currentQuestion: json['currentQuestion'] as Map<String, dynamic>?,
-  questionIndex: (json['questionIndex'] as num?)?.toInt() ?? 0,
-  totalQuestions: (json['totalQuestions'] as num?)?.toInt() ?? 0,
-  timeRemaining: (json['timeRemaining'] as num?)?.toInt() ?? 30,
-  hasAnswered: json['hasAnswered'] as bool? ?? false,
-  isCorrect: json['isCorrect'] as bool?,
-  pointsEarned: (json['pointsEarned'] as num?)?.toInt(),
-  correctAnswer: json['correctAnswer'],
+  currentQuestion: json['current_question'] as Map<String, dynamic>?,
+  questionIndex: (json['question_index'] as num?)?.toInt() ?? 0,
+  totalQuestions: (json['total_questions'] as num?)?.toInt() ?? 0,
+  timeRemaining: (json['time_remaining'] as num?)?.toInt() ?? 30,
+  hasAnswered: json['has_answered'] as bool? ?? false,
+  isCorrect: json['is_correct'] as bool?,
+  pointsEarned: (json['points_earned'] as num?)?.toInt(),
+  correctAnswer: json['correct_answer'],
   rankings:
       (json['rankings'] as List<dynamic>?)
           ?.map((e) => e as Map<String, dynamic>)
@@ -78,28 +78,28 @@ _GameState _$GameStateFromJson(Map<String, dynamic> json) => _GameState(
 
 Map<String, dynamic> _$GameStateToJson(_GameState instance) =>
     <String, dynamic>{
-      'currentQuestion': instance.currentQuestion,
-      'questionIndex': instance.questionIndex,
-      'totalQuestions': instance.totalQuestions,
-      'timeRemaining': instance.timeRemaining,
-      'hasAnswered': instance.hasAnswered,
-      'isCorrect': instance.isCorrect,
-      'pointsEarned': instance.pointsEarned,
-      'correctAnswer': instance.correctAnswer,
+      'current_question': instance.currentQuestion,
+      'question_index': instance.questionIndex,
+      'total_questions': instance.totalQuestions,
+      'time_remaining': instance.timeRemaining,
+      'has_answered': instance.hasAnswered,
+      'is_correct': instance.isCorrect,
+      'points_earned': instance.pointsEarned,
+      'correct_answer': instance.correctAnswer,
       'rankings': instance.rankings,
     };
 
 _LeaderboardEntry _$LeaderboardEntryFromJson(Map<String, dynamic> json) =>
     _LeaderboardEntry(
       rank: (json['rank'] as num).toInt(),
-      userId: json['userId'] as String,
+      userId: json['user_id'] as String,
       score: (json['score'] as num).toInt(),
     );
 
 Map<String, dynamic> _$LeaderboardEntryToJson(_LeaderboardEntry instance) =>
     <String, dynamic>{
       'rank': instance.rank,
-      'userId': instance.userId,
+      'user_id': instance.userId,
       'score': instance.score,
     };
 
@@ -111,15 +111,15 @@ _LeaderboardState _$LeaderboardStateFromJson(Map<String, dynamic> json) =>
               .toList() ??
           const [],
       currentUserEntry:
-          json['currentUserEntry'] == null
+          json['current_user_entry'] == null
               ? null
               : LeaderboardEntry.fromJson(
-                json['currentUserEntry'] as Map<String, dynamic>,
+                json['current_user_entry'] as Map<String, dynamic>,
               ),
     );
 
 Map<String, dynamic> _$LeaderboardStateToJson(_LeaderboardState instance) =>
     <String, dynamic>{
       'rankings': instance.rankings,
-      'currentUserEntry': instance.currentUserEntry,
+      'current_user_entry': instance.currentUserEntry,
     };

@@ -37,19 +37,17 @@ class WebSocketService {
   }
 
   Future _connect(String sessionCode, String userId) async {
-    // For Android emulator use 10.0.2.2, for iOS/Web use localhost
-    final host =
-        defaultTargetPlatform == TargetPlatform.android
-            ? '10.0.2.2'
-            : 'localhost';
-
     // Clean session code and user ID - remove any special characters
     final cleanSessionCode = sessionCode.trim();
     final cleanUserId = userId.trim();
 
+    // Use cloudflare tunnel URL with secure WebSocket (wss://)
+    // Remove https:// and replace with wss://
+    const baseUrl = 'allergy-justin-discovery-watched.trycloudflare.com';
+
     // Construct URI properly - NO trailing characters
     final uri = Uri.parse(
-      'ws://$host:8000/api/ws/$cleanSessionCode?user_id=$cleanUserId',
+      'wss://$baseUrl/api/ws/$cleanSessionCode?user_id=$cleanUserId',
     );
 
     debugPrint('🔌 Connecting to WebSocket: $uri'); // Debug log

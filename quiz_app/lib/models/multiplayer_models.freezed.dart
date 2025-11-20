@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Participant {
 
- String get userId; String get username; String get joinedAt; bool get connected; int get score; List<Map<String, dynamic>> get answers;
+@JsonKey(name: 'user_id') String get userId; String get username;@JsonKey(name: 'joined_at') String get joinedAt; bool get connected; int get score; List<Map<String, dynamic>> get answers;
 /// Create a copy of Participant
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $ParticipantCopyWith<$Res>  {
   factory $ParticipantCopyWith(Participant value, $Res Function(Participant) _then) = _$ParticipantCopyWithImpl;
 @useResult
 $Res call({
- String userId, String username, String joinedAt, bool connected, int score, List<Map<String, dynamic>> answers
+@JsonKey(name: 'user_id') String userId, String username,@JsonKey(name: 'joined_at') String joinedAt, bool connected, int score, List<Map<String, dynamic>> answers
 });
 
 
@@ -158,7 +158,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String userId,  String username,  String joinedAt,  bool connected,  int score,  List<Map<String, dynamic>> answers)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'user_id')  String userId,  String username, @JsonKey(name: 'joined_at')  String joinedAt,  bool connected,  int score,  List<Map<String, dynamic>> answers)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Participant() when $default != null:
 return $default(_that.userId,_that.username,_that.joinedAt,_that.connected,_that.score,_that.answers);case _:
@@ -179,7 +179,7 @@ return $default(_that.userId,_that.username,_that.joinedAt,_that.connected,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String userId,  String username,  String joinedAt,  bool connected,  int score,  List<Map<String, dynamic>> answers)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'user_id')  String userId,  String username, @JsonKey(name: 'joined_at')  String joinedAt,  bool connected,  int score,  List<Map<String, dynamic>> answers)  $default,) {final _that = this;
 switch (_that) {
 case _Participant():
 return $default(_that.userId,_that.username,_that.joinedAt,_that.connected,_that.score,_that.answers);case _:
@@ -199,7 +199,7 @@ return $default(_that.userId,_that.username,_that.joinedAt,_that.connected,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String userId,  String username,  String joinedAt,  bool connected,  int score,  List<Map<String, dynamic>> answers)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'user_id')  String userId,  String username, @JsonKey(name: 'joined_at')  String joinedAt,  bool connected,  int score,  List<Map<String, dynamic>> answers)?  $default,) {final _that = this;
 switch (_that) {
 case _Participant() when $default != null:
 return $default(_that.userId,_that.username,_that.joinedAt,_that.connected,_that.score,_that.answers);case _:
@@ -214,12 +214,12 @@ return $default(_that.userId,_that.username,_that.joinedAt,_that.connected,_that
 @JsonSerializable()
 
 class _Participant implements Participant {
-  const _Participant({required this.userId, required this.username, required this.joinedAt, this.connected = true, this.score = 0, final  List<Map<String, dynamic>> answers = const []}): _answers = answers;
+  const _Participant({@JsonKey(name: 'user_id') required this.userId, required this.username, @JsonKey(name: 'joined_at') required this.joinedAt, this.connected = true, this.score = 0, final  List<Map<String, dynamic>> answers = const []}): _answers = answers;
   factory _Participant.fromJson(Map<String, dynamic> json) => _$ParticipantFromJson(json);
 
-@override final  String userId;
+@override@JsonKey(name: 'user_id') final  String userId;
 @override final  String username;
-@override final  String joinedAt;
+@override@JsonKey(name: 'joined_at') final  String joinedAt;
 @override@JsonKey() final  bool connected;
 @override@JsonKey() final  int score;
  final  List<Map<String, dynamic>> _answers;
@@ -263,7 +263,7 @@ abstract mixin class _$ParticipantCopyWith<$Res> implements $ParticipantCopyWith
   factory _$ParticipantCopyWith(_Participant value, $Res Function(_Participant) _then) = __$ParticipantCopyWithImpl;
 @override @useResult
 $Res call({
- String userId, String username, String joinedAt, bool connected, int score, List<Map<String, dynamic>> answers
+@JsonKey(name: 'user_id') String userId, String username,@JsonKey(name: 'joined_at') String joinedAt, bool connected, int score, List<Map<String, dynamic>> answers
 });
 
 
@@ -299,8 +299,7 @@ as List<Map<String, dynamic>>,
 /// @nodoc
 mixin _$SessionState {
 
- String get sessionCode; String get quizId; String get hostId; String get status;// waiting, active, completed
- String get mode; int get currentQuestionIndex; String get quizTitle; int get totalQuestions; List<Participant> get participants; int get participantCount;
+@JsonKey(name: 'session_code') String get sessionCode;@JsonKey(name: 'quiz_id') String get quizId;@JsonKey(name: 'host_id') String get hostId; String get status; String get mode;@JsonKey(name: 'current_question_index') int get currentQuestionIndex;@JsonKey(name: 'quiz_title') String get quizTitle;@JsonKey(name: 'total_questions') int get totalQuestions; List<Participant> get participants;@JsonKey(name: 'participant_count') int get participantCount;
 /// Create a copy of SessionState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -333,7 +332,7 @@ abstract mixin class $SessionStateCopyWith<$Res>  {
   factory $SessionStateCopyWith(SessionState value, $Res Function(SessionState) _then) = _$SessionStateCopyWithImpl;
 @useResult
 $Res call({
- String sessionCode, String quizId, String hostId, String status, String mode, int currentQuestionIndex, String quizTitle, int totalQuestions, List<Participant> participants, int participantCount
+@JsonKey(name: 'session_code') String sessionCode,@JsonKey(name: 'quiz_id') String quizId,@JsonKey(name: 'host_id') String hostId, String status, String mode,@JsonKey(name: 'current_question_index') int currentQuestionIndex,@JsonKey(name: 'quiz_title') String quizTitle,@JsonKey(name: 'total_questions') int totalQuestions, List<Participant> participants,@JsonKey(name: 'participant_count') int participantCount
 });
 
 
@@ -447,7 +446,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String sessionCode,  String quizId,  String hostId,  String status,  String mode,  int currentQuestionIndex,  String quizTitle,  int totalQuestions,  List<Participant> participants,  int participantCount)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'session_code')  String sessionCode, @JsonKey(name: 'quiz_id')  String quizId, @JsonKey(name: 'host_id')  String hostId,  String status,  String mode, @JsonKey(name: 'current_question_index')  int currentQuestionIndex, @JsonKey(name: 'quiz_title')  String quizTitle, @JsonKey(name: 'total_questions')  int totalQuestions,  List<Participant> participants, @JsonKey(name: 'participant_count')  int participantCount)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SessionState() when $default != null:
 return $default(_that.sessionCode,_that.quizId,_that.hostId,_that.status,_that.mode,_that.currentQuestionIndex,_that.quizTitle,_that.totalQuestions,_that.participants,_that.participantCount);case _:
@@ -468,7 +467,7 @@ return $default(_that.sessionCode,_that.quizId,_that.hostId,_that.status,_that.m
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String sessionCode,  String quizId,  String hostId,  String status,  String mode,  int currentQuestionIndex,  String quizTitle,  int totalQuestions,  List<Participant> participants,  int participantCount)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'session_code')  String sessionCode, @JsonKey(name: 'quiz_id')  String quizId, @JsonKey(name: 'host_id')  String hostId,  String status,  String mode, @JsonKey(name: 'current_question_index')  int currentQuestionIndex, @JsonKey(name: 'quiz_title')  String quizTitle, @JsonKey(name: 'total_questions')  int totalQuestions,  List<Participant> participants, @JsonKey(name: 'participant_count')  int participantCount)  $default,) {final _that = this;
 switch (_that) {
 case _SessionState():
 return $default(_that.sessionCode,_that.quizId,_that.hostId,_that.status,_that.mode,_that.currentQuestionIndex,_that.quizTitle,_that.totalQuestions,_that.participants,_that.participantCount);case _:
@@ -488,7 +487,7 @@ return $default(_that.sessionCode,_that.quizId,_that.hostId,_that.status,_that.m
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String sessionCode,  String quizId,  String hostId,  String status,  String mode,  int currentQuestionIndex,  String quizTitle,  int totalQuestions,  List<Participant> participants,  int participantCount)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'session_code')  String sessionCode, @JsonKey(name: 'quiz_id')  String quizId, @JsonKey(name: 'host_id')  String hostId,  String status,  String mode, @JsonKey(name: 'current_question_index')  int currentQuestionIndex, @JsonKey(name: 'quiz_title')  String quizTitle, @JsonKey(name: 'total_questions')  int totalQuestions,  List<Participant> participants, @JsonKey(name: 'participant_count')  int participantCount)?  $default,) {final _that = this;
 switch (_that) {
 case _SessionState() when $default != null:
 return $default(_that.sessionCode,_that.quizId,_that.hostId,_that.status,_that.mode,_that.currentQuestionIndex,_that.quizTitle,_that.totalQuestions,_that.participants,_that.participantCount);case _:
@@ -503,18 +502,17 @@ return $default(_that.sessionCode,_that.quizId,_that.hostId,_that.status,_that.m
 @JsonSerializable()
 
 class _SessionState implements SessionState {
-  const _SessionState({required this.sessionCode, required this.quizId, required this.hostId, required this.status, required this.mode, required this.currentQuestionIndex, required this.quizTitle, required this.totalQuestions, final  List<Participant> participants = const [], this.participantCount = 0}): _participants = participants;
+  const _SessionState({@JsonKey(name: 'session_code') required this.sessionCode, @JsonKey(name: 'quiz_id') required this.quizId, @JsonKey(name: 'host_id') required this.hostId, required this.status, required this.mode, @JsonKey(name: 'current_question_index') required this.currentQuestionIndex, @JsonKey(name: 'quiz_title') required this.quizTitle, @JsonKey(name: 'total_questions') required this.totalQuestions, final  List<Participant> participants = const [], @JsonKey(name: 'participant_count') this.participantCount = 0}): _participants = participants;
   factory _SessionState.fromJson(Map<String, dynamic> json) => _$SessionStateFromJson(json);
 
-@override final  String sessionCode;
-@override final  String quizId;
-@override final  String hostId;
+@override@JsonKey(name: 'session_code') final  String sessionCode;
+@override@JsonKey(name: 'quiz_id') final  String quizId;
+@override@JsonKey(name: 'host_id') final  String hostId;
 @override final  String status;
-// waiting, active, completed
 @override final  String mode;
-@override final  int currentQuestionIndex;
-@override final  String quizTitle;
-@override final  int totalQuestions;
+@override@JsonKey(name: 'current_question_index') final  int currentQuestionIndex;
+@override@JsonKey(name: 'quiz_title') final  String quizTitle;
+@override@JsonKey(name: 'total_questions') final  int totalQuestions;
  final  List<Participant> _participants;
 @override@JsonKey() List<Participant> get participants {
   if (_participants is EqualUnmodifiableListView) return _participants;
@@ -522,7 +520,7 @@ class _SessionState implements SessionState {
   return EqualUnmodifiableListView(_participants);
 }
 
-@override@JsonKey() final  int participantCount;
+@override@JsonKey(name: 'participant_count') final  int participantCount;
 
 /// Create a copy of SessionState
 /// with the given fields replaced by the non-null parameter values.
@@ -557,7 +555,7 @@ abstract mixin class _$SessionStateCopyWith<$Res> implements $SessionStateCopyWi
   factory _$SessionStateCopyWith(_SessionState value, $Res Function(_SessionState) _then) = __$SessionStateCopyWithImpl;
 @override @useResult
 $Res call({
- String sessionCode, String quizId, String hostId, String status, String mode, int currentQuestionIndex, String quizTitle, int totalQuestions, List<Participant> participants, int participantCount
+@JsonKey(name: 'session_code') String sessionCode,@JsonKey(name: 'quiz_id') String quizId,@JsonKey(name: 'host_id') String hostId, String status, String mode,@JsonKey(name: 'current_question_index') int currentQuestionIndex,@JsonKey(name: 'quiz_title') String quizTitle,@JsonKey(name: 'total_questions') int totalQuestions, List<Participant> participants,@JsonKey(name: 'participant_count') int participantCount
 });
 
 
@@ -597,7 +595,7 @@ as int,
 /// @nodoc
 mixin _$GameState {
 
- Map<String, dynamic>? get currentQuestion; int get questionIndex; int get totalQuestions; int get timeRemaining; bool get hasAnswered; bool? get isCorrect; int? get pointsEarned; dynamic get correctAnswer; List<Map<String, dynamic>>? get rankings;
+@JsonKey(name: 'current_question') Map<String, dynamic>? get currentQuestion;@JsonKey(name: 'question_index') int get questionIndex;@JsonKey(name: 'total_questions') int get totalQuestions;@JsonKey(name: 'time_remaining') int get timeRemaining;@JsonKey(name: 'has_answered') bool get hasAnswered;@JsonKey(name: 'is_correct') bool? get isCorrect;@JsonKey(name: 'points_earned') int? get pointsEarned;@JsonKey(name: 'correct_answer') dynamic get correctAnswer; List<Map<String, dynamic>>? get rankings;
 /// Create a copy of GameState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -630,7 +628,7 @@ abstract mixin class $GameStateCopyWith<$Res>  {
   factory $GameStateCopyWith(GameState value, $Res Function(GameState) _then) = _$GameStateCopyWithImpl;
 @useResult
 $Res call({
- Map<String, dynamic>? currentQuestion, int questionIndex, int totalQuestions, int timeRemaining, bool hasAnswered, bool? isCorrect, int? pointsEarned, dynamic correctAnswer, List<Map<String, dynamic>>? rankings
+@JsonKey(name: 'current_question') Map<String, dynamic>? currentQuestion,@JsonKey(name: 'question_index') int questionIndex,@JsonKey(name: 'total_questions') int totalQuestions,@JsonKey(name: 'time_remaining') int timeRemaining,@JsonKey(name: 'has_answered') bool hasAnswered,@JsonKey(name: 'is_correct') bool? isCorrect,@JsonKey(name: 'points_earned') int? pointsEarned,@JsonKey(name: 'correct_answer') dynamic correctAnswer, List<Map<String, dynamic>>? rankings
 });
 
 
@@ -743,7 +741,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( Map<String, dynamic>? currentQuestion,  int questionIndex,  int totalQuestions,  int timeRemaining,  bool hasAnswered,  bool? isCorrect,  int? pointsEarned,  dynamic correctAnswer,  List<Map<String, dynamic>>? rankings)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'current_question')  Map<String, dynamic>? currentQuestion, @JsonKey(name: 'question_index')  int questionIndex, @JsonKey(name: 'total_questions')  int totalQuestions, @JsonKey(name: 'time_remaining')  int timeRemaining, @JsonKey(name: 'has_answered')  bool hasAnswered, @JsonKey(name: 'is_correct')  bool? isCorrect, @JsonKey(name: 'points_earned')  int? pointsEarned, @JsonKey(name: 'correct_answer')  dynamic correctAnswer,  List<Map<String, dynamic>>? rankings)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _GameState() when $default != null:
 return $default(_that.currentQuestion,_that.questionIndex,_that.totalQuestions,_that.timeRemaining,_that.hasAnswered,_that.isCorrect,_that.pointsEarned,_that.correctAnswer,_that.rankings);case _:
@@ -764,7 +762,7 @@ return $default(_that.currentQuestion,_that.questionIndex,_that.totalQuestions,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( Map<String, dynamic>? currentQuestion,  int questionIndex,  int totalQuestions,  int timeRemaining,  bool hasAnswered,  bool? isCorrect,  int? pointsEarned,  dynamic correctAnswer,  List<Map<String, dynamic>>? rankings)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'current_question')  Map<String, dynamic>? currentQuestion, @JsonKey(name: 'question_index')  int questionIndex, @JsonKey(name: 'total_questions')  int totalQuestions, @JsonKey(name: 'time_remaining')  int timeRemaining, @JsonKey(name: 'has_answered')  bool hasAnswered, @JsonKey(name: 'is_correct')  bool? isCorrect, @JsonKey(name: 'points_earned')  int? pointsEarned, @JsonKey(name: 'correct_answer')  dynamic correctAnswer,  List<Map<String, dynamic>>? rankings)  $default,) {final _that = this;
 switch (_that) {
 case _GameState():
 return $default(_that.currentQuestion,_that.questionIndex,_that.totalQuestions,_that.timeRemaining,_that.hasAnswered,_that.isCorrect,_that.pointsEarned,_that.correctAnswer,_that.rankings);case _:
@@ -784,7 +782,7 @@ return $default(_that.currentQuestion,_that.questionIndex,_that.totalQuestions,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( Map<String, dynamic>? currentQuestion,  int questionIndex,  int totalQuestions,  int timeRemaining,  bool hasAnswered,  bool? isCorrect,  int? pointsEarned,  dynamic correctAnswer,  List<Map<String, dynamic>>? rankings)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'current_question')  Map<String, dynamic>? currentQuestion, @JsonKey(name: 'question_index')  int questionIndex, @JsonKey(name: 'total_questions')  int totalQuestions, @JsonKey(name: 'time_remaining')  int timeRemaining, @JsonKey(name: 'has_answered')  bool hasAnswered, @JsonKey(name: 'is_correct')  bool? isCorrect, @JsonKey(name: 'points_earned')  int? pointsEarned, @JsonKey(name: 'correct_answer')  dynamic correctAnswer,  List<Map<String, dynamic>>? rankings)?  $default,) {final _that = this;
 switch (_that) {
 case _GameState() when $default != null:
 return $default(_that.currentQuestion,_that.questionIndex,_that.totalQuestions,_that.timeRemaining,_that.hasAnswered,_that.isCorrect,_that.pointsEarned,_that.correctAnswer,_that.rankings);case _:
@@ -799,11 +797,11 @@ return $default(_that.currentQuestion,_that.questionIndex,_that.totalQuestions,_
 @JsonSerializable()
 
 class _GameState implements GameState {
-  const _GameState({final  Map<String, dynamic>? currentQuestion, this.questionIndex = 0, this.totalQuestions = 0, this.timeRemaining = 30, this.hasAnswered = false, this.isCorrect, this.pointsEarned, this.correctAnswer, final  List<Map<String, dynamic>>? rankings}): _currentQuestion = currentQuestion,_rankings = rankings;
+  const _GameState({@JsonKey(name: 'current_question') final  Map<String, dynamic>? currentQuestion, @JsonKey(name: 'question_index') this.questionIndex = 0, @JsonKey(name: 'total_questions') this.totalQuestions = 0, @JsonKey(name: 'time_remaining') this.timeRemaining = 30, @JsonKey(name: 'has_answered') this.hasAnswered = false, @JsonKey(name: 'is_correct') this.isCorrect, @JsonKey(name: 'points_earned') this.pointsEarned, @JsonKey(name: 'correct_answer') this.correctAnswer, final  List<Map<String, dynamic>>? rankings}): _currentQuestion = currentQuestion,_rankings = rankings;
   factory _GameState.fromJson(Map<String, dynamic> json) => _$GameStateFromJson(json);
 
  final  Map<String, dynamic>? _currentQuestion;
-@override Map<String, dynamic>? get currentQuestion {
+@override@JsonKey(name: 'current_question') Map<String, dynamic>? get currentQuestion {
   final value = _currentQuestion;
   if (value == null) return null;
   if (_currentQuestion is EqualUnmodifiableMapView) return _currentQuestion;
@@ -811,13 +809,13 @@ class _GameState implements GameState {
   return EqualUnmodifiableMapView(value);
 }
 
-@override@JsonKey() final  int questionIndex;
-@override@JsonKey() final  int totalQuestions;
-@override@JsonKey() final  int timeRemaining;
-@override@JsonKey() final  bool hasAnswered;
-@override final  bool? isCorrect;
-@override final  int? pointsEarned;
-@override final  dynamic correctAnswer;
+@override@JsonKey(name: 'question_index') final  int questionIndex;
+@override@JsonKey(name: 'total_questions') final  int totalQuestions;
+@override@JsonKey(name: 'time_remaining') final  int timeRemaining;
+@override@JsonKey(name: 'has_answered') final  bool hasAnswered;
+@override@JsonKey(name: 'is_correct') final  bool? isCorrect;
+@override@JsonKey(name: 'points_earned') final  int? pointsEarned;
+@override@JsonKey(name: 'correct_answer') final  dynamic correctAnswer;
  final  List<Map<String, dynamic>>? _rankings;
 @override List<Map<String, dynamic>>? get rankings {
   final value = _rankings;
@@ -861,7 +859,7 @@ abstract mixin class _$GameStateCopyWith<$Res> implements $GameStateCopyWith<$Re
   factory _$GameStateCopyWith(_GameState value, $Res Function(_GameState) _then) = __$GameStateCopyWithImpl;
 @override @useResult
 $Res call({
- Map<String, dynamic>? currentQuestion, int questionIndex, int totalQuestions, int timeRemaining, bool hasAnswered, bool? isCorrect, int? pointsEarned, dynamic correctAnswer, List<Map<String, dynamic>>? rankings
+@JsonKey(name: 'current_question') Map<String, dynamic>? currentQuestion,@JsonKey(name: 'question_index') int questionIndex,@JsonKey(name: 'total_questions') int totalQuestions,@JsonKey(name: 'time_remaining') int timeRemaining,@JsonKey(name: 'has_answered') bool hasAnswered,@JsonKey(name: 'is_correct') bool? isCorrect,@JsonKey(name: 'points_earned') int? pointsEarned,@JsonKey(name: 'correct_answer') dynamic correctAnswer, List<Map<String, dynamic>>? rankings
 });
 
 
@@ -900,7 +898,7 @@ as List<Map<String, dynamic>>?,
 /// @nodoc
 mixin _$LeaderboardEntry {
 
- int get rank; String get userId; int get score;
+ int get rank;@JsonKey(name: 'user_id') String get userId; int get score;
 /// Create a copy of LeaderboardEntry
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -933,7 +931,7 @@ abstract mixin class $LeaderboardEntryCopyWith<$Res>  {
   factory $LeaderboardEntryCopyWith(LeaderboardEntry value, $Res Function(LeaderboardEntry) _then) = _$LeaderboardEntryCopyWithImpl;
 @useResult
 $Res call({
- int rank, String userId, int score
+ int rank,@JsonKey(name: 'user_id') String userId, int score
 });
 
 
@@ -1040,7 +1038,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int rank,  String userId,  int score)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int rank, @JsonKey(name: 'user_id')  String userId,  int score)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _LeaderboardEntry() when $default != null:
 return $default(_that.rank,_that.userId,_that.score);case _:
@@ -1061,7 +1059,7 @@ return $default(_that.rank,_that.userId,_that.score);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int rank,  String userId,  int score)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int rank, @JsonKey(name: 'user_id')  String userId,  int score)  $default,) {final _that = this;
 switch (_that) {
 case _LeaderboardEntry():
 return $default(_that.rank,_that.userId,_that.score);case _:
@@ -1081,7 +1079,7 @@ return $default(_that.rank,_that.userId,_that.score);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int rank,  String userId,  int score)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int rank, @JsonKey(name: 'user_id')  String userId,  int score)?  $default,) {final _that = this;
 switch (_that) {
 case _LeaderboardEntry() when $default != null:
 return $default(_that.rank,_that.userId,_that.score);case _:
@@ -1096,11 +1094,11 @@ return $default(_that.rank,_that.userId,_that.score);case _:
 @JsonSerializable()
 
 class _LeaderboardEntry implements LeaderboardEntry {
-  const _LeaderboardEntry({required this.rank, required this.userId, required this.score});
+  const _LeaderboardEntry({required this.rank, @JsonKey(name: 'user_id') required this.userId, required this.score});
   factory _LeaderboardEntry.fromJson(Map<String, dynamic> json) => _$LeaderboardEntryFromJson(json);
 
 @override final  int rank;
-@override final  String userId;
+@override@JsonKey(name: 'user_id') final  String userId;
 @override final  int score;
 
 /// Create a copy of LeaderboardEntry
@@ -1136,7 +1134,7 @@ abstract mixin class _$LeaderboardEntryCopyWith<$Res> implements $LeaderboardEnt
   factory _$LeaderboardEntryCopyWith(_LeaderboardEntry value, $Res Function(_LeaderboardEntry) _then) = __$LeaderboardEntryCopyWithImpl;
 @override @useResult
 $Res call({
- int rank, String userId, int score
+ int rank,@JsonKey(name: 'user_id') String userId, int score
 });
 
 
@@ -1169,7 +1167,7 @@ as int,
 /// @nodoc
 mixin _$LeaderboardState {
 
- List<LeaderboardEntry> get rankings; LeaderboardEntry? get currentUserEntry;
+ List<LeaderboardEntry> get rankings;@JsonKey(name: 'current_user_entry') LeaderboardEntry? get currentUserEntry;
 /// Create a copy of LeaderboardState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1202,7 +1200,7 @@ abstract mixin class $LeaderboardStateCopyWith<$Res>  {
   factory $LeaderboardStateCopyWith(LeaderboardState value, $Res Function(LeaderboardState) _then) = _$LeaderboardStateCopyWithImpl;
 @useResult
 $Res call({
- List<LeaderboardEntry> rankings, LeaderboardEntry? currentUserEntry
+ List<LeaderboardEntry> rankings,@JsonKey(name: 'current_user_entry') LeaderboardEntry? currentUserEntry
 });
 
 
@@ -1320,7 +1318,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<LeaderboardEntry> rankings,  LeaderboardEntry? currentUserEntry)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<LeaderboardEntry> rankings, @JsonKey(name: 'current_user_entry')  LeaderboardEntry? currentUserEntry)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _LeaderboardState() when $default != null:
 return $default(_that.rankings,_that.currentUserEntry);case _:
@@ -1341,7 +1339,7 @@ return $default(_that.rankings,_that.currentUserEntry);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<LeaderboardEntry> rankings,  LeaderboardEntry? currentUserEntry)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<LeaderboardEntry> rankings, @JsonKey(name: 'current_user_entry')  LeaderboardEntry? currentUserEntry)  $default,) {final _that = this;
 switch (_that) {
 case _LeaderboardState():
 return $default(_that.rankings,_that.currentUserEntry);case _:
@@ -1361,7 +1359,7 @@ return $default(_that.rankings,_that.currentUserEntry);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<LeaderboardEntry> rankings,  LeaderboardEntry? currentUserEntry)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<LeaderboardEntry> rankings, @JsonKey(name: 'current_user_entry')  LeaderboardEntry? currentUserEntry)?  $default,) {final _that = this;
 switch (_that) {
 case _LeaderboardState() when $default != null:
 return $default(_that.rankings,_that.currentUserEntry);case _:
@@ -1376,7 +1374,7 @@ return $default(_that.rankings,_that.currentUserEntry);case _:
 @JsonSerializable()
 
 class _LeaderboardState implements LeaderboardState {
-  const _LeaderboardState({final  List<LeaderboardEntry> rankings = const [], this.currentUserEntry}): _rankings = rankings;
+  const _LeaderboardState({final  List<LeaderboardEntry> rankings = const [], @JsonKey(name: 'current_user_entry') this.currentUserEntry}): _rankings = rankings;
   factory _LeaderboardState.fromJson(Map<String, dynamic> json) => _$LeaderboardStateFromJson(json);
 
  final  List<LeaderboardEntry> _rankings;
@@ -1386,7 +1384,7 @@ class _LeaderboardState implements LeaderboardState {
   return EqualUnmodifiableListView(_rankings);
 }
 
-@override final  LeaderboardEntry? currentUserEntry;
+@override@JsonKey(name: 'current_user_entry') final  LeaderboardEntry? currentUserEntry;
 
 /// Create a copy of LeaderboardState
 /// with the given fields replaced by the non-null parameter values.
@@ -1421,7 +1419,7 @@ abstract mixin class _$LeaderboardStateCopyWith<$Res> implements $LeaderboardSta
   factory _$LeaderboardStateCopyWith(_LeaderboardState value, $Res Function(_LeaderboardState) _then) = __$LeaderboardStateCopyWithImpl;
 @override @useResult
 $Res call({
- List<LeaderboardEntry> rankings, LeaderboardEntry? currentUserEntry
+ List<LeaderboardEntry> rankings,@JsonKey(name: 'current_user_entry') LeaderboardEntry? currentUserEntry
 });
 
 

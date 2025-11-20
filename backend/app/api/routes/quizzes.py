@@ -393,15 +393,27 @@ async def add_quiz_to_library(data: dict):
         
         # Import sessions_collection and users_collection here to avoid circular imports
         from app.core.database import sessions_collection, users_collection
+        from app.services.session_manager import SessionManager
         
-        # Find the session by code
+        # Check MongoDB first (for regular sessions)
         session = await sessions_collection.find_one({"session_code": quiz_code})
         
-        if not session:
-            raise HTTPException(status_code=404, detail="Quiz code not found or session expired")
+        quiz_id = None
+        mode = None
         
-        quiz_id = session.get("quiz_id")
-        mode = session.get("mode")
+        if session:
+            quiz_id = session.get("quiz_id")
+            mode = session.get("mode")
+        else:
+            # Check Redis (for live multiplayer sessions)
+            session_manager = SessionManager()
+            live_session = await session_manager.get_session(quiz_code)
+            
+            if live_session:
+                quiz_id = live_session.get("quiz_id")
+                mode = live_session.get("mode")
+            else:
+                raise HTTPException(status_code=404, detail="Quiz code not found or session expired")
         
         # Get the quiz details
         quiz = await collection.find_one({"_id": ObjectId(quiz_id)})

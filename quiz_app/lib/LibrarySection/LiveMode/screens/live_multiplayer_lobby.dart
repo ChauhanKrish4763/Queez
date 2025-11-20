@@ -66,10 +66,36 @@ class _LiveMultiplayerLobbyState extends ConsumerState<LiveMultiplayerLobby> {
     final sessionState = ref.watch(sessionProvider);
 
     if (sessionState == null) {
+      // This should rarely happen now, but add safety timeout
+      Future.delayed(const Duration(seconds: 5), () {
+        if (context.mounted && ref.read(sessionProvider) == null) {
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Failed to load session. Please try again.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      });
+
       return const Scaffold(
         backgroundColor: SciFiTheme.background,
         body: Center(
-          child: CircularProgressIndicator(color: SciFiTheme.primary),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(color: SciFiTheme.primary),
+              SizedBox(height: 16),
+              Text(
+                'LOADING SESSION...',
+                style: TextStyle(
+                  color: SciFiTheme.textSecondary,
+                  fontFamily: 'Orbitron',
+                ),
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -180,7 +206,7 @@ class _LiveMultiplayerLobbyState extends ConsumerState<LiveMultiplayerLobby> {
                     SciFiButton(
                       label: 'START QUIZ',
                       onPressed:
-                          sessionState.participantCount >= 2
+                          sessionState.participantCount >= 1
                               ? () {
                                 ref.read(sessionProvider.notifier).startQuiz();
                               }

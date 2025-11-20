@@ -86,10 +86,17 @@ async def handle_join(websocket: WebSocket, session_code: str, user_id: str, pay
             }
         }, session_code)
         
-        # Send current state to user
+        # Send current state to user (convert participants dict to list)
+        session_payload = {**session}
+        session_payload["participants"] = list(session.get("participants", {}).values())
+
+        # DEBUG: Print payload structure
+        print(f"🔍 Sending session_state payload:")
+        print(json.dumps(session_payload, indent=2, default=str))
+
         await manager.send_personal_message({
             "type": "session_state", 
-            "payload": session
+            "payload": session_payload
         }, websocket)
         
         # If reconnecting during active quiz, send current question
@@ -182,19 +189,19 @@ async def delayed_advance(session_code: str):
 
 async def handle_start_quiz(session_code: str, user_id: str):
     if await session_manager.is_host(session_code, user_id):
-        # Validate minimum 2 participants
-        session = await session_manager.get_session(session_code)
-        participants = session.get("participants", {})
-        connected_count = sum(1 for p in participants.values() if p.get("connected", False))
+        # FOR TESTING: Allow starting with 1 participant
+        # session = await session_manager.get_session(session_code)
+        # participants = session.get("participants", {})
+        # connected_count = sum(1 for p in participants.values() if p.get("connected", False))
         
-        if connected_count < 2:
-            user_ws = manager.user_connections.get(user_id)
-            if user_ws:
-                await manager.send_personal_message({
-                    "type": "error",
-                    "payload": {"message": "At least 2 participants required to start"}
-                }, user_ws)
-            return
+        # if connected_count < 2:
+        #     user_ws = manager.user_connections.get(user_id)
+        #     if user_ws:
+        #         await manager.send_personal_message({
+        #             "type": "error",
+        #             "payload": {"message": "At least 2 participants required to start"}
+        #         }, user_ws)
+        #     return
         
         success = await session_manager.start_session(session_code, user_id)
         if success:
