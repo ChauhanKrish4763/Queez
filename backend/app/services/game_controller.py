@@ -111,23 +111,30 @@ class GameController:
         participants_json = session_data[3]
         
         if not start_time_str:
-             return {"error": "Question not active"}
+            return {"error": "Question not active"}
 
         # Validate time
         start_time = datetime.fromisoformat(start_time_str)
         elapsed = (datetime.utcnow() - start_time).total_seconds()
         
-        if elapsed > QUESTION_TIME_SECONDS + 2: # 2 seconds grace period for latency
+        if elapsed > QUESTION_TIME_SECONDS + 2:  # 2 seconds grace period for latency
             return {"error": "Time expired", "is_correct": False, "points": 0}
 
         # Get correct answer
         quiz = await quiz_collection.find_one({"_id": ObjectId(quiz_id)})
         question = quiz["questions"][current_index]
-        correct_answer = question.get("correct_answer") # Index or value depending on question type
+        
+        # ✅ FIX: Use correctAnswerIndex instead of correct_answer
+        correct_answer = question.get("correctAnswerIndex", question.get("correct_answer"))
+        
+        if correct_answer is None:
+            logger.error(f"❌ No correct answer found for question {current_index}")
+            return {"error": "Invalid question configuration"}
         
         # Check correctness
-        # Assuming multiple choice where answer is an index (int) or string
-        is_correct = str(answer) == str(correct_answer)
+        is_correct = int(answer) == int(correct_answer)
+        
+        logger.info(f"🎯 Answer check: user={user_id}, answer={answer}, correct={correct_answer}, is_correct={is_correct}")
         
         # Calculate points
         points = 0
@@ -135,7 +142,8 @@ class GameController:
             base_points = 1000
             time_bonus = int(max(0, (1 - elapsed / QUESTION_TIME_SECONDS) * 500))
             points = base_points + time_bonus
-            
+            logger.info(f"✅ Correct answer! Base: {base_points}, Time bonus: {time_bonus}, Total: {points}")
+        
         # Update participant data
         participants = json.loads(participants_json)
         if user_id in participants:
@@ -144,6 +152,7 @@ class GameController:
             # Check if already answered
             for ans in participant["answers"]:
                 if ans["question_index"] == current_index:
+                    logger.warning(f"⚠️ User {user_id} already answered question {current_index}")
                     return {"error": "Already answered"}
             
             # Record answer
@@ -159,6 +168,8 @@ class GameController:
             # Save back to Redis
             await self.redis.hset(session_key, "participants", json.dumps(participants))
             
+            logger.info(f"💾 Saved answer for {user_id}: score now {participant['score']}")
+            
             return {
                 "is_correct": is_correct,
                 "points": points,
@@ -166,6 +177,7 @@ class GameController:
                 "new_total_score": participant["score"]
             }
             
+        logger.error(f"❌ Participant {user_id} not found in session")
         return {"error": "Participant not found"}
 
     async def advance_question(self, session_code: str) -> bool:

@@ -214,11 +214,11 @@ return $default(_that.userId,_that.username,_that.joinedAt,_that.connected,_that
 @JsonSerializable()
 
 class _Participant implements Participant {
-  const _Participant({@JsonKey(name: 'user_id') required this.userId, required this.username, @JsonKey(name: 'joined_at') required this.joinedAt, this.connected = true, this.score = 0, final  List<Map<String, dynamic>> answers = const []}): _answers = answers;
+  const _Participant({@JsonKey(name: 'user_id') this.userId = '', this.username = '', @JsonKey(name: 'joined_at') this.joinedAt = '', this.connected = true, this.score = 0, final  List<Map<String, dynamic>> answers = const []}): _answers = answers;
   factory _Participant.fromJson(Map<String, dynamic> json) => _$ParticipantFromJson(json);
 
 @override@JsonKey(name: 'user_id') final  String userId;
-@override final  String username;
+@override@JsonKey() final  String username;
 @override@JsonKey(name: 'joined_at') final  String joinedAt;
 @override@JsonKey() final  bool connected;
 @override@JsonKey() final  int score;
@@ -502,24 +502,18 @@ return $default(_that.sessionCode,_that.quizId,_that.hostId,_that.status,_that.m
 @JsonSerializable()
 
 class _SessionState implements SessionState {
-  const _SessionState({@JsonKey(name: 'session_code') required this.sessionCode, @JsonKey(name: 'quiz_id') required this.quizId, @JsonKey(name: 'host_id') required this.hostId, required this.status, required this.mode, @JsonKey(name: 'current_question_index') required this.currentQuestionIndex, @JsonKey(name: 'quiz_title') required this.quizTitle, @JsonKey(name: 'total_questions') required this.totalQuestions, final  List<Participant> participants = const [], @JsonKey(name: 'participant_count') this.participantCount = 0}): _participants = participants;
+  const _SessionState({@JsonKey(name: 'session_code') required this.sessionCode, @JsonKey(name: 'quiz_id') required this.quizId, @JsonKey(name: 'host_id') required this.hostId, this.status = 'waiting', this.mode = 'live', @JsonKey(name: 'current_question_index') this.currentQuestionIndex = 0, @JsonKey(name: 'quiz_title') this.quizTitle = '', @JsonKey(name: 'total_questions') this.totalQuestions = 0, this.participants = const [], @JsonKey(name: 'participant_count') this.participantCount = 0});
   factory _SessionState.fromJson(Map<String, dynamic> json) => _$SessionStateFromJson(json);
 
 @override@JsonKey(name: 'session_code') final  String sessionCode;
 @override@JsonKey(name: 'quiz_id') final  String quizId;
 @override@JsonKey(name: 'host_id') final  String hostId;
-@override final  String status;
-@override final  String mode;
+@override@JsonKey() final  String status;
+@override@JsonKey() final  String mode;
 @override@JsonKey(name: 'current_question_index') final  int currentQuestionIndex;
 @override@JsonKey(name: 'quiz_title') final  String quizTitle;
 @override@JsonKey(name: 'total_questions') final  int totalQuestions;
- final  List<Participant> _participants;
-@override@JsonKey() List<Participant> get participants {
-  if (_participants is EqualUnmodifiableListView) return _participants;
-  // ignore: implicit_dynamic_type
-  return EqualUnmodifiableListView(_participants);
-}
-
+@override@JsonKey() final  List<Participant> participants;
 @override@JsonKey(name: 'participant_count') final  int participantCount;
 
 /// Create a copy of SessionState
@@ -535,12 +529,12 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SessionState&&(identical(other.sessionCode, sessionCode) || other.sessionCode == sessionCode)&&(identical(other.quizId, quizId) || other.quizId == quizId)&&(identical(other.hostId, hostId) || other.hostId == hostId)&&(identical(other.status, status) || other.status == status)&&(identical(other.mode, mode) || other.mode == mode)&&(identical(other.currentQuestionIndex, currentQuestionIndex) || other.currentQuestionIndex == currentQuestionIndex)&&(identical(other.quizTitle, quizTitle) || other.quizTitle == quizTitle)&&(identical(other.totalQuestions, totalQuestions) || other.totalQuestions == totalQuestions)&&const DeepCollectionEquality().equals(other._participants, _participants)&&(identical(other.participantCount, participantCount) || other.participantCount == participantCount));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SessionState&&(identical(other.sessionCode, sessionCode) || other.sessionCode == sessionCode)&&(identical(other.quizId, quizId) || other.quizId == quizId)&&(identical(other.hostId, hostId) || other.hostId == hostId)&&(identical(other.status, status) || other.status == status)&&(identical(other.mode, mode) || other.mode == mode)&&(identical(other.currentQuestionIndex, currentQuestionIndex) || other.currentQuestionIndex == currentQuestionIndex)&&(identical(other.quizTitle, quizTitle) || other.quizTitle == quizTitle)&&(identical(other.totalQuestions, totalQuestions) || other.totalQuestions == totalQuestions)&&const DeepCollectionEquality().equals(other.participants, participants)&&(identical(other.participantCount, participantCount) || other.participantCount == participantCount));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,sessionCode,quizId,hostId,status,mode,currentQuestionIndex,quizTitle,totalQuestions,const DeepCollectionEquality().hash(_participants),participantCount);
+int get hashCode => Object.hash(runtimeType,sessionCode,quizId,hostId,status,mode,currentQuestionIndex,quizTitle,totalQuestions,const DeepCollectionEquality().hash(participants),participantCount);
 
 @override
 String toString() {
@@ -582,7 +576,7 @@ as String,mode: null == mode ? _self.mode : mode // ignore: cast_nullable_to_non
 as String,currentQuestionIndex: null == currentQuestionIndex ? _self.currentQuestionIndex : currentQuestionIndex // ignore: cast_nullable_to_non_nullable
 as int,quizTitle: null == quizTitle ? _self.quizTitle : quizTitle // ignore: cast_nullable_to_non_nullable
 as String,totalQuestions: null == totalQuestions ? _self.totalQuestions : totalQuestions // ignore: cast_nullable_to_non_nullable
-as int,participants: null == participants ? _self._participants : participants // ignore: cast_nullable_to_non_nullable
+as int,participants: null == participants ? _self.participants : participants // ignore: cast_nullable_to_non_nullable
 as List<Participant>,participantCount: null == participantCount ? _self.participantCount : participantCount // ignore: cast_nullable_to_non_nullable
 as int,
   ));

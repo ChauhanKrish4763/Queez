@@ -8,9 +8,9 @@ part 'multiplayer_models.g.dart';
 @freezed
 abstract class Participant with _$Participant {
   const factory Participant({
-    @JsonKey(name: 'user_id') required String userId,
-    required String username,
-    @JsonKey(name: 'joined_at') required String joinedAt,
+    @JsonKey(name: 'user_id') @Default('') String userId,
+    @Default('') String username,
+    @JsonKey(name: 'joined_at') @Default('') String joinedAt,
     @Default(true) bool connected,
     @Default(0) int score,
     @Default([]) List<Map<String, dynamic>> answers,
@@ -19,17 +19,17 @@ abstract class Participant with _$Participant {
   factory Participant.fromJson(Map<String, dynamic> json) => _$ParticipantFromJson(json);
 }
 
-@freezed
+@Freezed(makeCollectionsUnmodifiable: false)
 abstract class SessionState with _$SessionState {
   const factory SessionState({
     @JsonKey(name: 'session_code') required String sessionCode,
     @JsonKey(name: 'quiz_id') required String quizId,
     @JsonKey(name: 'host_id') required String hostId,
-    required String status,
-    required String mode,
-    @JsonKey(name: 'current_question_index') required int currentQuestionIndex,
-    @JsonKey(name: 'quiz_title') required String quizTitle,
-    @JsonKey(name: 'total_questions') required int totalQuestions,
+    @Default('waiting') String status,
+    @Default('live') String mode,
+    @JsonKey(name: 'current_question_index') @Default(0) int currentQuestionIndex,
+    @JsonKey(name: 'quiz_title') @Default('') String quizTitle,
+    @JsonKey(name: 'total_questions') @Default(0) int totalQuestions,
     @Default([]) List<Participant> participants,
     @JsonKey(name: 'participant_count') @Default(0) int participantCount,
   }) = _SessionState;

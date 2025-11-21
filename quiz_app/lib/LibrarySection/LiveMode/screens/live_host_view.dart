@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quiz_app/providers/game_provider.dart';
 import 'package:quiz_app/providers/session_provider.dart';
-import 'package:quiz_app/utils/quiz_design_system.dart';
+import 'package:quiz_app/utils/color.dart';
 import 'package:quiz_app/LibrarySection/LiveMode/widgets/host_leaderboard_panel.dart';
 
 class LiveHostView extends ConsumerWidget {
@@ -28,21 +28,32 @@ class LiveHostView extends ConsumerWidget {
           ) / participantCount;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Host Dashboard'),
-        centerTitle: true,
+        backgroundColor: AppColors.white,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text(
+          'Host Dashboard',
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        centerTitle: true,
       ),
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.all(QuizSpacing.lg),
+          padding: const EdgeInsets.all(24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Session Code Display with copy button
               _buildSessionCodeCard(context),
-              SizedBox(height: QuizSpacing.lg),
+              const SizedBox(height: 24),
 
               // Enhanced Host Leaderboard Panel
               Expanded(
@@ -65,15 +76,15 @@ class LiveHostView extends ConsumerWidget {
   /// Builds the session code card with copy functionality
   Widget _buildSessionCodeCard(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(QuizSpacing.lg),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(QuizBorderRadius.lg),
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: AppColors.primary.withValues(alpha: 0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
@@ -82,10 +93,10 @@ class LiveHostView extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
+              const Text(
                 'SESSION CODE',
                 style: TextStyle(
-                  color: QuizColors.textSecondary,
+                  color: AppColors.textSecondary,
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 1.2,
@@ -93,18 +104,18 @@ class LiveHostView extends ConsumerWidget {
               ),
               // Copy button
               IconButton(
-                icon: Icon(
+                icon: const Icon(
                   Icons.copy,
-                  color: QuizColors.info,
+                  color: AppColors.primary,
                   size: 20,
                 ),
                 onPressed: () {
                   Clipboard.setData(ClipboardData(text: sessionCode));
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: const Text('Session code copied to clipboard'),
-                      duration: const Duration(seconds: 2),
-                      backgroundColor: QuizColors.correct,
+                    const SnackBar(
+                      content: Text('Session code copied to clipboard'),
+                      duration: Duration(seconds: 2),
+                      backgroundColor: AppColors.success,
                     ),
                   );
                 },
@@ -112,14 +123,14 @@ class LiveHostView extends ConsumerWidget {
               ),
             ],
           ),
-          SizedBox(height: QuizSpacing.sm),
+          const SizedBox(height: 8),
           Text(
             sessionCode,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 48,
               letterSpacing: 12,
               fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.primary,
+              color: AppColors.primary,
             ),
           ),
         ],

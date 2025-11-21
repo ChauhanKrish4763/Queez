@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:quiz_app/utils/quiz_design_system.dart';
+import 'package:quiz_app/utils/color.dart';
 import 'package:quiz_app/LibrarySection/LiveMode/widgets/animated_leaderboard_entry.dart';
 import 'package:quiz_app/LibrarySection/LiveMode/widgets/answer_distribution_chart.dart';
 
@@ -58,15 +58,15 @@ class HostLeaderboardPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(QuizSpacing.lg),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(QuizBorderRadius.lg),
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: AppColors.primary.withValues(alpha: 0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
@@ -75,22 +75,22 @@ class HostLeaderboardPanel extends StatelessWidget {
         children: [
           // Header with question progress and participant count
           _buildHeader(context),
-          SizedBox(height: QuizSpacing.md),
+          const SizedBox(height: 16),
 
           // Average score display
           _buildAverageScoreCard(context),
-          SizedBox(height: QuizSpacing.lg),
+          const SizedBox(height: 24),
 
           // Leaderboard title
-          Text(
+          const Text(
             'Leaderboard',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: QuizColors.textPrimary,
+              color: AppColors.textPrimary,
             ),
           ),
-          SizedBox(height: QuizSpacing.md),
+          const SizedBox(height: 16),
 
           // Leaderboard list
           Expanded(
@@ -99,16 +99,16 @@ class HostLeaderboardPanel extends StatelessWidget {
 
           // Answer distribution (if available)
           if (answerDistribution != null) ...[
-            SizedBox(height: QuizSpacing.lg),
-            Text(
+            const SizedBox(height: 24),
+            const Text(
               'Answer Distribution',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: QuizColors.textPrimary,
+                color: AppColors.textPrimary,
               ),
             ),
-            SizedBox(height: QuizSpacing.md),
+            const SizedBox(height: 16),
             AnswerDistributionChart(distribution: answerDistribution!),
           ],
         ],
@@ -127,24 +127,24 @@ class HostLeaderboardPanel extends StatelessWidget {
           style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: QuizColors.textPrimary,
+            color: AppColors.textPrimary,
           ),
         ),
 
         // Participant count with icon
         Row(
           children: [
-            Icon(
+            const Icon(
               Icons.people,
               size: 20,
-              color: QuizColors.info,
+              color: AppColors.primary,
             ),
-            SizedBox(width: QuizSpacing.sm),
+            const SizedBox(width: 8),
             Text(
               '$participantCount ${participantCount == 1 ? 'participant' : 'participants'}',
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 16,
-                color: QuizColors.textSecondary,
+                color: AppColors.textSecondary,
               ),
             ),
           ],
@@ -156,29 +156,29 @@ class HostLeaderboardPanel extends StatelessWidget {
   /// Builds the average score card with highlighted styling
   Widget _buildAverageScoreCard(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(QuizSpacing.md),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: QuizColors.info.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(QuizBorderRadius.sm),
+        color: AppColors.primary.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: QuizColors.info.withValues(alpha: 0.3),
+          color: AppColors.primary.withValues(alpha: 0.2),
           width: 1,
         ),
       ),
       child: Row(
         children: [
-          Icon(
+          const Icon(
             Icons.analytics,
-            color: QuizColors.info,
+            color: AppColors.primary,
             size: 24,
           ),
-          SizedBox(width: QuizSpacing.md),
+          const SizedBox(width: 16),
           Text(
             'Average Score: ${averageScore.toStringAsFixed(0)}',
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
-              color: QuizColors.textPrimary,
+              color: AppColors.textPrimary,
             ),
           ),
         ],
@@ -189,14 +189,14 @@ class HostLeaderboardPanel extends StatelessWidget {
   /// Builds the scrollable leaderboard list with animated entries
   Widget _buildLeaderboardList() {
     if (rankings.isEmpty) {
-      return Center(
+      return const Center(
         child: Padding(
-          padding: EdgeInsets.all(QuizSpacing.lg),
+          padding: EdgeInsets.all(24),
           child: Text(
             'No participants yet',
             style: TextStyle(
               fontSize: 16,
-              color: QuizColors.textSecondary,
+              color: AppColors.textSecondary,
             ),
           ),
         ),

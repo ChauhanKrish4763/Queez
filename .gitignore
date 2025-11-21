@@ -34,4 +34,4 @@ build/
 dist/
 *.egg-info/
 
-cloudflared.exe
+.kiro/

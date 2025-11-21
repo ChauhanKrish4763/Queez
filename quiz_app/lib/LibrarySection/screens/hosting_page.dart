@@ -102,15 +102,23 @@ class _HostingPageState extends ConsumerState<HostingPage> {
               ? user!.displayName!
               : (user?.email?.split('@')[0] ?? 'Host');
 
+      debugPrint('🎯 HOST - Attempting to join session $sessionCode as $username');
+      
       // Connect host as a participant via WebSocket
       await ref
           .read(sessionProvider.notifier)
-          .joinSession(sessionCode!, widget.hostId, username);
+          .joinSession(sessionCode!, widget.hostId, username)
+          .timeout(
+            const Duration(seconds: 10),
+            onTimeout: () {
+              debugPrint('⚠️ HOST - Join timeout, but continuing anyway (host can still control session)');
+            },
+          );
 
-      debugPrint('✅ Host connected to WebSocket');
+      debugPrint('✅ HOST - Successfully connected to WebSocket');
     } catch (e) {
-      debugPrint('⚠️ Host WebSocket connection failed: $e');
-      // Don't block the UI, just log the error
+      debugPrint('⚠️ HOST - WebSocket connection issue: $e (continuing anyway)');
+      // Don't show error - host can still start the quiz via HTTP API
     }
   }
 

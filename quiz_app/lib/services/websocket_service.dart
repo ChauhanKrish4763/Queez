@@ -74,8 +74,12 @@ class WebSocketService {
 
       _channel!.stream.listen(
         (message) {
-          final decodedMessage = jsonDecode(message);
-          _messageController.add(decodedMessage);
+          try {
+            final decodedMessage = jsonDecode(message);
+            _messageController.add(decodedMessage);
+          } catch (e) {
+            debugPrint('❌ WS - Failed to decode message: $e');
+          }
         },
         onDone: () {
           debugPrint('⚠️ WebSocket connection closed');
@@ -100,6 +104,8 @@ class WebSocketService {
     if (_channel != null && _isConnected) {
       final message = {'type': type, if (payload != null) 'payload': payload};
       _channel!.sink.add(jsonEncode(message));
+    } else {
+      debugPrint('⚠️ WS - Cannot send message, not connected. Type: $type');
     }
   }
 

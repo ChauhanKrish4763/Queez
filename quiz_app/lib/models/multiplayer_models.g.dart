@@ -7,9 +7,9 @@ part of 'multiplayer_models.dart';
 // **************************************************************************
 
 _Participant _$ParticipantFromJson(Map<String, dynamic> json) => _Participant(
-  userId: json['user_id'] as String,
-  username: json['username'] as String,
-  joinedAt: json['joined_at'] as String,
+  userId: json['user_id'] as String? ?? '',
+  username: json['username'] as String? ?? '',
+  joinedAt: json['joined_at'] as String? ?? '',
   connected: json['connected'] as bool? ?? true,
   score: (json['score'] as num?)?.toInt() ?? 0,
   answers:
@@ -34,11 +34,12 @@ _SessionState _$SessionStateFromJson(Map<String, dynamic> json) =>
       sessionCode: json['session_code'] as String,
       quizId: json['quiz_id'] as String,
       hostId: json['host_id'] as String,
-      status: json['status'] as String,
-      mode: json['mode'] as String,
-      currentQuestionIndex: (json['current_question_index'] as num).toInt(),
-      quizTitle: json['quiz_title'] as String,
-      totalQuestions: (json['total_questions'] as num).toInt(),
+      status: json['status'] as String? ?? 'waiting',
+      mode: json['mode'] as String? ?? 'live',
+      currentQuestionIndex:
+          (json['current_question_index'] as num?)?.toInt() ?? 0,
+      quizTitle: json['quiz_title'] as String? ?? '',
+      totalQuestions: (json['total_questions'] as num?)?.toInt() ?? 0,
       participants:
           (json['participants'] as List<dynamic>?)
               ?.map((e) => Participant.fromJson(e as Map<String, dynamic>))

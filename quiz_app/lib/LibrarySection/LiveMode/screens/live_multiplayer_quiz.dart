@@ -66,6 +66,7 @@ class _LiveMultiplayerQuizState extends ConsumerState<LiveMultiplayerQuiz> {
     final gameState = ref.watch(gameProvider);
     final currentQuestion = gameState.currentQuestion;
     final currentUserId = ref.watch(currentUserProvider);
+    final isHost = ref.watch(sessionProvider)?.hostId == currentUserId;
 
     if (currentQuestion == null) {
       return Scaffold(
@@ -89,230 +90,286 @@ class _LiveMultiplayerQuizState extends ConsumerState<LiveMultiplayerQuiz> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                // Header: Timer and Question Count
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.timer,
-                            color:
-                                gameState.timeRemaining < 10
-                                    ? QuizColors.incorrect
-                                    : Theme.of(context).colorScheme.primary,
-                            size: 20,
-                          ),
-                          const SizedBox(width: QuizSpacing.md),
-                          Expanded(
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(QuizBorderRadius.sm),
-                              child: LinearProgressIndicator(
-                                value: gameState.timeRemaining / 30.0,
-                                backgroundColor: Colors.grey[700],
+                    // Header: Timer and Question Count
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.timer,
                                 color:
                                     gameState.timeRemaining < 10
                                         ? QuizColors.incorrect
                                         : Theme.of(context).colorScheme.primary,
-                                minHeight: 8,
+                                size: 20,
+                              ),
+                              const SizedBox(width: QuizSpacing.md),
+                              Expanded(
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(
+                                    QuizBorderRadius.sm,
+                                  ),
+                                  child: LinearProgressIndicator(
+                                    value: gameState.timeRemaining / 30.0,
+                                    backgroundColor: Colors.grey[700],
+                                    color:
+                                        gameState.timeRemaining < 10
+                                            ? QuizColors.incorrect
+                                            : Theme.of(
+                                              context,
+                                            ).colorScheme.primary,
+                                    minHeight: 8,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: QuizSpacing.lg),
+                        Text(
+                          'Q ${gameState.questionIndex + 1} / ${gameState.totalQuestions}',
+                          style: TextStyle(
+                            color: QuizColors.textSecondary,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: QuizSpacing.lg),
+
+                    // Question Text Widget
+                    QuestionTextWidget(
+                      questionText: currentQuestion['question'] ?? '',
+                      imageUrl: currentQuestion['imageUrl'],
+                    ),
+                    const SizedBox(height: QuizSpacing.lg),
+
+                    // Question UI based on question type
+                    Expanded(
+                      child: QuestionTypeHandler.buildQuestionUI(
+                        question: currentQuestion,
+                        onAnswerSelected: (answer) {
+                          ref.read(gameProvider.notifier).submitAnswer(answer);
+                        },
+                        hasAnswered: gameState.hasAnswered,
+                        selectedAnswer: gameState.selectedAnswer,
+                        isCorrect: gameState.isCorrect,
+                        correctAnswer: gameState.correctAnswer,
+                      ),
+                    ),
+
+                    // Status Message, Leaderboard (Host only), or Participant Score Card
+                    if (gameState.rankings != null)
+                      // Show leaderboard only to host
+                      if (isHost)
+                        Expanded(
+                          child: LeaderboardWidget(
+                            rankings: gameState.rankings!,
+                            currentUserId: currentUserId ?? '',
+                          ),
+                        )
+                      else
+                        // Show participant score card to non-host participants
+                        Padding(
+                          padding: const EdgeInsets.only(top: QuizSpacing.md),
+                          child: ParticipantScoreCard(
+                            currentScore: gameState.currentScore,
+                            pointsEarned: gameState.pointsEarned,
+                            lastAnswerCorrect: gameState.isCorrect,
+                          ),
+                        )
+                    else if (gameState.hasAnswered &&
+                        gameState.correctAnswer == null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: QuizSpacing.md),
+                        child: Center(
+                          child: Text(
+                            // Check if single player or multiplayer
+                            (ref.watch(sessionProvider)?.participantCount ??
+                                        0) >
+                                    1
+                                ? 'Waiting for other players...'
+                                : 'Checking answer...',
+                            style: TextStyle(
+                              color: QuizColors.textSecondary,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                    if (gameState.correctAnswer != null &&
+                        gameState.rankings == null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: QuizSpacing.md),
+                        child: Center(
+                          child: Text(
+                            gameState.isCorrect == true
+                                ? 'CORRECT!'
+                                : 'INCORRECT',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color:
+                                  gameState.isCorrect == true
+                                      ? QuizColors.correct
+                                      : QuizColors.incorrect,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                    // ✅ HOST CONTROLS - NEXT QUESTION BUTTON
+                    if (isHost &&
+                        gameState.hasAnswered &&
+                        gameState.rankings != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: QuizSpacing.lg),
+                        child: ElevatedButton(
+                          onPressed: () {
+                            // Send next_question message via WebSocket
+                            ref
+                                .read(webSocketServiceProvider)
+                                .sendMessage('next_question', {});
+                          },
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: QuizSpacing.md,
+                            ),
+                            backgroundColor:
+                                Theme.of(context).colorScheme.primary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                QuizBorderRadius.md,
                               ),
                             ),
                           ),
-                        ],
+                          child: const Text(
+                            'NEXT QUESTION',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: QuizSpacing.lg),
-                    Text(
-                      'Q ${gameState.questionIndex + 1} / ${gameState.totalQuestions}',
-                      style: TextStyle(
-                        color: QuizColors.textSecondary,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+
+                    // HOST CONTROLS - END QUIZ BUTTON
+                    if (isHost)
+                      Padding(
+                        padding: const EdgeInsets.only(top: QuizSpacing.md),
+                        child: OutlinedButton(
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder:
+                                  (context) => AlertDialog(
+                                    title: const Text('END QUIZ?'),
+                                    content: const Text(
+                                      'Are you sure you want to end the quiz early? All progress will be saved.',
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(context),
+                                        child: const Text('CANCEL'),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.pop(
+                                            context,
+                                          ); // Close dialog
+                                          ref
+                                              .read(sessionProvider.notifier)
+                                              .endQuiz();
+                                        },
+                                        style: TextButton.styleFrom(
+                                          foregroundColor: QuizColors.incorrect,
+                                        ),
+                                        child: const Text('END NOW'),
+                                      ),
+                                    ],
+                                  ),
+                            );
+                          },
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: QuizSpacing.md,
+                            ),
+                            side: BorderSide(color: QuizColors.incorrect),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                QuizBorderRadius.md,
+                              ),
+                            ),
+                          ),
+                          child: Text(
+                            'END QUIZ',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: QuizColors.incorrect,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
                   ],
                 ),
-                const SizedBox(height: QuizSpacing.lg),
+              ),
+            ),
 
-                // Question Text Widget
-                QuestionTextWidget(
-                  questionText: currentQuestion['question'] ?? '',
-                  imageUrl: currentQuestion['imageUrl'],
-                ),
-                const SizedBox(height: QuizSpacing.lg),
-
-                // Question UI based on question type
-                Expanded(
-                  child: QuestionTypeHandler.buildQuestionUI(
-                    question: currentQuestion,
-                    onAnswerSelected: (answer) {
-                      ref.read(gameProvider.notifier).submitAnswer(answer);
+            // Answer Feedback Overlay - shown when showingFeedback is true
+            if (gameState.showingFeedback &&
+                gameState.isCorrect != null &&
+                gameState.pointsEarned != null)
+              Container(
+                color: Colors.black.withValues(alpha: 0.7),
+                child: Center(
+                  child: AnswerFeedbackOverlay(
+                    isCorrect: gameState.isCorrect!,
+                    pointsEarned: gameState.pointsEarned!,
+                    onComplete: () {
+                      // Hide feedback and show correct answer highlight
+                      ref
+                          .read(gameProvider.notifier)
+                          .showCorrectAnswerHighlight();
                     },
-                    hasAnswered: gameState.hasAnswered,
-                    selectedAnswer: gameState.selectedAnswer,
-                    isCorrect: gameState.isCorrect,
-                    correctAnswer: gameState.correctAnswer,
                   ),
                 ),
+              ),
 
-                // Status Message, Leaderboard (Host only), or Participant Score Card
-                if (gameState.rankings != null)
-                  // Show leaderboard only to host
-                  if (ref.watch(sessionProvider)?.hostId == currentUserId)
-                    Expanded(
-                      child: LeaderboardWidget(
-                        rankings: gameState.rankings!,
-                        currentUserId: currentUserId ?? '',
-                      ),
-                    )
-                  else
-                    // Show participant score card to non-host participants
-                    Padding(
-                      padding: const EdgeInsets.only(top: QuizSpacing.md),
-                      child: ParticipantScoreCard(
-                        currentScore: gameState.currentScore,
-                        pointsEarned: gameState.pointsEarned,
-                        lastAnswerCorrect: gameState.isCorrect,
-                      ),
-                    )
-                else if (gameState.hasAnswered &&
-                    gameState.correctAnswer == null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: QuizSpacing.md),
-                    child: Center(
-                      child: Text(
-                        // Check if single player or multiplayer
-                        (ref.watch(sessionProvider)?.participantCount ?? 0) > 1
-                            ? 'Waiting for other players...'
-                            : 'Checking answer...',
-                        style: TextStyle(
-                          color: QuizColors.textSecondary,
-                          fontStyle: FontStyle.italic,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                if (gameState.correctAnswer != null &&
-                    gameState.rankings == null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: QuizSpacing.md),
-                    child: Center(
-                      child: Text(
-                        gameState.isCorrect == true ? 'CORRECT!' : 'INCORRECT',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color:
-                              gameState.isCorrect == true
-                                  ? QuizColors.correct
-                                  : QuizColors.incorrect,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                // Host Controls
-                if (ref.watch(sessionProvider)?.hostId == currentUserId)
-                  Padding(
-                    padding: const EdgeInsets.only(top: QuizSpacing.lg),
-                    child: OutlinedButton(
-                      onPressed: () {
-                        showDialog(
+            // Correct Answer Highlight - shown after feedback is dismissed
+            if (gameState.showingCorrectAnswer &&
+                gameState.correctAnswer != null)
+              Container(
+                color: Colors.black.withValues(alpha: 0.7),
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(QuizSpacing.lg),
+                    child: CorrectAnswerHighlight(
+                      correctAnswer: gameState.correctAnswer,
+                      countdown: 2,
+                      onCountdownComplete: () {
+                        // Use transition animation when advancing to next question
+                        TransitionAnimationController.transitionToNextQuestion(
                           context: context,
-                          builder:
-                              (context) => AlertDialog(
-                                title: const Text('END QUIZ?'),
-                                content: const Text(
-                                  'Are you sure you want to end the quiz early? All progress will be saved.',
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(context),
-                                    child: const Text('CANCEL'),
-                                  ),
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.pop(context); // Close dialog
-                                      ref
-                                          .read(sessionProvider.notifier)
-                                          .endQuiz();
-                                    },
-                                    style: TextButton.styleFrom(
-                                      foregroundColor: QuizColors.incorrect,
-                                    ),
-                                    child: const Text('END NOW'),
-                                  ),
-                                ],
-                              ),
+                          onComplete: () {
+                            // Hide correct answer highlight and allow progression to next question
+                            ref
+                                .read(gameProvider.notifier)
+                                .hideCorrectAnswerHighlight();
+                          },
                         );
                       },
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: QuizSpacing.md),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(QuizBorderRadius.md),
-                        ),
-                      ),
-                      child: const Text(
-                        'END QUIZ',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
                     ),
                   ),
-                ],
-              ),
-            ),
-          ),
-          
-          // Answer Feedback Overlay - shown when showingFeedback is true
-          if (gameState.showingFeedback && 
-              gameState.isCorrect != null && 
-              gameState.pointsEarned != null)
-            Container(
-              color: Colors.black.withValues(alpha: 0.7),
-              child: Center(
-                child: AnswerFeedbackOverlay(
-                  isCorrect: gameState.isCorrect!,
-                  pointsEarned: gameState.pointsEarned!,
-                  onComplete: () {
-                    // Hide feedback and show correct answer highlight
-                    ref.read(gameProvider.notifier).showCorrectAnswerHighlight();
-                  },
                 ),
               ),
-            ),
-          
-          // Correct Answer Highlight - shown after feedback is dismissed
-          if (gameState.showingCorrectAnswer && 
-              gameState.correctAnswer != null)
-            Container(
-              color: Colors.black.withValues(alpha: 0.7),
-              child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(QuizSpacing.lg),
-                  child: CorrectAnswerHighlight(
-                    correctAnswer: gameState.correctAnswer,
-                    countdown: 2,
-                    onCountdownComplete: () {
-                      // Use transition animation when advancing to next question
-                      TransitionAnimationController.transitionToNextQuestion(
-                        context: context,
-                        onComplete: () {
-                          // Hide correct answer highlight and allow progression to next question
-                          ref.read(gameProvider.notifier).hideCorrectAnswerHighlight();
-                        },
-                      );
-                    },
-                  ),
-                ),
-              ),
-            ),
-        ],
-      ),
+          ],
+        ),
       ),
     );
   }

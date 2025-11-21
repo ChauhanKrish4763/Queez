@@ -32,13 +32,10 @@ class GameNotifier extends Notifier<GameState> {
 
     _wsService.sendMessage('submit_answer', {
       'answer': answer,
-      'timestamp': DateTime.now().toIso8601String(),
+      'timestamp': DateTime.now().millisecondsSinceEpoch / 1000,
     });
 
-    state = state.copyWith(
-      hasAnswered: true,
-      selectedAnswer: answer,
-    );
+    state = state.copyWith(hasAnswered: true, selectedAnswer: answer);
   }
 
   void hideFeedback() {
@@ -46,10 +43,7 @@ class GameNotifier extends Notifier<GameState> {
   }
 
   void showCorrectAnswerHighlight() {
-    state = state.copyWith(
-      showingFeedback: false,
-      showingCorrectAnswer: true,
-    );
+    state = state.copyWith(showingFeedback: false, showingCorrectAnswer: true);
   }
 
   void hideCorrectAnswerHighlight() {
@@ -61,6 +55,7 @@ class GameNotifier extends Notifier<GameState> {
     final payload = message['payload'];
 
     if (type == 'question') {
+      // New question received
       _startTimer(payload['time_remaining'] ?? 30);
       state = state.copyWith(
         currentQuestion: payload['question'],
@@ -68,26 +63,45 @@ class GameNotifier extends Notifier<GameState> {
         totalQuestions: payload['total'],
         timeRemaining: payload['time_remaining'] ?? 30,
         hasAnswered: false,
+        selectedAnswer: null,
         isCorrect: null,
-        pointsEarned: null,
         correctAnswer: null,
+        pointsEarned: null,
         rankings: null,
+        showingFeedback: false,
+        showingCorrectAnswer: false,
       );
     } else if (type == 'answer_result') {
+      // ✅ FIXED: Handle answer result with all fields
+      final isCorrect = payload['is_correct'] as bool? ?? false;
+      final points = payload['points'] as int? ?? 0;
+      final correctAnswer = payload['correct_answer'];
+      final newScore = payload['new_total_score'] as int? ?? state.currentScore;
+
       state = state.copyWith(
-        isCorrect: payload['is_correct'],
-        pointsEarned: payload['points'],
+        isCorrect: isCorrect,
+        correctAnswer: correctAnswer,
+        pointsEarned: points,
+        currentScore: newScore,
         showingFeedback: true,
       );
+
+      // Auto-hide feedback after 2 seconds
+      Future.delayed(const Duration(seconds: 2), () {
+        if (state.showingFeedback) {
+          hideFeedback();
+        }
+      });
     } else if (type == 'answer_feedback') {
-      // Handle answer feedback message for participants
-      final isCorrect = payload['is_correct'] as bool;
-      final pointsEarned = payload['points_earned'] as int;
+      // Handle answer feedback message for participants (alternative message type)
+      final isCorrect = payload['is_correct'] as bool? ?? false;
+      final pointsEarned = payload['points_earned'] as int? ?? 0;
       final correctAnswer = payload['correct_answer'];
-      final yourScore = payload['your_score'] as int;
-      final answerDistribution = payload['answer_distribution'] != null
-          ? Map<dynamic, int>.from(payload['answer_distribution'])
-          : null;
+      final yourScore = payload['your_score'] as int? ?? state.currentScore;
+      final answerDistribution =
+          payload['answer_distribution'] != null
+              ? Map<dynamic, int>.from(payload['answer_distribution'])
+              : null;
 
       state = state.copyWith(
         lastAnswerCorrect: isCorrect,
@@ -99,39 +113,54 @@ class GameNotifier extends Notifier<GameState> {
         showingFeedback: true,
       );
 
-      // Start 2-second timer to hide feedback
+      // Auto-hide feedback after 2 seconds
       Future.delayed(const Duration(seconds: 2), () {
         if (state.showingFeedback) {
-          state = state.copyWith(showingFeedback: false);
+          hideFeedback();
         }
       });
-    } else if (type == 'answer_reveal') {
-      _stopTimer();
-      state = state.copyWith(
-        correctAnswer: payload['correct_answer'],
-        rankings: List<Map<String, dynamic>>.from(payload['rankings']),
-      );
     } else if (type == 'leaderboard_update') {
-      // Realtime leaderboard update for host only
-      // Only process if the current user is a host
-      if (state.isHost) {
-        final rankings = payload['rankings'] != null
-            ? List<Map<String, dynamic>>.from(payload['rankings'])
-            : null;
-        final answerDistribution = payload['answer_distribution'] != null
-            ? Map<dynamic, int>.from(payload['answer_distribution'])
-            : null;
+      // ✅ FIXED: Update leaderboard for all users, not just host
+      final leaderboard = payload['leaderboard'];
 
-        state = state.copyWith(
-          rankings: rankings,
-          answerDistribution: answerDistribution,
-        );
+      if (leaderboard != null) {
+        final rankings =
+            leaderboard is List
+                ? List<Map<String, dynamic>>.from(
+                  leaderboard.map((item) => Map<String, dynamic>.from(item)),
+                )
+                : null;
+
+        if (rankings != null) {
+          state = state.copyWith(rankings: rankings);
+        }
       }
-    } else if (type == 'quiz_completed') {
+    } else if (type == 'answer_reveal') {
+      // Host reveals answer and shows rankings
       _stopTimer();
-      state = state.copyWith(
-        rankings: List<Map<String, dynamic>>.from(payload['final_rankings']),
-      );
+
+      final correctAnswer = payload['correct_answer'];
+      final rankings =
+          payload['rankings'] != null
+              ? List<Map<String, dynamic>>.from(
+                payload['rankings'].map(
+                  (item) => Map<String, dynamic>.from(item),
+                ),
+              )
+              : null;
+
+      state = state.copyWith(correctAnswer: correctAnswer, rankings: rankings);
+    } else if (type == 'quiz_completed' || type == 'quiz_ended') {
+      // Quiz finished
+      _stopTimer();
+
+      final finalRankings = payload['final_rankings'] ?? payload['results'];
+      if (finalRankings != null) {
+        final rankings = List<Map<String, dynamic>>.from(
+          finalRankings.map((item) => Map<String, dynamic>.from(item)),
+        );
+        state = state.copyWith(rankings: rankings);
+      }
     }
   }
 
