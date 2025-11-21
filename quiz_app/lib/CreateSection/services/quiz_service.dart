@@ -10,11 +10,11 @@ import '../models/quiz.dart';
 
 class QuizService {
   static const String baseUrl =
-      'https://recruiting-transmitted-including-garbage.trycloudflare.com'; // Public tunnel URL
+      'https://refugia-unorderable-cyrus.ngrok-free.dev'; // ngrok tunnel URL
 
   static Map<String, String> get _headers => {
     'Content-Type': 'application/json',
-    'Bypass-Tunnel-Reminder': 'true', // THIS IS CRITICAL
+    'ngrok-skip-browser-warning': 'true', // Skip ngrok browser warning
   };
 
   static Future<String> createQuiz(Quiz quiz) async {

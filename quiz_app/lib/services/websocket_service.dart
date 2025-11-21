@@ -41,9 +41,8 @@ class WebSocketService {
     final cleanSessionCode = sessionCode.trim();
     final cleanUserId = userId.trim();
 
-    // Use cloudflare tunnel URL with secure WebSocket (wss://)
-    // Remove https:// and replace with wss://
-    const baseUrl = 'recruiting-transmitted-including-garbage.trycloudflare.com ';
+    // Use ngrok tunnel URL with secure WebSocket (wss://)
+    const baseUrl = 'refugia-unorderable-cyrus.ngrok-free.dev';
 
     // Construct URI properly - NO trailing characters
     final uri = Uri.parse(
@@ -59,7 +58,10 @@ class WebSocketService {
 
       _channel = IOWebSocketChannel.connect(
         uri,
-        connectTimeout: const Duration(seconds: 10), // Add timeout
+        connectTimeout: const Duration(seconds: 10),
+        headers: {
+          'ngrok-skip-browser-warning': 'true',
+        },
       );
 
       await _channel!.ready;

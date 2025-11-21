@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 
 class SessionService {
   static const String baseUrl =
-      'https://recruiting-transmitted-including-garbage.trycloudflare.com ';
+      'https://refugia-unorderable-cyrus.ngrok-free.dev';
 
   // Create a new quiz session
   static Future<Map<String, dynamic>> createSession({
