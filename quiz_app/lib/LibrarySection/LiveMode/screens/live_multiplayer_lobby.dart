@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quiz_app/LibrarySection/LiveMode/screens/live_host_view.dart';
 import 'package:quiz_app/LibrarySection/LiveMode/screens/live_multiplayer_quiz.dart';
 import 'package:quiz_app/LibrarySection/LiveMode/widgets/reconnection_overlay.dart';
+import 'package:quiz_app/providers/game_provider.dart';
 import 'package:quiz_app/providers/session_provider.dart';
 import 'package:quiz_app/utils/color.dart';
 
@@ -24,6 +25,7 @@ class LiveMultiplayerLobby extends ConsumerStatefulWidget {
 class _LiveMultiplayerLobbyState extends ConsumerState<LiveMultiplayerLobby> {
   @override
   Widget build(BuildContext context) {
+    ref.watch(gameProvider);
     ref.listen(sessionProvider, (previous, next) {
       if (next != null && next.status == 'active') {
         // Route based on role

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quiz_app/models/multiplayer_models.dart';
 import 'package:quiz_app/providers/session_provider.dart';
@@ -56,6 +57,8 @@ class GameNotifier extends Notifier<GameState> {
 
     if (type == 'question') {
       // New question received
+      debugPrint('📚 GAME_PROVIDER - Processing question message');
+      debugPrint('📦 GAME_PROVIDER - Question payload: $payload');
       _startTimer(payload['time_remaining'] ?? 30);
       state = state.copyWith(
         currentQuestion: payload['question'],
@@ -70,6 +73,9 @@ class GameNotifier extends Notifier<GameState> {
         rankings: null,
         showingFeedback: false,
         showingCorrectAnswer: false,
+      );
+      debugPrint(
+        '✅ GAME_PROVIDER - State updated, currentQuestion is now: ${state.currentQuestion != null ? "SET" : "NULL"}',
       );
     } else if (type == 'answer_result') {
       // ✅ FIXED: Handle answer result with all fields

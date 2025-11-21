@@ -34,6 +34,11 @@ class _LiveMultiplayerQuizState extends ConsumerState<LiveMultiplayerQuiz> {
         );
       }
     });
+    ref.listen(gameProvider, (previous, next) {
+      debugPrint(
+        '🎮 UI - Game state changed, currentQuestion: ${next.currentQuestion != null ? "SET" : "NULL"}',
+      );
+    });
 
     ref.listen(sessionProvider.notifier.select((n) => n.errorStream), (
       previous,
@@ -67,13 +72,23 @@ class _LiveMultiplayerQuizState extends ConsumerState<LiveMultiplayerQuiz> {
     final currentQuestion = gameState.currentQuestion;
     final currentUserId = ref.watch(currentUserProvider);
     final isHost = ref.watch(sessionProvider)?.hostId == currentUserId;
+    debugPrint(
+      '🎮 UI - Building with currentQuestion: ${currentQuestion != null ? "SET" : "NULL"}',
+    );
 
     if (currentQuestion == null) {
       return Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: Center(
-          child: CircularProgressIndicator(
-            color: Theme.of(context).colorScheme.primary,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              const SizedBox(height: 16),
+              const Text('Loading question...'),
+            ],
           ),
         ),
       );

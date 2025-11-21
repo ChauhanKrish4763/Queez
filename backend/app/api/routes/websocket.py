@@ -233,13 +233,14 @@ async def handle_submit_answer(websocket: WebSocket, session_code: str, user_id:
         "payload": result
     }, websocket)
     
-    # Update leaderboard
+    # ✅ GET AND BROADCAST REAL-TIME LEADERBOARD
     leaderboard = await leaderboard_manager.get_leaderboard(session_code)
     await manager.broadcast_to_session({
         "type": "leaderboard_update",
         "payload": {"leaderboard": leaderboard}
     }, session_code)
-
+    
+    logger.info(f"📊 Broadcasted leaderboard update to session {session_code}")
 
 
 async def handle_next_question(websocket: WebSocket, session_code: str, user_id: str):

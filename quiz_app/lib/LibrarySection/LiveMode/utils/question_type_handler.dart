@@ -1,23 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:quiz_app/CreateSection/models/question.dart';
+import 'package:quiz_app/LibrarySection/LiveMode/widgets/drag_drop_interface.dart';
 import 'package:quiz_app/LibrarySection/LiveMode/widgets/multiple_choice_options.dart';
 import 'package:quiz_app/LibrarySection/LiveMode/widgets/true_false_options.dart';
-import 'package:quiz_app/LibrarySection/LiveMode/widgets/drag_drop_interface.dart';
 
 /// Utility class for handling different question types in live multiplayer quiz
 /// Routes to appropriate UI component based on question type
 class QuestionTypeHandler {
   /// Builds the appropriate question UI based on the question type
-  /// 
-  /// Parameters:
-  /// - [question]: The question data containing type and options
-  /// - [onAnswerSelected]: Callback when user selects/submits an answer
-  /// - [hasAnswered]: Whether the user has already answered this question
-  /// - [selectedAnswer]: The answer the user selected (if any)
-  /// - [isCorrect]: Whether the selected answer was correct (null if not yet revealed)
-  /// - [correctAnswer]: The correct answer (for display after submission)
-  /// 
-  /// Returns the appropriate widget for the question type
   static Widget buildQuestionUI({
     required Map<String, dynamic> question,
     required Function(dynamic) onAnswerSelected,
@@ -33,6 +23,9 @@ class QuestionTypeHandler {
     // Extract options from question data
     final List<String> options = List<String>.from(question['options'] ?? []);
 
+    // ✅ FIX: Convert correctAnswer to String if it's an int
+    final String? correctAnswerStr = correctAnswer?.toString();
+
     // Route to appropriate UI component based on question type
     switch (questionType) {
       case QuestionType.singleMcq:
@@ -42,7 +35,7 @@ class QuestionTypeHandler {
           options: options,
           onSelect: (option) => onAnswerSelected(option),
           selectedAnswer: selectedAnswer as String?,
-          correctAnswer: correctAnswer as String?,
+          correctAnswer: correctAnswerStr, // ✅ Use converted string
           hasAnswered: hasAnswered,
           isCorrect: isCorrect,
         );
@@ -59,7 +52,9 @@ class QuestionTypeHandler {
 
       case QuestionType.dragAndDrop:
         // Drag and drop questions - render draggable items and drop zones
-        final List<String> items = List<String>.from(question['dragItems'] ?? options);
+        final List<String> items = List<String>.from(
+          question['dragItems'] ?? options,
+        );
         return DragDropInterface(
           items: items,
           onOrderSubmit: (order) => onAnswerSelected(order),

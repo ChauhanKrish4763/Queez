@@ -1,63 +1,102 @@
+import logging
+import json
 from typing import List, Dict, Any
 from app.core.database import redis_client
+
+logger = logging.getLogger(__name__)
 
 class LeaderboardManager:
     def __init__(self):
         self.redis = redis_client
 
-    async def update_score(self, session_code: str, user_id: str, score: int):
-        """Update a participant's score in the leaderboard"""
-        leaderboard_key = f"leaderboard:{session_code}"
-        await self.redis.zadd(leaderboard_key, {user_id: score})
-
-    async def get_rankings(self, session_code: str, limit: int = 10) -> List[Dict[str, Any]]:
-        """Get top N participants"""
-        leaderboard_key = f"leaderboard:{session_code}"
-        # Get top users with scores
-        top_users = await self.redis.zrevrange(leaderboard_key, 0, limit - 1, withscores=True)
+    async def get_leaderboard(self, session_code: str) -> List[Dict[str, Any]]:
+        """
+        Get real-time leaderboard for a session
+        Returns sorted list of participants with rankings
+        """
+        session_key = f"session:{session_code}"
         
-        rankings = []
-        for i, (user_id, score) in enumerate(top_users):
-            rankings.append({
-                "rank": i + 1,
-                "user_id": user_id,
-                "score": int(score)
-            })
-        return rankings
-    
-    async def get_rankings_with_usernames(self, session_code: str, limit: int = 10) -> List[Dict[str, Any]]:
-        """Get top N participants with usernames and current question progress from session data"""
-        from app.services.session_manager import SessionManager
-        import json
+        # Get participants and current question index
+        session_data = await self.redis.hmget(
+            session_key, 
+            ["participants", "current_question_index", "total_questions"]
+        )
         
-        session_manager = SessionManager()
-        session = await session_manager.get_session(session_code)
-        
-        if not session:
+        if not session_data[0]:
+            logger.warning(f"No participants found for session {session_code}")
             return []
         
-        participants = session.get("participants", {})
-        rankings = await self.get_rankings(session_code, limit)
+        participants = json.loads(session_data[0])
+        current_index = int(session_data[1] or 0)
+        total_questions = int(session_data[2] or 0)
         
-        # Enrich with usernames and current question
-        for rank_entry in rankings:
-            user_id = rank_entry["user_id"]
-            participant = participants.get(user_id, {})
-            rank_entry["username"] = participant.get("username", "Unknown")
+        # Build leaderboard data
+        leaderboard = []
+        for user_id, participant in participants.items():
+            # Count answered questions
+            answered_count = len(participant.get("answers", []))
             
-            # Track current question (based on number of answers submitted)
-            answers = participant.get("answers", [])
-            rank_entry["current_question"] = len(answers)
+            leaderboard.append({
+                "user_id": user_id,
+                "username": participant.get("username", "Anonymous"),
+                "score": participant.get("score", 0),
+                "answered_count": answered_count,
+                "total_questions": total_questions,
+                "current_question": current_index + 1,
+                "is_connected": participant.get("connected", False),
+            })
         
-        return rankings
+        # Sort by score (descending), then by answered_count (ascending - faster is better)
+        leaderboard.sort(key=lambda x: (-x["score"], x["answered_count"]))
+        
+        # Add position/rank
+        for idx, entry in enumerate(leaderboard):
+            entry["position"] = idx + 1
+        
+        logger.info(f"📊 Leaderboard for {session_code}: {len(leaderboard)} participants")
+        
+        return leaderboard
 
-    async def get_user_rank(self, session_code: str, user_id: str) -> int:
-        """Get specific user's rank (1-based)"""
-        leaderboard_key = f"leaderboard:{session_code}"
-        rank = await self.redis.zrevrank(leaderboard_key, user_id)
-        return (rank + 1) if rank is not None else 0
+    async def get_participant_rank(self, session_code: str, user_id: str) -> Dict[str, Any]:
+        """Get rank info for a specific participant"""
+        leaderboard = await self.get_leaderboard(session_code)
+        
+        for entry in leaderboard:
+            if entry["user_id"] == user_id:
+                return {
+                    "position": entry["position"],
+                    "score": entry["score"],
+                    "total_participants": len(leaderboard)
+                }
+        
+        return {"position": None, "score": 0, "total_participants": len(leaderboard)}
 
-    async def clear_leaderboard(self, session_code: str):
-        """Delete leaderboard data"""
-        leaderboard_key = f"leaderboard:{session_code}"
-        await self.redis.delete(leaderboard_key)
+    async def calculate_final_results(self, session_code: str) -> List[Dict[str, Any]]:
+        """Calculate final results with additional stats"""
+        leaderboard = await self.get_leaderboard(session_code)
+        
+        # Add accuracy and performance metrics
+        for entry in leaderboard:
+            user_id = entry["user_id"]
+            
+            # Get participant answers
+            session_key = f"session:{session_code}"
+            participants_json = await self.redis.hget(session_key, "participants")
+            participants = json.loads(participants_json)
+            
+            if user_id in participants:
+                participant = participants[user_id]
+                answers = participant.get("answers", [])
+                
+                # Calculate accuracy
+                if answers:
+                    correct_count = sum(1 for ans in answers if ans.get("is_correct", False))
+                    entry["accuracy"] = round((correct_count / len(answers)) * 100, 1)
+                    entry["correct_answers"] = correct_count
+                    entry["wrong_answers"] = len(answers) - correct_count
+                else:
+                    entry["accuracy"] = 0.0
+                    entry["correct_answers"] = 0
+                    entry["wrong_answers"] = 0
+        
+        return leaderboard

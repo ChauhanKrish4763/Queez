@@ -173,7 +173,7 @@ class GameController:
             return {
                 "is_correct": is_correct,
                 "points": points,
-                "correct_answer": correct_answer,
+                "correct_answer": str(correct_answer),
                 "new_total_score": participant["score"]
             }
             

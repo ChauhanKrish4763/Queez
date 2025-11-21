@@ -15,7 +15,9 @@ class LeaderboardWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(QuizBorderRadius.lg)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(QuizBorderRadius.lg),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(QuizSpacing.lg),
         child: Column(
@@ -32,11 +34,16 @@ class LeaderboardWidget extends StatelessWidget {
             Expanded(
               child: ListView.separated(
                 itemCount: rankings.length,
-                separatorBuilder: (context, index) => const SizedBox(height: QuizSpacing.sm),
+                separatorBuilder:
+                    (context, index) => const SizedBox(height: QuizSpacing.sm),
                 itemBuilder: (context, index) {
                   final entry = rankings[index];
                   final isCurrentUser = entry['user_id'] == currentUserId;
                   final rank = index + 1;
+
+                  // ✅ NEW: Extract question progress
+                  final answeredCount = entry['answered_count'] as int? ?? 0;
+                  final totalQuestions = entry['total_questions'] as int? ?? 0;
 
                   // Medal colors and styles for top 3
                   Color? medalColor;
@@ -47,20 +54,24 @@ class LeaderboardWidget extends StatelessWidget {
 
                   if (rank == 1) {
                     medalColor = QuizColors.gold;
-                    medalIcon = Icons.emoji_events; // Trophy
+                    medalIcon = Icons.emoji_events;
                     cardGradientStart = QuizColors.gold.withValues(alpha: 0.3);
                     cardGradientEnd = QuizColors.gold.withValues(alpha: 0.1);
                     elevation = 6;
                   } else if (rank == 2) {
                     medalColor = QuizColors.silver;
                     medalIcon = Icons.emoji_events;
-                    cardGradientStart = QuizColors.silver.withValues(alpha: 0.3);
+                    cardGradientStart = QuizColors.silver.withValues(
+                      alpha: 0.3,
+                    );
                     cardGradientEnd = QuizColors.silver.withValues(alpha: 0.1);
                     elevation = 5;
                   } else if (rank == 3) {
                     medalColor = QuizColors.bronze;
                     medalIcon = Icons.emoji_events;
-                    cardGradientStart = QuizColors.bronze.withValues(alpha: 0.3);
+                    cardGradientStart = QuizColors.bronze.withValues(
+                      alpha: 0.3,
+                    );
                     cardGradientEnd = QuizColors.bronze.withValues(alpha: 0.1);
                     elevation = 4;
                   }
@@ -94,11 +105,15 @@ class LeaderboardWidget extends StatelessWidget {
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                 ),
-                                borderRadius: BorderRadius.circular(QuizBorderRadius.md),
+                                borderRadius: BorderRadius.circular(
+                                  QuizBorderRadius.md,
+                                ),
                               )
                               : null,
                       child: Padding(
-                        padding: EdgeInsets.all(rank <= 3 ? QuizSpacing.md : QuizSpacing.sm),
+                        padding: EdgeInsets.all(
+                          rank <= 3 ? QuizSpacing.md : QuizSpacing.sm,
+                        ),
                         child: Row(
                           children: [
                             // Rank badge/medal
@@ -134,18 +149,36 @@ class LeaderboardWidget extends StatelessWidget {
                             ),
                             const SizedBox(width: QuizSpacing.md),
 
-                            // Username
+                            // ✅ NEW: Username with progress
                             Expanded(
-                              child: Text(
-                                entry['username'] ?? 'Unknown',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight:
-                                      isCurrentUser || rank <= 3
-                                          ? FontWeight.bold
-                                          : FontWeight.normal,
-                                  fontSize: rank <= 3 ? 16 : 14,
-                                ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    entry['username'] ?? 'Unknown',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight:
+                                          isCurrentUser || rank <= 3
+                                              ? FontWeight.bold
+                                              : FontWeight.normal,
+                                      fontSize: rank <= 3 ? 16 : 14,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  // ✅ NEW: Question progress indicator
+                                  if (totalQuestions > 0) ...[
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Q$answeredCount/$totalQuestions',
+                                      style: TextStyle(
+                                        color: Colors.white.withValues(alpha: 0.7),
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ],
                               ),
                             ),
 
@@ -160,7 +193,9 @@ class LeaderboardWidget extends StatelessWidget {
                                     medalColor?.withValues(alpha: 0.2) ??
                                     Theme.of(context).colorScheme.primary
                                         .withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(QuizBorderRadius.circular),
+                                borderRadius: BorderRadius.circular(
+                                  QuizBorderRadius.circular,
+                                ),
                                 border: Border.all(
                                   color:
                                       medalColor ??
