@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:quiz_app/utils/quiz_design_system.dart';
+import 'package:quiz_app/utils/color.dart';
 
 /// Widget that displays multiple choice question options for live multiplayer quiz
 /// Renders all options as selectable buttons with appropriate feedback colors and icons
@@ -27,7 +27,7 @@ class MultipleChoiceOptions extends StatelessWidget {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: options.length,
-      separatorBuilder: (context, index) => const SizedBox(height: QuizSpacing.md),
+      separatorBuilder: (context, index) => const SizedBox(height: 16),
       itemBuilder: (context, index) {
         final option = options[index];
         return _buildOptionButton(
@@ -58,40 +58,40 @@ class MultipleChoiceOptions extends StatelessWidget {
         // User selected this option
         if (isCorrect == true) {
           // Correct answer - green background
-          backgroundColor = QuizColors.correct;
-          borderColor = QuizColors.correct;
+          backgroundColor = AppColors.success;
+          borderColor = AppColors.success;
           feedbackIcon = Icons.check_circle;
-          iconColor = Colors.white;
+          iconColor = AppColors.white;
         } else {
           // Incorrect answer - red background
-          backgroundColor = QuizColors.incorrect;
-          borderColor = QuizColors.incorrect;
+          backgroundColor = AppColors.error;
+          borderColor = AppColors.error;
           feedbackIcon = Icons.cancel;
-          iconColor = Colors.white;
+          iconColor = AppColors.white;
         }
       } else if (isCorrectOption) {
         // Show correct answer with green tint (not selected)
-        backgroundColor = QuizColors.correct.withValues(alpha: 0.3);
-        borderColor = QuizColors.correct;
+        backgroundColor = AppColors.success.withValues(alpha: 0.3);
+        borderColor = AppColors.success;
         feedbackIcon = Icons.check_circle;
-        iconColor = QuizColors.correct;
+        iconColor = AppColors.success;
       } else {
         // Not selected, not correct - neutral
-        backgroundColor = Theme.of(context).cardColor;
+        backgroundColor = AppColors.white;
         borderColor = Colors.grey.shade300;
       }
     } else {
       // Not answered yet - neutral state
-      backgroundColor = Theme.of(context).cardColor;
-      borderColor = isSelected ? Theme.of(context).primaryColor : Colors.grey.shade300;
+      backgroundColor = AppColors.white;
+      borderColor = isSelected ? AppColors.primary : Colors.grey.shade300;
     }
 
     return AnimatedContainer(
-      duration: QuizAnimations.normal, // 300ms transition
+      duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: BorderRadius.circular(QuizBorderRadius.lg), // 16px rounded corners
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: borderColor,
           width: isSelected && !hasAnswered ? 3 : 2,
@@ -106,9 +106,9 @@ class MultipleChoiceOptions extends StatelessWidget {
       ),
       child: InkWell(
         onTap: hasAnswered ? null : () => onSelect(option), // Disable after answer submitted
-        borderRadius: BorderRadius.circular(QuizBorderRadius.lg),
+        borderRadius: BorderRadius.circular(16),
         child: Padding(
-          padding: const EdgeInsets.all(QuizSpacing.lg), // 24px padding
+          padding: const EdgeInsets.all(24),
           child: Row(
             children: [
               // Option letter (A, B, C, D)
@@ -117,10 +117,10 @@ class MultipleChoiceOptions extends StatelessWidget {
                 height: 40,
                 decoration: BoxDecoration(
                   color: hasAnswered && isSelected
-                      ? Colors.white.withValues(alpha: 0.2)
+                      ? AppColors.white.withValues(alpha: 0.2)
                       : (hasAnswered && isCorrectOption
-                          ? QuizColors.correct.withValues(alpha: 0.2)
-                          : Theme.of(context).primaryColor.withValues(alpha: 0.1)),
+                          ? AppColors.success.withValues(alpha: 0.2)
+                          : AppColors.primary.withValues(alpha: 0.1)),
                   shape: BoxShape.circle,
                 ),
                 child: Center(
@@ -130,31 +130,34 @@ class MultipleChoiceOptions extends StatelessWidget {
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: hasAnswered && isSelected
-                          ? Colors.white
+                          ? AppColors.white
                           : (hasAnswered && isCorrectOption
-                              ? QuizColors.correct
-                              : Theme.of(context).primaryColor),
+                              ? AppColors.success
+                              : AppColors.primary),
                     ),
                   ),
                 ),
               ),
-              const SizedBox(width: QuizSpacing.md), // 16px spacing
+              const SizedBox(width: 16),
               // Option text
               Expanded(
                 child: Text(
                   option,
-                  style: QuizTextStyles.optionText.copyWith(
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ).copyWith(
                     color: hasAnswered && isSelected
-                        ? Colors.white
+                        ? AppColors.white
                         : (hasAnswered && isCorrectOption
-                            ? QuizColors.correct
-                            : QuizColors.textPrimary),
+                            ? AppColors.success
+                            : AppColors.textPrimary),
                   ),
                 ),
               ),
               // Feedback icon (checkmark or X)
               if (feedbackIcon != null) ...[
-                const SizedBox(width: QuizSpacing.md), // 16px spacing
+                const SizedBox(width: 16),
                 Icon(
                   feedbackIcon,
                   size: 32,

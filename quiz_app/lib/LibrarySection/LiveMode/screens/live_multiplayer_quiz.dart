@@ -11,7 +11,7 @@ import 'package:quiz_app/LibrarySection/LiveMode/widgets/question_text_widget.da
 import 'package:quiz_app/LibrarySection/LiveMode/widgets/reconnection_overlay.dart';
 import 'package:quiz_app/providers/game_provider.dart';
 import 'package:quiz_app/providers/session_provider.dart';
-import 'package:quiz_app/utils/quiz_design_system.dart';
+import 'package:quiz_app/utils/color.dart';
 
 class LiveMultiplayerQuiz extends ConsumerStatefulWidget {
   const LiveMultiplayerQuiz({super.key});
@@ -78,16 +78,19 @@ class _LiveMultiplayerQuizState extends ConsumerState<LiveMultiplayerQuiz> {
 
     if (currentQuestion == null) {
       return Scaffold(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        backgroundColor: AppColors.background,
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               CircularProgressIndicator(
-                color: Theme.of(context).colorScheme.primary,
+                color: AppColors.primary,
               ),
               const SizedBox(height: 16),
-              const Text('Loading question...'),
+              const Text(
+                'Loading question...',
+                style: TextStyle(color: AppColors.textPrimary),
+              ),
             ],
           ),
         ),
@@ -95,13 +98,13 @@ class _LiveMultiplayerQuizState extends ConsumerState<LiveMultiplayerQuiz> {
     }
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: AppColors.background,
       body: ReconnectionOverlay(
         child: Stack(
           children: [
             SafeArea(
               child: Padding(
-                padding: const EdgeInsets.all(QuizSpacing.lg),
+                padding: const EdgeInsets.all(24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -116,25 +119,21 @@ class _LiveMultiplayerQuizState extends ConsumerState<LiveMultiplayerQuiz> {
                                 Icons.timer,
                                 color:
                                     gameState.timeRemaining < 10
-                                        ? QuizColors.incorrect
-                                        : Theme.of(context).colorScheme.primary,
+                                        ? AppColors.error
+                                        : AppColors.primary,
                                 size: 20,
                               ),
-                              const SizedBox(width: QuizSpacing.md),
+                              const SizedBox(width: 16),
                               Expanded(
                                 child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(
-                                    QuizBorderRadius.sm,
-                                  ),
+                                  borderRadius: BorderRadius.circular(8),
                                   child: LinearProgressIndicator(
                                     value: gameState.timeRemaining / 30.0,
-                                    backgroundColor: Colors.grey[700],
+                                    backgroundColor: Colors.grey[300],
                                     color:
                                         gameState.timeRemaining < 10
-                                            ? QuizColors.incorrect
-                                            : Theme.of(
-                                              context,
-                                            ).colorScheme.primary,
+                                            ? AppColors.error
+                                            : AppColors.primary,
                                     minHeight: 8,
                                   ),
                                 ),
@@ -142,25 +141,25 @@ class _LiveMultiplayerQuizState extends ConsumerState<LiveMultiplayerQuiz> {
                             ],
                           ),
                         ),
-                        const SizedBox(width: QuizSpacing.lg),
+                        const SizedBox(width: 24),
                         Text(
                           'Q ${gameState.questionIndex + 1} / ${gameState.totalQuestions}',
-                          style: TextStyle(
-                            color: QuizColors.textSecondary,
+                          style: const TextStyle(
+                            color: AppColors.textSecondary,
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: QuizSpacing.lg),
+                    const SizedBox(height: 24),
 
                     // Question Text Widget
                     QuestionTextWidget(
                       questionText: currentQuestion['question'] ?? '',
                       imageUrl: currentQuestion['imageUrl'],
                     ),
-                    const SizedBox(height: QuizSpacing.lg),
+                    const SizedBox(height: 24),
 
                     // Question UI based on question type
                     Expanded(

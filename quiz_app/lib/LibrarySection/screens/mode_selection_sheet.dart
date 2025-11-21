@@ -1,11 +1,15 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:quiz_app/LibrarySection/LiveMode/screens/live_multiplayer_lobby.dart';
+import 'package:quiz_app/LibrarySection/services/session_service.dart';
+import 'package:quiz_app/providers/session_provider.dart';
 import 'package:quiz_app/utils/color.dart';
-import 'package:quiz_app/LibrarySection/screens/hosting_page.dart';
 import 'package:quiz_app/utils/animations/page_transition.dart';
 
-/// Example widget showing how to select a mode and navigate to HostingPage
+/// Example widget showing how to select a mode and navigate to LiveMultiplayerLobby
 /// You can integrate this into your existing quiz creation/selection flow
-class ModeSelectionSheet extends StatelessWidget {
+class ModeSelectionSheet extends ConsumerStatefulWidget {
   final String quizId;
   final String quizTitle;
   final String hostId;
@@ -16,6 +20,83 @@ class ModeSelectionSheet extends StatelessWidget {
     required this.quizTitle,
     required this.hostId,
   });
+
+  @override
+  ConsumerState<ModeSelectionSheet> createState() => _ModeSelectionSheetState();
+}
+
+class _ModeSelectionSheetState extends ConsumerState<ModeSelectionSheet> {
+  bool _isCreatingSession = false;
+
+  Future<void> _createSessionAndNavigate(String mode) async {
+    if (mode != 'live_multiplayer') {
+      // For other modes, show a message (not implemented yet)
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('$mode mode coming soon!'),
+          backgroundColor: AppColors.info,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isCreatingSession = true);
+
+    try {
+      // Create session
+      final result = await SessionService.createSession(
+        quizId: widget.quizId,
+        hostId: widget.hostId,
+        mode: mode,
+      );
+
+      if (result['success'] == true && mounted) {
+        final sessionCode = result['session_code'] as String;
+
+        // Connect host to WebSocket
+        final user = FirebaseAuth.instance.currentUser;
+        final username =
+            user?.displayName?.trim().isNotEmpty == true
+                ? user!.displayName!
+                : (user?.email?.split('@')[0] ?? 'Host');
+
+        await ref
+            .read(sessionProvider.notifier)
+            .joinSession(sessionCode, widget.hostId, username);
+
+        // Close bottom sheet and navigate to lobby
+        if (mounted) {
+          Navigator.pop(context); // Close bottom sheet
+          Navigator.push(
+            context,
+            customRoute(
+              LiveMultiplayerLobby(
+                sessionCode: sessionCode,
+                isHost: true,
+              ),
+              AnimationType.slideUp,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Failed to create session: ${e.toString().replaceAll('Exception: ', '')}',
+            ),
+            backgroundColor: AppColors.error,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isCreatingSession = false);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -109,9 +190,30 @@ class ModeSelectionSheet extends StatelessWidget {
               ),
               const SizedBox(height: 16),
 
+              // Loading indicator
+              if (_isCreatingSession) ...[
+                const SizedBox(height: 16),
+                Center(
+                  child: Column(
+                    children: [
+                      CircularProgressIndicator(color: AppColors.primary),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Creating session...',
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+
               // Cancel button
+              const SizedBox(height: 16),
               TextButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: _isCreatingSession ? null : () => Navigator.pop(context),
                 child: Text(
                   'Cancel',
                   style: TextStyle(color: AppColors.textSecondary),
@@ -134,23 +236,7 @@ class ModeSelectionSheet extends StatelessWidget {
     required String mode,
   }) {
     return InkWell(
-      onTap: () {
-        Navigator.pop(context); // Close bottom sheet
-
-        // Navigate to HostingPage with slide up animation
-        Navigator.push(
-          context,
-          customRoute(
-            HostingPage(
-              quizId: quizId,
-              quizTitle: quizTitle,
-              mode: mode,
-              hostId: hostId,
-            ),
-            AnimationType.slideUp,
-          ),
-        );
-      },
+      onTap: _isCreatingSession ? null : () => _createSessionAndNavigate(mode),
       borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.all(16),
