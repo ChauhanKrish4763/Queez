@@ -74,6 +74,15 @@ _GameState _$GameStateFromJson(Map<String, dynamic> json) => _GameState(
       (json['rankings'] as List<dynamic>?)
           ?.map((e) => e as Map<String, dynamic>)
           .toList(),
+  lastAnswerCorrect: json['last_answer_correct'] as bool?,
+  selectedAnswer: json['selected_answer'],
+  answerDistribution: (json['answer_distribution'] as Map<String, dynamic>?)
+      ?.map((k, e) => MapEntry(k, (e as num).toInt())),
+  showingFeedback: json['showing_feedback'] as bool? ?? false,
+  showingCorrectAnswer: json['showing_correct_answer'] as bool? ?? false,
+  feedbackCountdown: (json['feedback_countdown'] as num?)?.toInt() ?? 0,
+  isHost: json['is_host'] as bool? ?? false,
+  currentScore: (json['current_score'] as num?)?.toInt() ?? 0,
 );
 
 Map<String, dynamic> _$GameStateToJson(_GameState instance) =>
@@ -87,6 +96,14 @@ Map<String, dynamic> _$GameStateToJson(_GameState instance) =>
       'points_earned': instance.pointsEarned,
       'correct_answer': instance.correctAnswer,
       'rankings': instance.rankings,
+      'last_answer_correct': instance.lastAnswerCorrect,
+      'selected_answer': instance.selectedAnswer,
+      'answer_distribution': instance.answerDistribution,
+      'showing_feedback': instance.showingFeedback,
+      'showing_correct_answer': instance.showingCorrectAnswer,
+      'feedback_countdown': instance.feedbackCountdown,
+      'is_host': instance.isHost,
+      'current_score': instance.currentScore,
     };
 
 _LeaderboardEntry _$LeaderboardEntryFromJson(Map<String, dynamic> json) =>

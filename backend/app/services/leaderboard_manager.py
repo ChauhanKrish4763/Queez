@@ -24,6 +24,32 @@ class LeaderboardManager:
                 "score": int(score)
             })
         return rankings
+    
+    async def get_rankings_with_usernames(self, session_code: str, limit: int = 10) -> List[Dict[str, Any]]:
+        """Get top N participants with usernames and current question progress from session data"""
+        from app.services.session_manager import SessionManager
+        import json
+        
+        session_manager = SessionManager()
+        session = await session_manager.get_session(session_code)
+        
+        if not session:
+            return []
+        
+        participants = session.get("participants", {})
+        rankings = await self.get_rankings(session_code, limit)
+        
+        # Enrich with usernames and current question
+        for rank_entry in rankings:
+            user_id = rank_entry["user_id"]
+            participant = participants.get(user_id, {})
+            rank_entry["username"] = participant.get("username", "Unknown")
+            
+            # Track current question (based on number of answers submitted)
+            answers = participant.get("answers", [])
+            rank_entry["current_question"] = len(answers)
+        
+        return rankings
 
     async def get_user_rank(self, session_code: str, user_id: str) -> int:
         """Get specific user's rank (1-based)"""

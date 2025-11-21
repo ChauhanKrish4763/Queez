@@ -26,8 +26,11 @@ async def websocket_endpoint(websocket: WebSocket, session_code: str, user_id: s
         logger.error(f"Failed to accept WebSocket: {e}")
         return
     
+    # Check if user is host
+    is_host = await session_manager.is_host(session_code, user_id)
+    
     # Register connection with manager
-    await manager.connect(websocket, session_code, user_id)
+    await manager.connect(websocket, session_code, user_id, is_host=is_host)
     
     try:
         while True:
@@ -124,6 +127,16 @@ async def handle_submit_answer(session_code: str, user_id: str, payload: dict):
     # Update leaderboard
     if "new_total_score" in result:
         await leaderboard_manager.update_score(session_code, user_id, result["new_total_score"])
+        
+        # Broadcast realtime leaderboard update to host
+        session = await session_manager.get_session(session_code)
+        if session:
+            host_id = session.get("host_id")
+            rankings = await leaderboard_manager.get_rankings_with_usernames(session_code, limit=50)
+            await manager.broadcast_to_host({
+                "type": "leaderboard_update",
+                "payload": {"rankings": rankings}
+            }, session_code, host_id)
 
     # Send result to user
     user_ws = manager.user_connections.get(user_id)
@@ -149,18 +162,56 @@ async def reveal_answer(session_code: str):
     # Get answer distribution statistics
     distribution = await game_controller.get_answer_distribution(session_code)
     
-    # Get leaderboard
-    rankings = await leaderboard_manager.get_rankings(session_code)
+    # Get leaderboard with usernames
+    rankings = await leaderboard_manager.get_rankings_with_usernames(session_code, limit=50)
     
-    # Broadcast reveal
-    await manager.broadcast_to_session({
-        "type": "answer_reveal",
-        "payload": {
-            "correct_answer": correct_answer,
-            "answer_distribution": distribution,
-            "rankings": rankings
-        }
-    }, session_code)
+    # Get session to find host
+    session = await session_manager.get_session(session_code)
+    if not session:
+        return
+    
+    host_id = session.get("host_id")
+    
+    # Send leaderboard update to HOST only
+    if host_id:
+        await manager.broadcast_to_host({
+            "type": "leaderboard_update",
+            "payload": {
+                "rankings": rankings,
+                "answer_distribution": distribution
+            }
+        }, session_code, host_id)
+    
+    # Send individual answer feedback to each PARTICIPANT
+    participants = session.get("participants", {})
+    for user_id, participant_data in participants.items():
+        if not participant_data.get("connected", False):
+            continue
+        
+        # Find this participant's answer for current question
+        current_index = question_data["index"]
+        user_answer = None
+        is_correct = False
+        points_earned = 0
+        
+        for answer in participant_data.get("answers", []):
+            if answer.get("question_index") == current_index:
+                user_answer = answer.get("answer")
+                is_correct = answer.get("is_correct", False)
+                points_earned = answer.get("points_earned", 0)
+                break
+        
+        # Send personalized feedback
+        await manager.send_personal_message({
+            "type": "answer_feedback",
+            "payload": {
+                "is_correct": is_correct,
+                "points_earned": points_earned,
+                "correct_answer": correct_answer,
+                "your_score": participant_data.get("score", 0),
+                "answer_distribution": distribution
+            }
+        }, session_code, user_id)
     
     import asyncio
     asyncio.create_task(delayed_advance(session_code))
@@ -188,7 +239,10 @@ async def delayed_advance(session_code: str):
         await complete_quiz(session_code)
 
 async def handle_start_quiz(session_code: str, user_id: str):
+    logger.info(f"🚀 START QUIZ requested by user={user_id} for session={session_code}")
+    
     if await session_manager.is_host(session_code, user_id):
+        logger.info(f"✅ User {user_id} verified as host")
         # FOR TESTING: Allow starting with 1 participant
         # session = await session_manager.get_session(session_code)
         # participants = session.get("participants", {})
@@ -204,20 +258,32 @@ async def handle_start_quiz(session_code: str, user_id: str):
         #     return
         
         success = await session_manager.start_session(session_code, user_id)
+        logger.info(f"🎯 Session start result: {success}")
+        
         if success:
             # Broadcast start
+            logger.info(f"📡 Broadcasting quiz_started to all participants")
             await manager.broadcast_to_session({"type": "quiz_started"}, session_code)
             
             # Start question timer
             await game_controller.start_question_timer(session_code)
+            logger.info(f"⏱️ Question timer started")
             
             # Send first question
+            logger.info(f"📝 Fetching first question...")
             question_data = await game_controller.get_current_question(session_code)
+            
             if question_data:
+                logger.info(f"✅ Broadcasting first question to all participants")
+                logger.info(f"📊 Question data: {question_data}")
                 await manager.broadcast_to_session({
                     "type": "question",
                     "payload": question_data
                 }, session_code)
+            else:
+                logger.error(f"❌ Failed to fetch first question!")
+    else:
+        logger.warning(f"⚠️ User {user_id} is NOT the host, cannot start quiz")
 
 async def complete_quiz(session_code: str):
     """Complete quiz and persist results"""
@@ -227,8 +293,8 @@ async def complete_quiz(session_code: str):
     await session_manager.end_session(session_code)
     session = await session_manager.get_session(session_code)
     
-    # Calculate final rankings with accuracy
-    rankings = await leaderboard_manager.get_rankings(session_code, limit=50)
+    # Calculate final rankings with accuracy and usernames
+    rankings = await leaderboard_manager.get_rankings_with_usernames(session_code, limit=50)
     
     # Add accuracy to rankings
     for rank in rankings:

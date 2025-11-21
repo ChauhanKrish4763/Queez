@@ -43,7 +43,7 @@ class WebSocketService {
 
     // Use cloudflare tunnel URL with secure WebSocket (wss://)
     // Remove https:// and replace with wss://
-    const baseUrl = 'allergy-justin-discovery-watched.trycloudflare.com';
+    const baseUrl = 'recruiting-transmitted-including-garbage.trycloudflare.com ';
 
     // Construct URI properly - NO trailing characters
     final uri = Uri.parse(

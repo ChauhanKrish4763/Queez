@@ -49,6 +49,17 @@ abstract class GameState with _$GameState {
     @JsonKey(name: 'points_earned') int? pointsEarned,
     @JsonKey(name: 'correct_answer') dynamic correctAnswer,
     List<Map<String, dynamic>>? rankings,
+    // NEW: Answer feedback properties
+    @JsonKey(name: 'last_answer_correct') bool? lastAnswerCorrect,
+    @JsonKey(name: 'selected_answer') dynamic selectedAnswer,
+    @JsonKey(name: 'answer_distribution') Map<dynamic, int>? answerDistribution,
+    // NEW: Animation state properties
+    @JsonKey(name: 'showing_feedback') @Default(false) bool showingFeedback,
+    @JsonKey(name: 'showing_correct_answer') @Default(false) bool showingCorrectAnswer,
+    @JsonKey(name: 'feedback_countdown') @Default(0) int feedbackCountdown,
+    // NEW: Role and score properties
+    @JsonKey(name: 'is_host') @Default(false) bool isHost,
+    @JsonKey(name: 'current_score') @Default(0) int currentScore,
   }) = _GameState;
 
   factory GameState.fromJson(Map<String, dynamic> json) => _$GameStateFromJson(json);

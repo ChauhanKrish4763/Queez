@@ -595,7 +595,10 @@ as int,
 /// @nodoc
 mixin _$GameState {
 
-@JsonKey(name: 'current_question') Map<String, dynamic>? get currentQuestion;@JsonKey(name: 'question_index') int get questionIndex;@JsonKey(name: 'total_questions') int get totalQuestions;@JsonKey(name: 'time_remaining') int get timeRemaining;@JsonKey(name: 'has_answered') bool get hasAnswered;@JsonKey(name: 'is_correct') bool? get isCorrect;@JsonKey(name: 'points_earned') int? get pointsEarned;@JsonKey(name: 'correct_answer') dynamic get correctAnswer; List<Map<String, dynamic>>? get rankings;
+@JsonKey(name: 'current_question') Map<String, dynamic>? get currentQuestion;@JsonKey(name: 'question_index') int get questionIndex;@JsonKey(name: 'total_questions') int get totalQuestions;@JsonKey(name: 'time_remaining') int get timeRemaining;@JsonKey(name: 'has_answered') bool get hasAnswered;@JsonKey(name: 'is_correct') bool? get isCorrect;@JsonKey(name: 'points_earned') int? get pointsEarned;@JsonKey(name: 'correct_answer') dynamic get correctAnswer; List<Map<String, dynamic>>? get rankings;// NEW: Answer feedback properties
+@JsonKey(name: 'last_answer_correct') bool? get lastAnswerCorrect;@JsonKey(name: 'selected_answer') dynamic get selectedAnswer;@JsonKey(name: 'answer_distribution') Map<dynamic, int>? get answerDistribution;// NEW: Animation state properties
+@JsonKey(name: 'showing_feedback') bool get showingFeedback;@JsonKey(name: 'showing_correct_answer') bool get showingCorrectAnswer;@JsonKey(name: 'feedback_countdown') int get feedbackCountdown;// NEW: Role and score properties
+@JsonKey(name: 'is_host') bool get isHost;@JsonKey(name: 'current_score') int get currentScore;
 /// Create a copy of GameState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -608,16 +611,16 @@ $GameStateCopyWith<GameState> get copyWith => _$GameStateCopyWithImpl<GameState>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is GameState&&const DeepCollectionEquality().equals(other.currentQuestion, currentQuestion)&&(identical(other.questionIndex, questionIndex) || other.questionIndex == questionIndex)&&(identical(other.totalQuestions, totalQuestions) || other.totalQuestions == totalQuestions)&&(identical(other.timeRemaining, timeRemaining) || other.timeRemaining == timeRemaining)&&(identical(other.hasAnswered, hasAnswered) || other.hasAnswered == hasAnswered)&&(identical(other.isCorrect, isCorrect) || other.isCorrect == isCorrect)&&(identical(other.pointsEarned, pointsEarned) || other.pointsEarned == pointsEarned)&&const DeepCollectionEquality().equals(other.correctAnswer, correctAnswer)&&const DeepCollectionEquality().equals(other.rankings, rankings));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is GameState&&const DeepCollectionEquality().equals(other.currentQuestion, currentQuestion)&&(identical(other.questionIndex, questionIndex) || other.questionIndex == questionIndex)&&(identical(other.totalQuestions, totalQuestions) || other.totalQuestions == totalQuestions)&&(identical(other.timeRemaining, timeRemaining) || other.timeRemaining == timeRemaining)&&(identical(other.hasAnswered, hasAnswered) || other.hasAnswered == hasAnswered)&&(identical(other.isCorrect, isCorrect) || other.isCorrect == isCorrect)&&(identical(other.pointsEarned, pointsEarned) || other.pointsEarned == pointsEarned)&&const DeepCollectionEquality().equals(other.correctAnswer, correctAnswer)&&const DeepCollectionEquality().equals(other.rankings, rankings)&&(identical(other.lastAnswerCorrect, lastAnswerCorrect) || other.lastAnswerCorrect == lastAnswerCorrect)&&const DeepCollectionEquality().equals(other.selectedAnswer, selectedAnswer)&&const DeepCollectionEquality().equals(other.answerDistribution, answerDistribution)&&(identical(other.showingFeedback, showingFeedback) || other.showingFeedback == showingFeedback)&&(identical(other.showingCorrectAnswer, showingCorrectAnswer) || other.showingCorrectAnswer == showingCorrectAnswer)&&(identical(other.feedbackCountdown, feedbackCountdown) || other.feedbackCountdown == feedbackCountdown)&&(identical(other.isHost, isHost) || other.isHost == isHost)&&(identical(other.currentScore, currentScore) || other.currentScore == currentScore));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(currentQuestion),questionIndex,totalQuestions,timeRemaining,hasAnswered,isCorrect,pointsEarned,const DeepCollectionEquality().hash(correctAnswer),const DeepCollectionEquality().hash(rankings));
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(currentQuestion),questionIndex,totalQuestions,timeRemaining,hasAnswered,isCorrect,pointsEarned,const DeepCollectionEquality().hash(correctAnswer),const DeepCollectionEquality().hash(rankings),lastAnswerCorrect,const DeepCollectionEquality().hash(selectedAnswer),const DeepCollectionEquality().hash(answerDistribution),showingFeedback,showingCorrectAnswer,feedbackCountdown,isHost,currentScore);
 
 @override
 String toString() {
-  return 'GameState(currentQuestion: $currentQuestion, questionIndex: $questionIndex, totalQuestions: $totalQuestions, timeRemaining: $timeRemaining, hasAnswered: $hasAnswered, isCorrect: $isCorrect, pointsEarned: $pointsEarned, correctAnswer: $correctAnswer, rankings: $rankings)';
+  return 'GameState(currentQuestion: $currentQuestion, questionIndex: $questionIndex, totalQuestions: $totalQuestions, timeRemaining: $timeRemaining, hasAnswered: $hasAnswered, isCorrect: $isCorrect, pointsEarned: $pointsEarned, correctAnswer: $correctAnswer, rankings: $rankings, lastAnswerCorrect: $lastAnswerCorrect, selectedAnswer: $selectedAnswer, answerDistribution: $answerDistribution, showingFeedback: $showingFeedback, showingCorrectAnswer: $showingCorrectAnswer, feedbackCountdown: $feedbackCountdown, isHost: $isHost, currentScore: $currentScore)';
 }
 
 
@@ -628,7 +631,7 @@ abstract mixin class $GameStateCopyWith<$Res>  {
   factory $GameStateCopyWith(GameState value, $Res Function(GameState) _then) = _$GameStateCopyWithImpl;
 @useResult
 $Res call({
-@JsonKey(name: 'current_question') Map<String, dynamic>? currentQuestion,@JsonKey(name: 'question_index') int questionIndex,@JsonKey(name: 'total_questions') int totalQuestions,@JsonKey(name: 'time_remaining') int timeRemaining,@JsonKey(name: 'has_answered') bool hasAnswered,@JsonKey(name: 'is_correct') bool? isCorrect,@JsonKey(name: 'points_earned') int? pointsEarned,@JsonKey(name: 'correct_answer') dynamic correctAnswer, List<Map<String, dynamic>>? rankings
+@JsonKey(name: 'current_question') Map<String, dynamic>? currentQuestion,@JsonKey(name: 'question_index') int questionIndex,@JsonKey(name: 'total_questions') int totalQuestions,@JsonKey(name: 'time_remaining') int timeRemaining,@JsonKey(name: 'has_answered') bool hasAnswered,@JsonKey(name: 'is_correct') bool? isCorrect,@JsonKey(name: 'points_earned') int? pointsEarned,@JsonKey(name: 'correct_answer') dynamic correctAnswer, List<Map<String, dynamic>>? rankings,@JsonKey(name: 'last_answer_correct') bool? lastAnswerCorrect,@JsonKey(name: 'selected_answer') dynamic selectedAnswer,@JsonKey(name: 'answer_distribution') Map<dynamic, int>? answerDistribution,@JsonKey(name: 'showing_feedback') bool showingFeedback,@JsonKey(name: 'showing_correct_answer') bool showingCorrectAnswer,@JsonKey(name: 'feedback_countdown') int feedbackCountdown,@JsonKey(name: 'is_host') bool isHost,@JsonKey(name: 'current_score') int currentScore
 });
 
 
@@ -645,7 +648,7 @@ class _$GameStateCopyWithImpl<$Res>
 
 /// Create a copy of GameState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? currentQuestion = freezed,Object? questionIndex = null,Object? totalQuestions = null,Object? timeRemaining = null,Object? hasAnswered = null,Object? isCorrect = freezed,Object? pointsEarned = freezed,Object? correctAnswer = freezed,Object? rankings = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? currentQuestion = freezed,Object? questionIndex = null,Object? totalQuestions = null,Object? timeRemaining = null,Object? hasAnswered = null,Object? isCorrect = freezed,Object? pointsEarned = freezed,Object? correctAnswer = freezed,Object? rankings = freezed,Object? lastAnswerCorrect = freezed,Object? selectedAnswer = freezed,Object? answerDistribution = freezed,Object? showingFeedback = null,Object? showingCorrectAnswer = null,Object? feedbackCountdown = null,Object? isHost = null,Object? currentScore = null,}) {
   return _then(_self.copyWith(
 currentQuestion: freezed == currentQuestion ? _self.currentQuestion : currentQuestion // ignore: cast_nullable_to_non_nullable
 as Map<String, dynamic>?,questionIndex: null == questionIndex ? _self.questionIndex : questionIndex // ignore: cast_nullable_to_non_nullable
@@ -656,7 +659,15 @@ as bool,isCorrect: freezed == isCorrect ? _self.isCorrect : isCorrect // ignore:
 as bool?,pointsEarned: freezed == pointsEarned ? _self.pointsEarned : pointsEarned // ignore: cast_nullable_to_non_nullable
 as int?,correctAnswer: freezed == correctAnswer ? _self.correctAnswer : correctAnswer // ignore: cast_nullable_to_non_nullable
 as dynamic,rankings: freezed == rankings ? _self.rankings : rankings // ignore: cast_nullable_to_non_nullable
-as List<Map<String, dynamic>>?,
+as List<Map<String, dynamic>>?,lastAnswerCorrect: freezed == lastAnswerCorrect ? _self.lastAnswerCorrect : lastAnswerCorrect // ignore: cast_nullable_to_non_nullable
+as bool?,selectedAnswer: freezed == selectedAnswer ? _self.selectedAnswer : selectedAnswer // ignore: cast_nullable_to_non_nullable
+as dynamic,answerDistribution: freezed == answerDistribution ? _self.answerDistribution : answerDistribution // ignore: cast_nullable_to_non_nullable
+as Map<dynamic, int>?,showingFeedback: null == showingFeedback ? _self.showingFeedback : showingFeedback // ignore: cast_nullable_to_non_nullable
+as bool,showingCorrectAnswer: null == showingCorrectAnswer ? _self.showingCorrectAnswer : showingCorrectAnswer // ignore: cast_nullable_to_non_nullable
+as bool,feedbackCountdown: null == feedbackCountdown ? _self.feedbackCountdown : feedbackCountdown // ignore: cast_nullable_to_non_nullable
+as int,isHost: null == isHost ? _self.isHost : isHost // ignore: cast_nullable_to_non_nullable
+as bool,currentScore: null == currentScore ? _self.currentScore : currentScore // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 
@@ -741,10 +752,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'current_question')  Map<String, dynamic>? currentQuestion, @JsonKey(name: 'question_index')  int questionIndex, @JsonKey(name: 'total_questions')  int totalQuestions, @JsonKey(name: 'time_remaining')  int timeRemaining, @JsonKey(name: 'has_answered')  bool hasAnswered, @JsonKey(name: 'is_correct')  bool? isCorrect, @JsonKey(name: 'points_earned')  int? pointsEarned, @JsonKey(name: 'correct_answer')  dynamic correctAnswer,  List<Map<String, dynamic>>? rankings)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'current_question')  Map<String, dynamic>? currentQuestion, @JsonKey(name: 'question_index')  int questionIndex, @JsonKey(name: 'total_questions')  int totalQuestions, @JsonKey(name: 'time_remaining')  int timeRemaining, @JsonKey(name: 'has_answered')  bool hasAnswered, @JsonKey(name: 'is_correct')  bool? isCorrect, @JsonKey(name: 'points_earned')  int? pointsEarned, @JsonKey(name: 'correct_answer')  dynamic correctAnswer,  List<Map<String, dynamic>>? rankings, @JsonKey(name: 'last_answer_correct')  bool? lastAnswerCorrect, @JsonKey(name: 'selected_answer')  dynamic selectedAnswer, @JsonKey(name: 'answer_distribution')  Map<dynamic, int>? answerDistribution, @JsonKey(name: 'showing_feedback')  bool showingFeedback, @JsonKey(name: 'showing_correct_answer')  bool showingCorrectAnswer, @JsonKey(name: 'feedback_countdown')  int feedbackCountdown, @JsonKey(name: 'is_host')  bool isHost, @JsonKey(name: 'current_score')  int currentScore)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _GameState() when $default != null:
-return $default(_that.currentQuestion,_that.questionIndex,_that.totalQuestions,_that.timeRemaining,_that.hasAnswered,_that.isCorrect,_that.pointsEarned,_that.correctAnswer,_that.rankings);case _:
+return $default(_that.currentQuestion,_that.questionIndex,_that.totalQuestions,_that.timeRemaining,_that.hasAnswered,_that.isCorrect,_that.pointsEarned,_that.correctAnswer,_that.rankings,_that.lastAnswerCorrect,_that.selectedAnswer,_that.answerDistribution,_that.showingFeedback,_that.showingCorrectAnswer,_that.feedbackCountdown,_that.isHost,_that.currentScore);case _:
   return orElse();
 
 }
@@ -762,10 +773,10 @@ return $default(_that.currentQuestion,_that.questionIndex,_that.totalQuestions,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'current_question')  Map<String, dynamic>? currentQuestion, @JsonKey(name: 'question_index')  int questionIndex, @JsonKey(name: 'total_questions')  int totalQuestions, @JsonKey(name: 'time_remaining')  int timeRemaining, @JsonKey(name: 'has_answered')  bool hasAnswered, @JsonKey(name: 'is_correct')  bool? isCorrect, @JsonKey(name: 'points_earned')  int? pointsEarned, @JsonKey(name: 'correct_answer')  dynamic correctAnswer,  List<Map<String, dynamic>>? rankings)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'current_question')  Map<String, dynamic>? currentQuestion, @JsonKey(name: 'question_index')  int questionIndex, @JsonKey(name: 'total_questions')  int totalQuestions, @JsonKey(name: 'time_remaining')  int timeRemaining, @JsonKey(name: 'has_answered')  bool hasAnswered, @JsonKey(name: 'is_correct')  bool? isCorrect, @JsonKey(name: 'points_earned')  int? pointsEarned, @JsonKey(name: 'correct_answer')  dynamic correctAnswer,  List<Map<String, dynamic>>? rankings, @JsonKey(name: 'last_answer_correct')  bool? lastAnswerCorrect, @JsonKey(name: 'selected_answer')  dynamic selectedAnswer, @JsonKey(name: 'answer_distribution')  Map<dynamic, int>? answerDistribution, @JsonKey(name: 'showing_feedback')  bool showingFeedback, @JsonKey(name: 'showing_correct_answer')  bool showingCorrectAnswer, @JsonKey(name: 'feedback_countdown')  int feedbackCountdown, @JsonKey(name: 'is_host')  bool isHost, @JsonKey(name: 'current_score')  int currentScore)  $default,) {final _that = this;
 switch (_that) {
 case _GameState():
-return $default(_that.currentQuestion,_that.questionIndex,_that.totalQuestions,_that.timeRemaining,_that.hasAnswered,_that.isCorrect,_that.pointsEarned,_that.correctAnswer,_that.rankings);case _:
+return $default(_that.currentQuestion,_that.questionIndex,_that.totalQuestions,_that.timeRemaining,_that.hasAnswered,_that.isCorrect,_that.pointsEarned,_that.correctAnswer,_that.rankings,_that.lastAnswerCorrect,_that.selectedAnswer,_that.answerDistribution,_that.showingFeedback,_that.showingCorrectAnswer,_that.feedbackCountdown,_that.isHost,_that.currentScore);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -782,10 +793,10 @@ return $default(_that.currentQuestion,_that.questionIndex,_that.totalQuestions,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'current_question')  Map<String, dynamic>? currentQuestion, @JsonKey(name: 'question_index')  int questionIndex, @JsonKey(name: 'total_questions')  int totalQuestions, @JsonKey(name: 'time_remaining')  int timeRemaining, @JsonKey(name: 'has_answered')  bool hasAnswered, @JsonKey(name: 'is_correct')  bool? isCorrect, @JsonKey(name: 'points_earned')  int? pointsEarned, @JsonKey(name: 'correct_answer')  dynamic correctAnswer,  List<Map<String, dynamic>>? rankings)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'current_question')  Map<String, dynamic>? currentQuestion, @JsonKey(name: 'question_index')  int questionIndex, @JsonKey(name: 'total_questions')  int totalQuestions, @JsonKey(name: 'time_remaining')  int timeRemaining, @JsonKey(name: 'has_answered')  bool hasAnswered, @JsonKey(name: 'is_correct')  bool? isCorrect, @JsonKey(name: 'points_earned')  int? pointsEarned, @JsonKey(name: 'correct_answer')  dynamic correctAnswer,  List<Map<String, dynamic>>? rankings, @JsonKey(name: 'last_answer_correct')  bool? lastAnswerCorrect, @JsonKey(name: 'selected_answer')  dynamic selectedAnswer, @JsonKey(name: 'answer_distribution')  Map<dynamic, int>? answerDistribution, @JsonKey(name: 'showing_feedback')  bool showingFeedback, @JsonKey(name: 'showing_correct_answer')  bool showingCorrectAnswer, @JsonKey(name: 'feedback_countdown')  int feedbackCountdown, @JsonKey(name: 'is_host')  bool isHost, @JsonKey(name: 'current_score')  int currentScore)?  $default,) {final _that = this;
 switch (_that) {
 case _GameState() when $default != null:
-return $default(_that.currentQuestion,_that.questionIndex,_that.totalQuestions,_that.timeRemaining,_that.hasAnswered,_that.isCorrect,_that.pointsEarned,_that.correctAnswer,_that.rankings);case _:
+return $default(_that.currentQuestion,_that.questionIndex,_that.totalQuestions,_that.timeRemaining,_that.hasAnswered,_that.isCorrect,_that.pointsEarned,_that.correctAnswer,_that.rankings,_that.lastAnswerCorrect,_that.selectedAnswer,_that.answerDistribution,_that.showingFeedback,_that.showingCorrectAnswer,_that.feedbackCountdown,_that.isHost,_that.currentScore);case _:
   return null;
 
 }
@@ -797,7 +808,7 @@ return $default(_that.currentQuestion,_that.questionIndex,_that.totalQuestions,_
 @JsonSerializable()
 
 class _GameState implements GameState {
-  const _GameState({@JsonKey(name: 'current_question') final  Map<String, dynamic>? currentQuestion, @JsonKey(name: 'question_index') this.questionIndex = 0, @JsonKey(name: 'total_questions') this.totalQuestions = 0, @JsonKey(name: 'time_remaining') this.timeRemaining = 30, @JsonKey(name: 'has_answered') this.hasAnswered = false, @JsonKey(name: 'is_correct') this.isCorrect, @JsonKey(name: 'points_earned') this.pointsEarned, @JsonKey(name: 'correct_answer') this.correctAnswer, final  List<Map<String, dynamic>>? rankings}): _currentQuestion = currentQuestion,_rankings = rankings;
+  const _GameState({@JsonKey(name: 'current_question') final  Map<String, dynamic>? currentQuestion, @JsonKey(name: 'question_index') this.questionIndex = 0, @JsonKey(name: 'total_questions') this.totalQuestions = 0, @JsonKey(name: 'time_remaining') this.timeRemaining = 30, @JsonKey(name: 'has_answered') this.hasAnswered = false, @JsonKey(name: 'is_correct') this.isCorrect, @JsonKey(name: 'points_earned') this.pointsEarned, @JsonKey(name: 'correct_answer') this.correctAnswer, final  List<Map<String, dynamic>>? rankings, @JsonKey(name: 'last_answer_correct') this.lastAnswerCorrect, @JsonKey(name: 'selected_answer') this.selectedAnswer, @JsonKey(name: 'answer_distribution') final  Map<dynamic, int>? answerDistribution, @JsonKey(name: 'showing_feedback') this.showingFeedback = false, @JsonKey(name: 'showing_correct_answer') this.showingCorrectAnswer = false, @JsonKey(name: 'feedback_countdown') this.feedbackCountdown = 0, @JsonKey(name: 'is_host') this.isHost = false, @JsonKey(name: 'current_score') this.currentScore = 0}): _currentQuestion = currentQuestion,_rankings = rankings,_answerDistribution = answerDistribution;
   factory _GameState.fromJson(Map<String, dynamic> json) => _$GameStateFromJson(json);
 
  final  Map<String, dynamic>? _currentQuestion;
@@ -825,6 +836,25 @@ class _GameState implements GameState {
   return EqualUnmodifiableListView(value);
 }
 
+// NEW: Answer feedback properties
+@override@JsonKey(name: 'last_answer_correct') final  bool? lastAnswerCorrect;
+@override@JsonKey(name: 'selected_answer') final  dynamic selectedAnswer;
+ final  Map<dynamic, int>? _answerDistribution;
+@override@JsonKey(name: 'answer_distribution') Map<dynamic, int>? get answerDistribution {
+  final value = _answerDistribution;
+  if (value == null) return null;
+  if (_answerDistribution is EqualUnmodifiableMapView) return _answerDistribution;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableMapView(value);
+}
+
+// NEW: Animation state properties
+@override@JsonKey(name: 'showing_feedback') final  bool showingFeedback;
+@override@JsonKey(name: 'showing_correct_answer') final  bool showingCorrectAnswer;
+@override@JsonKey(name: 'feedback_countdown') final  int feedbackCountdown;
+// NEW: Role and score properties
+@override@JsonKey(name: 'is_host') final  bool isHost;
+@override@JsonKey(name: 'current_score') final  int currentScore;
 
 /// Create a copy of GameState
 /// with the given fields replaced by the non-null parameter values.
@@ -839,16 +869,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GameState&&const DeepCollectionEquality().equals(other._currentQuestion, _currentQuestion)&&(identical(other.questionIndex, questionIndex) || other.questionIndex == questionIndex)&&(identical(other.totalQuestions, totalQuestions) || other.totalQuestions == totalQuestions)&&(identical(other.timeRemaining, timeRemaining) || other.timeRemaining == timeRemaining)&&(identical(other.hasAnswered, hasAnswered) || other.hasAnswered == hasAnswered)&&(identical(other.isCorrect, isCorrect) || other.isCorrect == isCorrect)&&(identical(other.pointsEarned, pointsEarned) || other.pointsEarned == pointsEarned)&&const DeepCollectionEquality().equals(other.correctAnswer, correctAnswer)&&const DeepCollectionEquality().equals(other._rankings, _rankings));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GameState&&const DeepCollectionEquality().equals(other._currentQuestion, _currentQuestion)&&(identical(other.questionIndex, questionIndex) || other.questionIndex == questionIndex)&&(identical(other.totalQuestions, totalQuestions) || other.totalQuestions == totalQuestions)&&(identical(other.timeRemaining, timeRemaining) || other.timeRemaining == timeRemaining)&&(identical(other.hasAnswered, hasAnswered) || other.hasAnswered == hasAnswered)&&(identical(other.isCorrect, isCorrect) || other.isCorrect == isCorrect)&&(identical(other.pointsEarned, pointsEarned) || other.pointsEarned == pointsEarned)&&const DeepCollectionEquality().equals(other.correctAnswer, correctAnswer)&&const DeepCollectionEquality().equals(other._rankings, _rankings)&&(identical(other.lastAnswerCorrect, lastAnswerCorrect) || other.lastAnswerCorrect == lastAnswerCorrect)&&const DeepCollectionEquality().equals(other.selectedAnswer, selectedAnswer)&&const DeepCollectionEquality().equals(other._answerDistribution, _answerDistribution)&&(identical(other.showingFeedback, showingFeedback) || other.showingFeedback == showingFeedback)&&(identical(other.showingCorrectAnswer, showingCorrectAnswer) || other.showingCorrectAnswer == showingCorrectAnswer)&&(identical(other.feedbackCountdown, feedbackCountdown) || other.feedbackCountdown == feedbackCountdown)&&(identical(other.isHost, isHost) || other.isHost == isHost)&&(identical(other.currentScore, currentScore) || other.currentScore == currentScore));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_currentQuestion),questionIndex,totalQuestions,timeRemaining,hasAnswered,isCorrect,pointsEarned,const DeepCollectionEquality().hash(correctAnswer),const DeepCollectionEquality().hash(_rankings));
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_currentQuestion),questionIndex,totalQuestions,timeRemaining,hasAnswered,isCorrect,pointsEarned,const DeepCollectionEquality().hash(correctAnswer),const DeepCollectionEquality().hash(_rankings),lastAnswerCorrect,const DeepCollectionEquality().hash(selectedAnswer),const DeepCollectionEquality().hash(_answerDistribution),showingFeedback,showingCorrectAnswer,feedbackCountdown,isHost,currentScore);
 
 @override
 String toString() {
-  return 'GameState(currentQuestion: $currentQuestion, questionIndex: $questionIndex, totalQuestions: $totalQuestions, timeRemaining: $timeRemaining, hasAnswered: $hasAnswered, isCorrect: $isCorrect, pointsEarned: $pointsEarned, correctAnswer: $correctAnswer, rankings: $rankings)';
+  return 'GameState(currentQuestion: $currentQuestion, questionIndex: $questionIndex, totalQuestions: $totalQuestions, timeRemaining: $timeRemaining, hasAnswered: $hasAnswered, isCorrect: $isCorrect, pointsEarned: $pointsEarned, correctAnswer: $correctAnswer, rankings: $rankings, lastAnswerCorrect: $lastAnswerCorrect, selectedAnswer: $selectedAnswer, answerDistribution: $answerDistribution, showingFeedback: $showingFeedback, showingCorrectAnswer: $showingCorrectAnswer, feedbackCountdown: $feedbackCountdown, isHost: $isHost, currentScore: $currentScore)';
 }
 
 
@@ -859,7 +889,7 @@ abstract mixin class _$GameStateCopyWith<$Res> implements $GameStateCopyWith<$Re
   factory _$GameStateCopyWith(_GameState value, $Res Function(_GameState) _then) = __$GameStateCopyWithImpl;
 @override @useResult
 $Res call({
-@JsonKey(name: 'current_question') Map<String, dynamic>? currentQuestion,@JsonKey(name: 'question_index') int questionIndex,@JsonKey(name: 'total_questions') int totalQuestions,@JsonKey(name: 'time_remaining') int timeRemaining,@JsonKey(name: 'has_answered') bool hasAnswered,@JsonKey(name: 'is_correct') bool? isCorrect,@JsonKey(name: 'points_earned') int? pointsEarned,@JsonKey(name: 'correct_answer') dynamic correctAnswer, List<Map<String, dynamic>>? rankings
+@JsonKey(name: 'current_question') Map<String, dynamic>? currentQuestion,@JsonKey(name: 'question_index') int questionIndex,@JsonKey(name: 'total_questions') int totalQuestions,@JsonKey(name: 'time_remaining') int timeRemaining,@JsonKey(name: 'has_answered') bool hasAnswered,@JsonKey(name: 'is_correct') bool? isCorrect,@JsonKey(name: 'points_earned') int? pointsEarned,@JsonKey(name: 'correct_answer') dynamic correctAnswer, List<Map<String, dynamic>>? rankings,@JsonKey(name: 'last_answer_correct') bool? lastAnswerCorrect,@JsonKey(name: 'selected_answer') dynamic selectedAnswer,@JsonKey(name: 'answer_distribution') Map<dynamic, int>? answerDistribution,@JsonKey(name: 'showing_feedback') bool showingFeedback,@JsonKey(name: 'showing_correct_answer') bool showingCorrectAnswer,@JsonKey(name: 'feedback_countdown') int feedbackCountdown,@JsonKey(name: 'is_host') bool isHost,@JsonKey(name: 'current_score') int currentScore
 });
 
 
@@ -876,7 +906,7 @@ class __$GameStateCopyWithImpl<$Res>
 
 /// Create a copy of GameState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? currentQuestion = freezed,Object? questionIndex = null,Object? totalQuestions = null,Object? timeRemaining = null,Object? hasAnswered = null,Object? isCorrect = freezed,Object? pointsEarned = freezed,Object? correctAnswer = freezed,Object? rankings = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? currentQuestion = freezed,Object? questionIndex = null,Object? totalQuestions = null,Object? timeRemaining = null,Object? hasAnswered = null,Object? isCorrect = freezed,Object? pointsEarned = freezed,Object? correctAnswer = freezed,Object? rankings = freezed,Object? lastAnswerCorrect = freezed,Object? selectedAnswer = freezed,Object? answerDistribution = freezed,Object? showingFeedback = null,Object? showingCorrectAnswer = null,Object? feedbackCountdown = null,Object? isHost = null,Object? currentScore = null,}) {
   return _then(_GameState(
 currentQuestion: freezed == currentQuestion ? _self._currentQuestion : currentQuestion // ignore: cast_nullable_to_non_nullable
 as Map<String, dynamic>?,questionIndex: null == questionIndex ? _self.questionIndex : questionIndex // ignore: cast_nullable_to_non_nullable
@@ -887,7 +917,15 @@ as bool,isCorrect: freezed == isCorrect ? _self.isCorrect : isCorrect // ignore:
 as bool?,pointsEarned: freezed == pointsEarned ? _self.pointsEarned : pointsEarned // ignore: cast_nullable_to_non_nullable
 as int?,correctAnswer: freezed == correctAnswer ? _self.correctAnswer : correctAnswer // ignore: cast_nullable_to_non_nullable
 as dynamic,rankings: freezed == rankings ? _self._rankings : rankings // ignore: cast_nullable_to_non_nullable
-as List<Map<String, dynamic>>?,
+as List<Map<String, dynamic>>?,lastAnswerCorrect: freezed == lastAnswerCorrect ? _self.lastAnswerCorrect : lastAnswerCorrect // ignore: cast_nullable_to_non_nullable
+as bool?,selectedAnswer: freezed == selectedAnswer ? _self.selectedAnswer : selectedAnswer // ignore: cast_nullable_to_non_nullable
+as dynamic,answerDistribution: freezed == answerDistribution ? _self._answerDistribution : answerDistribution // ignore: cast_nullable_to_non_nullable
+as Map<dynamic, int>?,showingFeedback: null == showingFeedback ? _self.showingFeedback : showingFeedback // ignore: cast_nullable_to_non_nullable
+as bool,showingCorrectAnswer: null == showingCorrectAnswer ? _self.showingCorrectAnswer : showingCorrectAnswer // ignore: cast_nullable_to_non_nullable
+as bool,feedbackCountdown: null == feedbackCountdown ? _self.feedbackCountdown : feedbackCountdown // ignore: cast_nullable_to_non_nullable
+as int,isHost: null == isHost ? _self.isHost : isHost // ignore: cast_nullable_to_non_nullable
+as bool,currentScore: null == currentScore ? _self.currentScore : currentScore // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 

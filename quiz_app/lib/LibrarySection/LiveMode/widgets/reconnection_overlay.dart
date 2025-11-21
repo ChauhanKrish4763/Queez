@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quiz_app/providers/session_provider.dart';
 import 'package:quiz_app/services/websocket_service.dart';
+import 'package:quiz_app/utils/quiz_design_system.dart';
 
 class ReconnectionOverlay extends ConsumerWidget {
   final Widget child;
@@ -26,12 +27,12 @@ class ReconnectionOverlay extends ConsumerWidget {
               child: Center(
                 child: Card(
                   elevation: 8,
-                  margin: const EdgeInsets.all(24.0),
+                  margin: const EdgeInsets.all(QuizSpacing.lg),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(QuizBorderRadius.lg),
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.all(32.0),
+                    padding: const EdgeInsets.all(QuizSpacing.xl),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -43,7 +44,7 @@ class ReconnectionOverlay extends ConsumerWidget {
                               color: Theme.of(context).colorScheme.primary,
                             ),
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: QuizSpacing.md),
                           const Text(
                             'RECONNECTING...',
                             style: TextStyle(
@@ -52,30 +53,30 @@ class ReconnectionOverlay extends ConsumerWidget {
                               color: Colors.white,
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: QuizSpacing.sm),
                           Text(
                             'Attempting to restore connection',
-                            style: TextStyle(color: Colors.grey[400]),
+                            style: TextStyle(color: QuizColors.textSecondary),
                           ),
                         ] else ...[
                           const Icon(
                             Icons.wifi_off,
                             size: 48,
-                            color: Colors.red,
+                            color: QuizColors.incorrect,
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: QuizSpacing.md),
                           const Text(
                             'CONNECTION LOST',
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
-                              color: Colors.red,
+                              color: QuizColors.incorrect,
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: QuizSpacing.sm),
                           Text(
                             'Please check your internet connection',
-                            style: TextStyle(color: Colors.grey[400]),
+                            style: TextStyle(color: QuizColors.textSecondary),
                           ),
                         ],
                       ],

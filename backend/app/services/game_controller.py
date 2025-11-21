@@ -17,9 +17,14 @@ class GameController:
         """Get the current question for the session"""
         session_key = f"session:{session_code}"
         
+        logger.info(f"📚 Getting current question for session {session_code}")
+        
         # Get current index and quiz ID
         session_data = await self.redis.hmget(session_key, ["current_question_index", "quiz_id", "question_start_time"])
+        logger.info(f"📊 Session data from Redis: index={session_data[0]}, quiz_id={session_data[1]}")
+        
         if not all(session_data[:2]): # Check if index and quiz_id exist
+            logger.error(f"❌ Missing session data! index={session_data[0]}, quiz_id={session_data[1]}")
             return None
             
         current_index = int(session_data[0])
@@ -27,24 +32,68 @@ class GameController:
         start_time = session_data[2]
         
         # Fetch quiz from MongoDB (could be cached in Redis for performance)
+        logger.info(f"🔍 Fetching quiz from MongoDB with ID: {quiz_id}")
         quiz = await quiz_collection.find_one({"_id": ObjectId(quiz_id)})
-        if not quiz or "questions" not in quiz:
+        
+        if not quiz:
+            logger.error(f"❌ Quiz not found in MongoDB with ID: {quiz_id}")
             return None
+            
+        if "questions" not in quiz:
+            logger.error(f"❌ Quiz {quiz_id} has no questions field!")
+            return None
+            
+        logger.info(f"✅ Quiz loaded successfully. Total questions: {len(quiz['questions'])}")
             
         questions = quiz["questions"]
         if current_index >= len(questions):
+            logger.warning(f"⚠️ Question index {current_index} out of range (total: {len(questions)})")
             return None
             
         question = questions[current_index]
+        
+        # Ensure question has required fields
+        question_text = question.get('questionText', question.get('question', ''))
+        question_type = question.get('type', 'single')
+        
+        # Validate question text is not empty
+        if not question_text or not question_text.strip():
+            logger.error(f"❌ Question {current_index} has empty question text!")
+            return None
+        
+        logger.info(f"✅ Retrieved question {current_index + 1}/{len(questions)}: {question_text[:50]}...")
         
         # Calculate time remaining
         time_remaining = QUESTION_TIME_SECONDS
         if start_time:
             elapsed = (datetime.utcnow() - datetime.fromisoformat(start_time)).total_seconds()
             time_remaining = max(0, QUESTION_TIME_SECONDS - int(elapsed))
+        
+        # Build question payload with normalized field names
+        question_payload = {
+            "question": question_text,
+            "questionType": question_type,
+            "type": question_type,  # Keep for backward compatibility
+            "options": question.get('options', []),
+            "id": question.get('id', str(current_index)),
+        }
+        
+        # Include optional fields if present
+        if 'correctAnswerIndex' in question:
+            question_payload['correctAnswerIndex'] = question['correctAnswerIndex']
+        if 'correctAnswerIndices' in question:
+            question_payload['correctAnswerIndices'] = question['correctAnswerIndices']
+        if 'dragItems' in question:
+            question_payload['dragItems'] = question['dragItems']
+        if 'dropTargets' in question:
+            question_payload['dropTargets'] = question['dropTargets']
+        if 'correctMatches' in question:
+            question_payload['correctMatches'] = question['correctMatches']
+        if 'imageUrl' in question:
+            question_payload['imageUrl'] = question['imageUrl']
             
         return {
-            "question": question,
+            "question": question_payload,
             "index": current_index,
             "total": len(questions),
             "time_remaining": time_remaining

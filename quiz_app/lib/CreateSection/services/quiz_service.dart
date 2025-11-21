@@ -10,7 +10,7 @@ import '../models/quiz.dart';
 
 class QuizService {
   static const String baseUrl =
-      'https://allergy-justin-discovery-watched.trycloudflare.com'; // Public tunnel URL
+      'https://recruiting-transmitted-including-garbage.trycloudflare.com'; // Public tunnel URL
 
   static Map<String, String> get _headers => {
     'Content-Type': 'application/json',

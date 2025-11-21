@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:quiz_app/LibrarySection/LiveMode/screens/live_host_view.dart';
 import 'package:quiz_app/LibrarySection/LiveMode/screens/live_multiplayer_quiz.dart';
 import 'package:quiz_app/LibrarySection/LiveMode/widgets/reconnection_overlay.dart';
 import 'package:quiz_app/providers/session_provider.dart';
+import 'package:quiz_app/utils/quiz_design_system.dart';
 
 class LiveMultiplayerLobby extends ConsumerStatefulWidget {
   final String sessionCode;
@@ -24,10 +26,25 @@ class _LiveMultiplayerLobbyState extends ConsumerState<LiveMultiplayerLobby> {
   Widget build(BuildContext context) {
     ref.listen(sessionProvider, (previous, next) {
       if (next != null && next.status == 'active') {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const LiveMultiplayerQuiz()),
-        );
+        // Route based on role
+        if (widget.isHost) {
+          // Host sees leaderboard only
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder:
+                  (context) => LiveHostView(sessionCode: widget.sessionCode),
+            ),
+          );
+        } else {
+          // Participants see quiz
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const LiveMultiplayerQuiz(),
+            ),
+          );
+        }
       }
     });
 
@@ -76,7 +93,7 @@ class _LiveMultiplayerLobbyState extends ConsumerState<LiveMultiplayerLobby> {
       });
 
       return Scaffold(
-        backgroundColor: Colors.grey[900],
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -84,11 +101,11 @@ class _LiveMultiplayerLobbyState extends ConsumerState<LiveMultiplayerLobby> {
               CircularProgressIndicator(
                 color: Theme.of(context).colorScheme.primary,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: QuizSpacing.md),
               Text(
                 'LOADING SESSION...',
                 style: TextStyle(
-                  color: Colors.grey[400],
+                  color: QuizColors.textSecondary,
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
@@ -100,11 +117,11 @@ class _LiveMultiplayerLobbyState extends ConsumerState<LiveMultiplayerLobby> {
     }
 
     return Scaffold(
-      backgroundColor: Colors.grey[900],
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: ReconnectionOverlay(
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.all(24.0),
+            padding: const EdgeInsets.all(QuizSpacing.lg),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -112,21 +129,21 @@ class _LiveMultiplayerLobbyState extends ConsumerState<LiveMultiplayerLobby> {
                 Card(
                   elevation: 4,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(QuizBorderRadius.lg),
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.all(24.0),
+                    padding: const EdgeInsets.all(QuizSpacing.lg),
                     child: Column(
                       children: [
                         Text(
                           'SESSION CODE',
                           style: TextStyle(
-                            color: Colors.grey[400],
+                            color: QuizColors.textSecondary,
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: QuizSpacing.sm),
                         Text(
                           widget.sessionCode,
                           style: TextStyle(
@@ -140,7 +157,7 @@ class _LiveMultiplayerLobbyState extends ConsumerState<LiveMultiplayerLobby> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: QuizSpacing.xl),
 
                 // Participants Count
                 Row(
@@ -156,14 +173,14 @@ class _LiveMultiplayerLobbyState extends ConsumerState<LiveMultiplayerLobby> {
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 4,
+                        horizontal: QuizSpacing.md,
+                        vertical: QuizSpacing.xs,
                       ),
                       decoration: BoxDecoration(
                         color: Theme.of(
                           context,
                         ).colorScheme.primary.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(QuizBorderRadius.md),
                         border: Border.all(
                           color: Theme.of(context).colorScheme.primary,
                         ),
@@ -178,7 +195,7 @@ class _LiveMultiplayerLobbyState extends ConsumerState<LiveMultiplayerLobby> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: QuizSpacing.md),
 
                 // Participants List
                 Expanded(
@@ -186,8 +203,8 @@ class _LiveMultiplayerLobbyState extends ConsumerState<LiveMultiplayerLobby> {
                     gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
+                          crossAxisSpacing: QuizSpacing.md,
+                          mainAxisSpacing: QuizSpacing.md,
                           childAspectRatio: 3,
                         ),
                     itemCount: sessionState.participants.length,
@@ -196,18 +213,18 @@ class _LiveMultiplayerLobbyState extends ConsumerState<LiveMultiplayerLobby> {
                       return Card(
                         elevation: 2,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(QuizBorderRadius.md),
                         ),
                         child: Padding(
-                          padding: const EdgeInsets.all(12.0),
+                          padding: const EdgeInsets.all(QuizSpacing.md),
                           child: Row(
                             children: [
                               Icon(
                                 Icons.person_outline,
-                                color: Colors.grey[400],
+                                color: QuizColors.textSecondary,
                                 size: 20,
                               ),
-                              const SizedBox(width: 8),
+                              const SizedBox(width: QuizSpacing.sm),
                               Expanded(
                                 child: Text(
                                   participant.username,
@@ -226,7 +243,7 @@ class _LiveMultiplayerLobbyState extends ConsumerState<LiveMultiplayerLobby> {
                   ),
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: QuizSpacing.lg),
 
                 // Status / Actions
                 if (widget.isHost)
@@ -238,9 +255,9 @@ class _LiveMultiplayerLobbyState extends ConsumerState<LiveMultiplayerLobby> {
                             }
                             : null,
                     style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      padding: const EdgeInsets.symmetric(vertical: QuizSpacing.md),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(QuizBorderRadius.md),
                       ),
                     ),
                     child: const Text(
@@ -255,10 +272,10 @@ class _LiveMultiplayerLobbyState extends ConsumerState<LiveMultiplayerLobby> {
                   Card(
                     elevation: 2,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(QuizBorderRadius.md),
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.all(16.0),
+                      padding: const EdgeInsets.all(QuizSpacing.md),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -272,11 +289,11 @@ class _LiveMultiplayerLobbyState extends ConsumerState<LiveMultiplayerLobby> {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 16),
+                          const SizedBox(width: QuizSpacing.md),
                           Text(
                             'WAITING FOR HOST...',
                             style: TextStyle(
-                              color: Colors.grey[400],
+                              color: QuizColors.textSecondary,
                               fontWeight: FontWeight.bold,
                             ),
                           ),

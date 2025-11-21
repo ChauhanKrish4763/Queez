@@ -73,8 +73,14 @@ class SessionManager:
         return session_data
 
     async def add_participant(self, session_code: str, user_id: str, username: str) -> bool:
-        """Add a participant to the session"""
+        """Add a participant to the session (excluding host)"""
         session_key = f"session:{session_code}"
+        
+        # Check if user is the host - hosts should NOT be in participant list
+        host_id = await self.redis.hget(session_key, "host_id")
+        if user_id == host_id:
+            logger.info(f"Rejected participant join: {user_id} is the host of session {session_code}")
+            return False
         
         # Get current participants
         participants_json = await self.redis.hget(session_key, "participants")
@@ -114,10 +120,20 @@ class SessionManager:
 
     async def start_session(self, session_code: str, host_id: str) -> bool:
         """Transition session to active state"""
+        logger.info(f"🎮 Starting session {session_code} by host {host_id}")
+        
         session = await self.get_session(session_code)
-        if not session or session["host_id"] != host_id:
+        if not session:
+            logger.error(f"❌ Session {session_code} not found!")
             return False
             
+        if session["host_id"] != host_id:
+            logger.error(f"❌ User {host_id} is not the host (actual host: {session['host_id']})")
+            return False
+        
+        logger.info(f"✅ Setting session {session_code} status to 'active'")
+        logger.info(f"📊 Session data: quiz_id={session.get('quiz_id')}, participants={len(session.get('participants', {}))}")
+        
         await self.redis.hset(f"session:{session_code}", "status", "active")
         return True
 

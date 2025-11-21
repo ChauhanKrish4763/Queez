@@ -5,7 +5,7 @@ import 'package:quiz_app/LibrarySection/widgets/quiz_library_item.dart';
 
 class LibraryService {
   static const String baseUrl =
-      'https://allergy-justin-discovery-watched.trycloudflare.com'; // Public tunnel URL
+      'https://recruiting-transmitted-including-garbage.trycloudflare.com '; // Public tunnel URL
 
   static Future<List<QuizLibraryItem>> fetchQuizLibrary() async {
     final response = await http.get(Uri.parse('$baseUrl/quizzes/library'));

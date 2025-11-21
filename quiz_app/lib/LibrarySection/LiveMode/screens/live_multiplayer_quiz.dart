@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quiz_app/LibrarySection/LiveMode/screens/live_multiplayer_results.dart';
+import 'package:quiz_app/LibrarySection/LiveMode/utils/question_type_handler.dart';
+import 'package:quiz_app/LibrarySection/LiveMode/utils/transition_animation_controller.dart';
+import 'package:quiz_app/LibrarySection/LiveMode/widgets/answer_feedback_overlay.dart';
+import 'package:quiz_app/LibrarySection/LiveMode/widgets/correct_answer_highlight.dart';
 import 'package:quiz_app/LibrarySection/LiveMode/widgets/leaderboard_widget.dart';
+import 'package:quiz_app/LibrarySection/LiveMode/widgets/participant_score_card.dart';
+import 'package:quiz_app/LibrarySection/LiveMode/widgets/question_text_widget.dart';
 import 'package:quiz_app/LibrarySection/LiveMode/widgets/reconnection_overlay.dart';
 import 'package:quiz_app/providers/game_provider.dart';
 import 'package:quiz_app/providers/session_provider.dart';
+import 'package:quiz_app/utils/quiz_design_system.dart';
 
 class LiveMultiplayerQuiz extends ConsumerStatefulWidget {
   const LiveMultiplayerQuiz({super.key});
@@ -62,7 +69,7 @@ class _LiveMultiplayerQuizState extends ConsumerState<LiveMultiplayerQuiz> {
 
     if (currentQuestion == null) {
       return Scaffold(
-        backgroundColor: Colors.grey[900],
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: Center(
           child: CircularProgressIndicator(
             color: Theme.of(context).colorScheme.primary,
@@ -71,17 +78,17 @@ class _LiveMultiplayerQuizState extends ConsumerState<LiveMultiplayerQuiz> {
       );
     }
 
-    final options = List<String>.from(currentQuestion['options'] ?? []);
-
     return Scaffold(
-      backgroundColor: Colors.grey[900],
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: ReconnectionOverlay(
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
+        child: Stack(
+          children: [
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(QuizSpacing.lg),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
                 // Header: Timer and Question Count
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -93,20 +100,20 @@ class _LiveMultiplayerQuizState extends ConsumerState<LiveMultiplayerQuiz> {
                             Icons.timer,
                             color:
                                 gameState.timeRemaining < 10
-                                    ? Colors.red
+                                    ? QuizColors.incorrect
                                     : Theme.of(context).colorScheme.primary,
                             size: 20,
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: QuizSpacing.md),
                           Expanded(
                             child: ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(QuizBorderRadius.sm),
                               child: LinearProgressIndicator(
                                 value: gameState.timeRemaining / 30.0,
                                 backgroundColor: Colors.grey[700],
                                 color:
                                     gameState.timeRemaining < 10
-                                        ? Colors.red
+                                        ? QuizColors.incorrect
                                         : Theme.of(context).colorScheme.primary,
                                 minHeight: 8,
                               ),
@@ -115,98 +122,72 @@ class _LiveMultiplayerQuizState extends ConsumerState<LiveMultiplayerQuiz> {
                         ],
                       ),
                     ),
-                    const SizedBox(width: 24),
+                    const SizedBox(width: QuizSpacing.lg),
                     Text(
                       'Q ${gameState.questionIndex + 1} / ${gameState.totalQuestions}',
                       style: TextStyle(
-                        color: Colors.grey[400],
+                        color: QuizColors.textSecondary,
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: QuizSpacing.lg),
 
-                // Question Panel
-                Card(
-                  elevation: 4,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(24.0),
-                    child: Column(
-                      children: [
-                        Text(
-                          currentQuestion['question'] ?? '',
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  ),
+                // Question Text Widget
+                QuestionTextWidget(
+                  questionText: currentQuestion['question'] ?? '',
+                  imageUrl: currentQuestion['imageUrl'],
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: QuizSpacing.lg),
 
-                // Options
+                // Question UI based on question type
                 Expanded(
-                  child: ListView.separated(
-                    itemCount: options.length,
-                    separatorBuilder:
-                        (context, index) => const SizedBox(height: 16),
-                    itemBuilder: (context, index) {
-                      final option = options[index];
-                      // final isCorrect = gameState.correctAnswer == option; // Unused for now
-
-                      return ElevatedButton(
-                        onPressed:
-                            gameState.hasAnswered
-                                ? null
-                                : () {
-                                  ref
-                                      .read(gameProvider.notifier)
-                                      .submitAnswer(option);
-                                },
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: Text(
-                          option,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      );
+                  child: QuestionTypeHandler.buildQuestionUI(
+                    question: currentQuestion,
+                    onAnswerSelected: (answer) {
+                      ref.read(gameProvider.notifier).submitAnswer(answer);
                     },
+                    hasAnswered: gameState.hasAnswered,
+                    selectedAnswer: gameState.selectedAnswer,
+                    isCorrect: gameState.isCorrect,
+                    correctAnswer: gameState.correctAnswer,
                   ),
                 ),
 
-                // Status Message or Leaderboard
+                // Status Message, Leaderboard (Host only), or Participant Score Card
                 if (gameState.rankings != null)
-                  Expanded(
-                    child: LeaderboardWidget(
-                      rankings: gameState.rankings!,
-                      currentUserId: currentUserId ?? '',
-                    ),
-                  )
+                  // Show leaderboard only to host
+                  if (ref.watch(sessionProvider)?.hostId == currentUserId)
+                    Expanded(
+                      child: LeaderboardWidget(
+                        rankings: gameState.rankings!,
+                        currentUserId: currentUserId ?? '',
+                      ),
+                    )
+                  else
+                    // Show participant score card to non-host participants
+                    Padding(
+                      padding: const EdgeInsets.only(top: QuizSpacing.md),
+                      child: ParticipantScoreCard(
+                        currentScore: gameState.currentScore,
+                        pointsEarned: gameState.pointsEarned,
+                        lastAnswerCorrect: gameState.isCorrect,
+                      ),
+                    )
                 else if (gameState.hasAnswered &&
                     gameState.correctAnswer == null)
                   Padding(
-                    padding: const EdgeInsets.only(top: 16),
+                    padding: const EdgeInsets.only(top: QuizSpacing.md),
                     child: Center(
                       child: Text(
-                        'Waiting for other players...',
+                        // Check if single player or multiplayer
+                        (ref.watch(sessionProvider)?.participantCount ?? 0) > 1
+                            ? 'Waiting for other players...'
+                            : 'Checking answer...',
                         style: TextStyle(
-                          color: Colors.grey[400],
+                          color: QuizColors.textSecondary,
                           fontStyle: FontStyle.italic,
                         ),
                       ),
@@ -216,7 +197,7 @@ class _LiveMultiplayerQuizState extends ConsumerState<LiveMultiplayerQuiz> {
                 if (gameState.correctAnswer != null &&
                     gameState.rankings == null)
                   Padding(
-                    padding: const EdgeInsets.only(top: 16),
+                    padding: const EdgeInsets.only(top: QuizSpacing.md),
                     child: Center(
                       child: Text(
                         gameState.isCorrect == true ? 'CORRECT!' : 'INCORRECT',
@@ -225,8 +206,8 @@ class _LiveMultiplayerQuizState extends ConsumerState<LiveMultiplayerQuiz> {
                           fontWeight: FontWeight.bold,
                           color:
                               gameState.isCorrect == true
-                                  ? Colors.green
-                                  : Colors.red,
+                                  ? QuizColors.correct
+                                  : QuizColors.incorrect,
                         ),
                       ),
                     ),
@@ -235,7 +216,7 @@ class _LiveMultiplayerQuizState extends ConsumerState<LiveMultiplayerQuiz> {
                 // Host Controls
                 if (ref.watch(sessionProvider)?.hostId == currentUserId)
                   Padding(
-                    padding: const EdgeInsets.only(top: 24),
+                    padding: const EdgeInsets.only(top: QuizSpacing.lg),
                     child: OutlinedButton(
                       onPressed: () {
                         showDialog(
@@ -259,7 +240,7 @@ class _LiveMultiplayerQuizState extends ConsumerState<LiveMultiplayerQuiz> {
                                           .endQuiz();
                                     },
                                     style: TextButton.styleFrom(
-                                      foregroundColor: Colors.red,
+                                      foregroundColor: QuizColors.incorrect,
                                     ),
                                     child: const Text('END NOW'),
                                   ),
@@ -268,9 +249,9 @@ class _LiveMultiplayerQuizState extends ConsumerState<LiveMultiplayerQuiz> {
                         );
                       },
                       style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        padding: const EdgeInsets.symmetric(vertical: QuizSpacing.md),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(QuizBorderRadius.md),
                         ),
                       ),
                       child: const Text(
@@ -282,10 +263,56 @@ class _LiveMultiplayerQuizState extends ConsumerState<LiveMultiplayerQuiz> {
                       ),
                     ),
                   ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
+          
+          // Answer Feedback Overlay - shown when showingFeedback is true
+          if (gameState.showingFeedback && 
+              gameState.isCorrect != null && 
+              gameState.pointsEarned != null)
+            Container(
+              color: Colors.black.withValues(alpha: 0.7),
+              child: Center(
+                child: AnswerFeedbackOverlay(
+                  isCorrect: gameState.isCorrect!,
+                  pointsEarned: gameState.pointsEarned!,
+                  onComplete: () {
+                    // Hide feedback and show correct answer highlight
+                    ref.read(gameProvider.notifier).showCorrectAnswerHighlight();
+                  },
+                ),
+              ),
+            ),
+          
+          // Correct Answer Highlight - shown after feedback is dismissed
+          if (gameState.showingCorrectAnswer && 
+              gameState.correctAnswer != null)
+            Container(
+              color: Colors.black.withValues(alpha: 0.7),
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(QuizSpacing.lg),
+                  child: CorrectAnswerHighlight(
+                    correctAnswer: gameState.correctAnswer,
+                    countdown: 2,
+                    onCountdownComplete: () {
+                      // Use transition animation when advancing to next question
+                      TransitionAnimationController.transitionToNextQuestion(
+                        context: context,
+                        onComplete: () {
+                          // Hide correct answer highlight and allow progression to next question
+                          ref.read(gameProvider.notifier).hideCorrectAnswerHighlight();
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
       ),
     );
   }

@@ -140,3 +140,132 @@ async def test_session_creation(session_manager, monkeypatch):
     assert session["quiz_id"] == quiz_id
     assert session["host_id"] == "host"
     assert session["status"] == "waiting"
+
+@pytest.mark.asyncio
+async def test_get_current_question_includes_text_and_type(game_controller, mock_redis, monkeypatch):
+    """Test that get_current_question includes question text and questionType fields"""
+    quiz_id = str(ObjectId())
+    session_code = "TEST123"
+    
+    # Mock quiz with proper question structure
+    async def mock_find_one(*args, **kwargs):
+        return {
+            "_id": ObjectId(quiz_id),
+            "title": "Test Quiz",
+            "questions": [
+                {
+                    "id": "q1",
+                    "questionText": "What is Python?",
+                    "type": "single",
+                    "options": ["A language", "A snake", "A software", "An OS"],
+                    "correctAnswerIndex": 0
+                },
+                {
+                    "id": "q2",
+                    "questionText": "Is Python open source?",
+                    "type": "trueFalse",
+                    "options": ["True", "False"],
+                    "correctAnswerIndex": 0
+                }
+            ]
+        }
+    monkeypatch.setattr("app.core.database.collection.find_one", mock_find_one)
+    
+    # Set up session data in mock Redis
+    await mock_redis.hset(f"session:{session_code}", mapping={
+        "quiz_id": quiz_id,
+        "current_question_index": "0",
+        "question_start_time": datetime.utcnow().isoformat()
+    })
+    
+    # Get current question
+    question_data = await game_controller.get_current_question(session_code)
+    
+    # Verify structure
+    assert question_data is not None
+    assert "question" in question_data
+    assert "index" in question_data
+    assert "total" in question_data
+    assert "time_remaining" in question_data
+    
+    # Verify question payload has required fields
+    question = question_data["question"]
+    assert "question" in question, "Question text field missing"
+    assert "questionType" in question, "Question type field missing"
+    assert question["question"] == "What is Python?"
+    assert question["questionType"] == "single"
+    assert question["type"] == "single"  # Backward compatibility
+    assert "options" in question
+    assert len(question["options"]) == 4
+
+@pytest.mark.asyncio
+async def test_get_current_question_validates_empty_text(game_controller, mock_redis, monkeypatch):
+    """Test that get_current_question returns None for empty question text"""
+    quiz_id = str(ObjectId())
+    session_code = "TEST456"
+    
+    # Mock quiz with empty question text
+    async def mock_find_one(*args, **kwargs):
+        return {
+            "_id": ObjectId(quiz_id),
+            "title": "Test Quiz",
+            "questions": [
+                {
+                    "id": "q1",
+                    "questionText": "",  # Empty text
+                    "type": "single",
+                    "options": ["A", "B", "C", "D"],
+                    "correctAnswerIndex": 0
+                }
+            ]
+        }
+    monkeypatch.setattr("app.core.database.collection.find_one", mock_find_one)
+    
+    # Set up session data in mock Redis
+    await mock_redis.hset(f"session:{session_code}", mapping={
+        "quiz_id": quiz_id,
+        "current_question_index": "0",
+        "question_start_time": datetime.utcnow().isoformat()
+    })
+    
+    # Get current question should return None for empty text
+    question_data = await game_controller.get_current_question(session_code)
+    assert question_data is None
+
+@pytest.mark.asyncio
+async def test_get_current_question_handles_legacy_field_names(game_controller, mock_redis, monkeypatch):
+    """Test that get_current_question handles legacy 'question' field name"""
+    quiz_id = str(ObjectId())
+    session_code = "TEST789"
+    
+    # Mock quiz with legacy field name
+    async def mock_find_one(*args, **kwargs):
+        return {
+            "_id": ObjectId(quiz_id),
+            "title": "Test Quiz",
+            "questions": [
+                {
+                    "id": "q1",
+                    "question": "Legacy question text",  # Using 'question' instead of 'questionText'
+                    "type": "single",
+                    "options": ["A", "B"],
+                    "correctAnswerIndex": 0
+                }
+            ]
+        }
+    monkeypatch.setattr("app.core.database.collection.find_one", mock_find_one)
+    
+    # Set up session data in mock Redis
+    await mock_redis.hset(f"session:{session_code}", mapping={
+        "quiz_id": quiz_id,
+        "current_question_index": "0",
+        "question_start_time": datetime.utcnow().isoformat()
+    })
+    
+    # Get current question
+    question_data = await game_controller.get_current_question(session_code)
+    
+    # Verify it handles legacy field name
+    assert question_data is not None
+    question = question_data["question"]
+    assert question["question"] == "Legacy question text"

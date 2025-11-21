@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quiz_app/LibrarySection/LiveMode/widgets/leaderboard_widget.dart';
 import 'package:quiz_app/LibrarySection/LiveMode/widgets/reconnection_overlay.dart';
 import 'package:quiz_app/providers/session_provider.dart';
+import 'package:quiz_app/utils/quiz_design_system.dart';
 
 class LiveMultiplayerResults extends ConsumerWidget {
   const LiveMultiplayerResults({super.key});
@@ -77,7 +78,7 @@ class LiveMultiplayerResults extends ConsumerWidget {
       body: ReconnectionOverlay(
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.all(24.0),
+            padding: const EdgeInsets.all(QuizSpacing.lg),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -85,18 +86,18 @@ class LiveMultiplayerResults extends ConsumerWidget {
                 Card(
                   elevation: 4,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(QuizBorderRadius.lg),
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.all(24.0),
+                    padding: const EdgeInsets.all(QuizSpacing.lg),
                     child: Column(
                       children: [
                         const Icon(
                           Icons.emoji_events,
-                          color: Color(0xFFFFD700), // Gold
+                          color: QuizColors.gold,
                           size: 64,
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: QuizSpacing.md),
                         Text(
                           'QUIZ COMPLETED',
                           style: TextStyle(
@@ -109,7 +110,7 @@ class LiveMultiplayerResults extends ConsumerWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: QuizSpacing.xl),
 
                 // Leaderboard
                 Expanded(
@@ -119,7 +120,7 @@ class LiveMultiplayerResults extends ConsumerWidget {
                   ),
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: QuizSpacing.lg),
 
                 // Exit Button
                 ElevatedButton(
@@ -128,9 +129,9 @@ class LiveMultiplayerResults extends ConsumerWidget {
                     Navigator.of(context).popUntil((route) => route.isFirst);
                   },
                   style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    padding: const EdgeInsets.symmetric(vertical: QuizSpacing.md),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(QuizBorderRadius.md),
                     ),
                   ),
                   child: const Text(
