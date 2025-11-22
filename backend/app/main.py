@@ -12,6 +12,8 @@ from app.core.config import (
 )
 from app.api.routes import (
     quizzes,
+    flashcards,
+    library,
     sessions,
     analytics,
     users,
@@ -38,6 +40,8 @@ app.add_middleware(
 
 # Include routers
 app.include_router(quizzes.router)
+app.include_router(flashcards.router)
+app.include_router(library.router)
 app.include_router(sessions.router)
 app.include_router(analytics.router)
 app.include_router(users.router)

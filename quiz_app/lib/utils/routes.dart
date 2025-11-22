@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:quiz_app/CreateSection/screens/assessment_page.dart';
 import 'package:quiz_app/CreateSection/screens/quiz_details.dart';
 import 'package:quiz_app/CreateSection/screens/quiz_questions.dart';
+import 'package:quiz_app/CreateSection/screens/learning_tools_page.dart';
 import 'package:quiz_app/main.dart'; // or wherever your widgets are
 import 'package:quiz_app/screens/dashboard.dart';
 import 'package:quiz_app/screens/login_page.dart';
@@ -23,5 +24,6 @@ final Map<String, RouteBuilder> routeMap = {
   '/assessment_page': (context) => const AssessmentPage(),
   '/quiz_details': (context) => QuizDetails(),
   '/quiz_questions': (context) => QuizQuestions(),
+  '/learning_tools_page': (context) => const LearningToolsPage(),
   ...profileSetupRoutes,
 };

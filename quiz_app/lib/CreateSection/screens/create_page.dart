@@ -14,16 +14,18 @@ class CreatePage extends StatelessWidget {
   }
 
   void _onLearningToolsTap(BuildContext context) {
-    ScaffoldMessenger.of(
+    customNavigate(
       context,
-    ).showSnackBar(const SnackBar(content: Text('Learning Tools tapped!')));
+      '/learning_tools_page',
+      AnimationType.fade,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(20.0),
           child: Column(
             children: [
@@ -32,6 +34,7 @@ class CreatePage extends StatelessWidget {
                 description: 'Create quizzes, duels, polls, surveys and more!',
                 iconPath: 'assets/icons/quiz_icon.png',
                 onPressed: () => _onAssessmentTap(context),
+                showArrow: true,
               ),
               const SizedBox(height: 28),
               CustomCard(
@@ -39,6 +42,7 @@ class CreatePage extends StatelessWidget {
                 description: 'Flashcards, drag and drop, games and more!',
                 iconPath: 'assets/icons/flashcard_icon.png',
                 onPressed: () => _onLearningToolsTap(context),
+                showArrow: true,
               ),
             ],
           ),
