@@ -36,6 +36,9 @@ async def create_quiz(quiz: Quiz):
         # Format createdAt as "Month, Year"
         now = datetime.utcnow()
         quiz_dict["createdAt"] = now.strftime("%B, %Y")
+        
+        # Store questionCount for optimized queries
+        quiz_dict["questionCount"] = len(quiz_dict.get("questions", []))
 
         # Set originalOwner to creatorId if not provided (user created the quiz themselves)
         if not quiz_dict.get("originalOwner"):
@@ -58,13 +61,23 @@ async def create_quiz(quiz: Quiz):
             id=str(result.inserted_id),
             message="Quiz created successfully"
         )
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
     
 @router.get("/library/{user_id}", response_model=QuizLibraryResponse, summary="Get all quizzes created by a specific user")
-async def get_quiz_library_by_user(user_id: str):
+async def get_quiz_library_by_user(
+    user_id: str,
+    skip: int = Query(0, ge=0, description="Number of quizzes to skip for pagination"),
+    limit: int = Query(20, ge=1, le=100, description="Maximum number of quizzes to return")
+):
     try:
+        # Get total count for pagination
+        total_count = await collection.count_documents({"creatorId": user_id})
+        
+        # Optimized query - exclude questions array to reduce payload size
         cursor = collection.find(
             {"creatorId": user_id},
             {
@@ -72,7 +85,7 @@ async def get_quiz_library_by_user(user_id: str):
                 "description": 1,
                 "coverImagePath": 1,
                 "createdAt": 1,
-                "questions": 1,  # needed temporarily to count length
+                "questionCount": 1,  # Use pre-stored count instead of questions array
                 "language": 1,
                 "category": 1,
                 "_id": 1,
@@ -80,9 +93,9 @@ async def get_quiz_library_by_user(user_id: str):
                 "originalOwner": 1,
                 "sharedMode": 1
             }
-        ).sort("createdAt", -1)
+        ).sort("createdAt", -1).skip(skip).limit(limit)
 
-        quizzes = await cursor.to_list(length=None)
+        quizzes = await cursor.to_list(length=limit)
 
         fallback_image = "https://img.freepik.com/free-vector/student-asking-teacher-concept-illustration_114360-19831.jpg?ga=GA1.1.377073698.1750732876&semt=ais_items_boosted&w=740"
 
@@ -93,7 +106,7 @@ async def get_quiz_library_by_user(user_id: str):
                 description=quiz.get("description", ""),
                 coverImagePath=quiz.get("coverImagePath") or fallback_image,
                 createdAt=quiz.get("createdAt", ""),
-                questionCount=len(quiz.get("questions", [])),
+                questionCount=quiz.get("questionCount", len(quiz.get("questions", []))),  # Fallback to array length if no stored count
                 language=quiz.get("language", ""),
                 category=quiz.get("category", ""),
                 originalOwner=quiz.get("originalOwner"),
@@ -106,7 +119,10 @@ async def get_quiz_library_by_user(user_id: str):
         return QuizLibraryResponse(
             success=True,
             data=quiz_items,
-            count=len(quiz_items)
+            count=len(quiz_items),
+            total=total_count,  # Add total for pagination UI
+            skip=skip,
+            limit=limit
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -133,6 +149,8 @@ async def update_quiz(quiz_id: str, quiz: Quiz):
             "message": "Quiz updated successfully",
             "id": quiz_id
         }
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -158,6 +176,8 @@ async def partial_update_quiz(quiz_id: str, update_data: dict):
             "id": quiz_id,
             "updated_fields": list(update_data.keys())
         }
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -176,6 +196,8 @@ async def delete_quiz(quiz_id: str):
             "message": "Quiz deleted successfully",
             "id": quiz_id
         }
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -367,6 +389,8 @@ async def get_quiz_by_id(quiz_id: str, user_id: str = Query(..., description="Th
         quiz.pop("_id")
 
         return quiz
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -383,15 +407,27 @@ async def add_quiz_to_library(data: dict):
         
         # Import sessions_collection and users_collection here to avoid circular imports
         from app.core.database import sessions_collection, users_collection
+        from app.services.session_manager import SessionManager
         
-        # Find the session by code
+        # Check MongoDB first (for regular sessions)
         session = await sessions_collection.find_one({"session_code": quiz_code})
         
-        if not session:
-            raise HTTPException(status_code=404, detail="Quiz code not found or session expired")
+        quiz_id = None
+        mode = None
         
-        quiz_id = session.get("quiz_id")
-        mode = session.get("mode")
+        if session:
+            quiz_id = session.get("quiz_id")
+            mode = session.get("mode")
+        else:
+            # Check Redis (for live multiplayer sessions)
+            session_manager = SessionManager()
+            live_session = await session_manager.get_session(quiz_code)
+            
+            if live_session:
+                quiz_id = live_session.get("quiz_id")
+                mode = live_session.get("mode")
+            else:
+                raise HTTPException(status_code=404, detail="Quiz code not found or session expired")
         
         # Get the quiz details
         quiz = await collection.find_one({"_id": ObjectId(quiz_id)})

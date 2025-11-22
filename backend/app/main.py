@@ -18,7 +18,9 @@ from app.api.routes import (
     reviews,
     results,
     leaderboard,
-    categories
+    categories,
+    websocket,
+    live_multiplayer
 )
 
 app = FastAPI(
@@ -45,6 +47,8 @@ app.include_router(reviews.router)
 app.include_router(results.router)
 app.include_router(leaderboard.router)
 app.include_router(categories.router)
+app.include_router(live_multiplayer.router)
+app.include_router(websocket.router)
 
 @app.get("/")
 async def root():

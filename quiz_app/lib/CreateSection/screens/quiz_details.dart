@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:quiz_app/CreateSection/models/question.dart';
 import 'package:quiz_app/CreateSection/screens/quiz_questions.dart';
 import 'package:quiz_app/CreateSection/services/quiz_cache_manager.dart';
@@ -158,8 +159,16 @@ class QuizDetailsState extends State<QuizDetails> {
                     title: 'Cover Image',
                     child: ImagePickerWidget(
                       imagePath: _coverImagePath,
-                      onTap: () {
-                        // TODO: Implement image picker
+                      onTap: () async {
+                        final ImagePicker picker = ImagePicker();
+                        final XFile? image = await picker.pickImage(
+                          source: ImageSource.gallery,
+                        );
+                        if (image != null) {
+                          setState(() {
+                            _coverImagePath = image.path;
+                          });
+                        }
                       },
                     ),
                   ),

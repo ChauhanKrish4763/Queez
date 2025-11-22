@@ -48,3 +48,6 @@ class QuizLibraryResponse(BaseModel):
     success: bool
     data: List[QuizLibraryItem]
     count: int
+    total: Optional[int] = None  # Total count of all user's quizzes (for pagination)
+    skip: Optional[int] = None  # Number of quizzes skipped
+    limit: Optional[int] = None  # Maximum number of quizzes returned

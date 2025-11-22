@@ -81,7 +81,7 @@ final class AppAuthProvider extends $AsyncNotifierProvider<AppAuth, AppState> {
   AppAuth create() => AppAuth();
 }
 
-String _$appAuthHash() => r'7d965758128a6a9cb20348bf34c1646935f5bc11';
+String _$appAuthHash() => r'd26443aa24c08520aa9488b03aa39a9f0b705bb2';
 
 /// Provider for app authentication state
 
