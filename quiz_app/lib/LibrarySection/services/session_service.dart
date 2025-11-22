@@ -2,9 +2,10 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import '../../api_config.dart';
 
 class SessionService {
-  static const String baseUrl = 'https://quizapp2024.loca.lt';
+  static const String baseUrl = ApiConfig.baseUrl;
 
   // Create a new quiz session
   static Future<Map<String, dynamic>> createSession({

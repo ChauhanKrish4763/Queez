@@ -1,6 +1,6 @@
 """
 Automated API Testing Script for Quiz App
-This script automatically tests all 31 endpoints without manual intervention
+This script automatically tests all endpoints including error cases
 Run: python test_api_automated.py
 """
 
@@ -12,7 +12,7 @@ import time
 
 # Configuration
 BASE_URL = "http://localhost:8000"
-RESULTS = {"passed": 0, "failed": 0, "tests": []}
+RESULTS = {"passed": 0, "failed": 0, "error_tests": 0, "tests": []}
 
 # Colors for terminal output
 class Colors:

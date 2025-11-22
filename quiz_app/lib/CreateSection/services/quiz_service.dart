@@ -2,12 +2,12 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import '../../api_config.dart';
 import 'package:quiz_app/CreateSection/models/question.dart';
 import '../models/quiz.dart';
 
 class QuizService {
-  static const String baseUrl =
-      'https://quizapp2024.loca.lt'; // Public tunnel URL
+  static const String baseUrl = ApiConfig.baseUrl;
 
   static Future<String> createQuiz(Quiz quiz) async {
     try {

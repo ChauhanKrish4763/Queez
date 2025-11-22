@@ -20,5 +20,5 @@ from app.main import app
 __all__ = ['app']
 
 
-# uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-# lt --port 8000 --subdomain quizapp2024
+# Local development:
+# uvicorn main:app --host 0.0.0.0 --port 8000 --reload
