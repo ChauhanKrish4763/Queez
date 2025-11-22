@@ -56,6 +56,7 @@ abstract class GameState with _$GameState {
     // NEW: Animation state properties
     @JsonKey(name: 'showing_feedback') @Default(false) bool showingFeedback,
     @JsonKey(name: 'showing_correct_answer') @Default(false) bool showingCorrectAnswer,
+    @JsonKey(name: 'showing_leaderboard') @Default(false) bool showingLeaderboard,
     @JsonKey(name: 'feedback_countdown') @Default(0) int feedbackCountdown,
     // NEW: Role and score properties
     @JsonKey(name: 'is_host') @Default(false) bool isHost,

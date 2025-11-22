@@ -57,6 +57,9 @@ async def websocket_endpoint(websocket: WebSocket, session_code: str, user_id: s
                 elif message_type == "next_question":
                     await handle_next_question(websocket, session_code, user_id)
                 
+                elif message_type == "request_next_question":
+                    await handle_request_next_question(websocket, session_code, user_id)
+                
                 elif message_type == "end_quiz":
                     await handle_end_quiz(websocket, session_code, user_id)
                 
@@ -207,11 +210,19 @@ async def handle_start_quiz(websocket: WebSocket, session_code: str, user_id: st
         }, websocket)
         return
     
+    # Initialize all participants to question 0
+    session = await session_manager.get_session(session_code)
+    participants = session.get("participants", {})
+    
+    for participant_id in participants.keys():
+        await game_controller.set_participant_question_index(session_code, participant_id, 0)
+        logger.info(f"📝 Initialized participant {participant_id} to question 0")
+    
     # Start the question timer
     await game_controller.start_question_timer(session_code)
     
-    # Get first question (index 0 is already set when session was created)
-    question_data = await game_controller.get_current_question(session_code)
+    # Get first question (index 0)
+    question_data = await game_controller.get_question_by_index(session_code, 0)
     
     if not question_data:
         await manager.send_personal_message({
@@ -240,40 +251,45 @@ async def handle_submit_answer(websocket: WebSocket, session_code: str, user_id:
     timestamp = payload.get("timestamp", datetime.utcnow().timestamp())
     
     if answer is None:
-        logger.error(f"❌ No answer provided in payload: {payload}")
+        logger.error(f"❌ ANSWER - No answer provided in payload: {payload}")
         await manager.send_personal_message({
             "type": "error",
             "payload": {"message": "Invalid answer submission"}
         }, websocket)
         return
     
-    logger.info(f"📝 User {user_id} submitted answer: {answer}, timestamp: {timestamp}")
+    logger.info(f"📝 ANSWER - User {user_id} submitted answer: {answer} (timestamp: {timestamp})")
     
-    # Process answer - ✅ CORRECT: 4 arguments
+    # Process answer
     result = await game_controller.submit_answer(
         session_code, user_id, answer, timestamp
     )
     
-    logger.info(f"✅ Answer result: {result}")
+    is_correct = result.get('is_correct', False)
+    points = result.get('points', 0)
+    logger.info(f"{'✅' if is_correct else '❌'} ANSWER - Result for {user_id}: {'CORRECT' if is_correct else 'INCORRECT'}, Points: {points}")
     
     # Send result to participant
     await manager.send_personal_message({
         "type": "answer_result",
         "payload": result
     }, websocket)
+    logger.info(f"📤 ANSWER - Sent answer result to {user_id}")
     
     # ✅ GET AND BROADCAST REAL-TIME LEADERBOARD
     leaderboard = await leaderboard_manager.get_leaderboard(session_code)
+    logger.info(f"🏆 LEADERBOARD - Broadcasting update to session {session_code} ({len(leaderboard)} participants)")
+    
     await manager.broadcast_to_session({
         "type": "leaderboard_update",
         "payload": {"leaderboard": leaderboard}
     }, session_code)
     
-    logger.info(f"📊 Broadcasted leaderboard update to session {session_code}")
+    logger.info(f"✅ LEADERBOARD - Broadcast complete for session {session_code}")
 
 
 async def handle_next_question(websocket: WebSocket, session_code: str, user_id: str):
-    """Host moves to next question"""
+    """Host moves to next question (broadcast to all)"""
     is_host = await session_manager.is_host(session_code, user_id)
     
     if not is_host:
@@ -295,6 +311,68 @@ async def handle_next_question(websocket: WebSocket, session_code: str, user_id:
     else:
         # No more questions - quiz complete
         await handle_end_quiz(websocket, session_code, user_id)
+
+
+async def handle_request_next_question(websocket: WebSocket, session_code: str, user_id: str):
+    """Participant requests their next question (self-paced)"""
+    logger.info(f"📨 SELF_PACED - Participant {user_id} requesting next question")
+    
+    # Get participant's current progress
+    participant_question_index = await game_controller.get_participant_question_index(session_code, user_id)
+    total_questions = await game_controller.get_total_questions(session_code)
+    
+    logger.info(f"📊 SELF_PACED - Current index for {user_id}: {participant_question_index}/{total_questions}")
+    logger.info(f"🔍 SELF_PACED - Checking completion: {participant_question_index} >= {total_questions - 1} = {participant_question_index >= total_questions - 1}")
+    
+    # Check if participant has already completed all questions
+    if participant_question_index >= total_questions - 1:
+        logger.info(f"🏁 SELF_PACED - ✅ COMPLETION TRIGGERED! Participant {user_id} has completed all questions!")
+        
+        # Get final results
+        final_results = await leaderboard_manager.get_final_results(session_code)
+        
+        await manager.send_personal_message({
+            "type": "quiz_completed",
+            "payload": {
+                "message": "You've completed all questions!",
+                "results": final_results
+            }
+        }, websocket)
+        logger.info(f"✅ SELF_PACED - Sent completion message to {user_id}")
+        return
+    
+    # Increment their question index
+    next_index = participant_question_index + 1
+    await game_controller.set_participant_question_index(session_code, user_id, next_index)
+    
+    logger.info(f"➡️ SELF_PACED - Participant {user_id} advancing: Q{participant_question_index} → Q{next_index}")
+    
+    # Get the next question for this participant
+    question_data = await game_controller.get_question_by_index(session_code, next_index)
+    
+    if question_data:
+        # Send next question to this participant only
+        logger.info(f"📤 SELF_PACED - Sending Q{next_index + 1}/{total_questions} to participant {user_id}")
+        await manager.send_personal_message({
+            "type": "question",
+            "payload": question_data
+        }, websocket)
+        logger.info(f"✅ SELF_PACED - Successfully sent Q{next_index + 1} to {user_id}")
+    else:
+        # No more questions - participant finished
+        logger.info(f"🏁 SELF_PACED - Participant {user_id} completed all questions!")
+        
+        # Get final results
+        final_results = await leaderboard_manager.get_final_results(session_code)
+        
+        await manager.send_personal_message({
+            "type": "quiz_completed",
+            "payload": {
+                "message": "You've completed all questions!",
+                "results": final_results
+            }
+        }, websocket)
+        logger.info(f"✅ SELF_PACED - Sent completion message to {user_id}")
 
 
 async def handle_end_quiz(websocket: WebSocket, session_code: str, user_id: str):

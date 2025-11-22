@@ -1,4 +1,5 @@
 import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quiz_app/CreateSection/screens/create_page.dart';
@@ -155,7 +156,10 @@ class _BottomNavbar extends StatelessWidget {
             ),
           ],
           border: Border(
-            top: BorderSide(color: Colors.white.withValues(alpha: 0.15), width: 0.8),
+            top: BorderSide(
+              color: Colors.white.withValues(alpha: 0.15),
+              width: 0.8,
+            ),
           ),
         ),
         child: BackdropFilter(

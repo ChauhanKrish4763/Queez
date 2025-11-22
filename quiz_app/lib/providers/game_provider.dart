@@ -29,26 +29,45 @@ class GameNotifier extends Notifier<GameState> {
   }
 
   void submitAnswer(dynamic answer) {
-    if (state.hasAnswered) return;
+    if (state.hasAnswered) {
+      debugPrint('⚠️ GAME_PROVIDER - Already answered, ignoring');
+      return;
+    }
 
+    debugPrint('📤 GAME_PROVIDER - Submitting answer: $answer');
     _wsService.sendMessage('submit_answer', {
       'answer': answer,
       'timestamp': DateTime.now().millisecondsSinceEpoch / 1000,
     });
 
     state = state.copyWith(hasAnswered: true, selectedAnswer: answer);
+    debugPrint('✅ GAME_PROVIDER - Answer submitted, hasAnswered=true');
   }
 
-  void hideFeedback() {
-    state = state.copyWith(showingFeedback: false);
+  void showLeaderboard() {
+    debugPrint('🏆 GAME_PROVIDER - Showing leaderboard popup');
+    state = state.copyWith(showingLeaderboard: true);
   }
 
-  void showCorrectAnswerHighlight() {
-    state = state.copyWith(showingFeedback: false, showingCorrectAnswer: true);
+  void hideLeaderboard() {
+    debugPrint('🏆 GAME_PROVIDER - Hiding leaderboard popup');
+    state = state.copyWith(showingLeaderboard: false);
   }
 
-  void hideCorrectAnswerHighlight() {
-    state = state.copyWith(showingCorrectAnswer: false);
+  void requestNextQuestion() {
+    debugPrint('➡️ GAME_PROVIDER - Requesting next question from backend');
+    // Send request to backend for next question
+    _wsService.sendMessage('request_next_question', {});
+    // Reset state for next question
+    state = state.copyWith(
+      hasAnswered: false,
+      selectedAnswer: null,
+      isCorrect: null,
+      correctAnswer: null,
+      pointsEarned: null,
+      showingLeaderboard: false,
+    );
+    debugPrint('✅ GAME_PROVIDER - State reset for next question');
   }
 
   void _handleMessage(Map<String, dynamic> message) {
@@ -71,33 +90,28 @@ class GameNotifier extends Notifier<GameState> {
         correctAnswer: null,
         pointsEarned: null,
         rankings: null,
-        showingFeedback: false,
-        showingCorrectAnswer: false,
+        showingLeaderboard: false,
       );
       debugPrint(
         '✅ GAME_PROVIDER - State updated, currentQuestion is now: ${state.currentQuestion != null ? "SET" : "NULL"}',
       );
     } else if (type == 'answer_result') {
-      // ✅ FIXED: Handle answer result with all fields
+      // Handle answer result - just update state, no overlays
       final isCorrect = payload['is_correct'] as bool? ?? false;
       final points = payload['points'] as int? ?? 0;
       final correctAnswer = payload['correct_answer'];
       final newScore = payload['new_total_score'] as int? ?? state.currentScore;
+
+      debugPrint('✅ GAME_PROVIDER - Answer result: ${isCorrect ? "CORRECT" : "INCORRECT"}');
+      debugPrint('💰 GAME_PROVIDER - Points earned: $points, New score: $newScore');
+      debugPrint('🎯 GAME_PROVIDER - Correct answer was: $correctAnswer');
 
       state = state.copyWith(
         isCorrect: isCorrect,
         correctAnswer: correctAnswer,
         pointsEarned: points,
         currentScore: newScore,
-        showingFeedback: true,
       );
-
-      // Auto-hide feedback after 2 seconds
-      Future.delayed(const Duration(seconds: 2), () {
-        if (state.showingFeedback) {
-          hideFeedback();
-        }
-      });
     } else if (type == 'answer_feedback') {
       // Handle answer feedback message for participants (alternative message type)
       final isCorrect = payload['is_correct'] as bool? ?? false;
@@ -116,18 +130,12 @@ class GameNotifier extends Notifier<GameState> {
         correctAnswer: correctAnswer,
         currentScore: yourScore,
         answerDistribution: answerDistribution,
-        showingFeedback: true,
       );
-
-      // Auto-hide feedback after 2 seconds
-      Future.delayed(const Duration(seconds: 2), () {
-        if (state.showingFeedback) {
-          hideFeedback();
-        }
-      });
     } else if (type == 'leaderboard_update') {
-      // ✅ FIXED: Update leaderboard for all users, not just host
+      // Update leaderboard and show popup
       final leaderboard = payload['leaderboard'];
+
+      debugPrint('🏆 GAME_PROVIDER - Leaderboard update received');
 
       if (leaderboard != null) {
         final rankings =
@@ -138,7 +146,25 @@ class GameNotifier extends Notifier<GameState> {
                 : null;
 
         if (rankings != null) {
-          state = state.copyWith(rankings: rankings);
+          debugPrint('📊 GAME_PROVIDER - ${rankings.length} participants in leaderboard');
+          for (var i = 0; i < rankings.length && i < 3; i++) {
+            debugPrint('   ${i + 1}. ${rankings[i]['username']}: ${rankings[i]['score']} pts');
+          }
+          
+          // Don't show leaderboard popup on last question
+          final isLastQuestion = state.questionIndex + 1 >= state.totalQuestions;
+          debugPrint('🔍 GAME_PROVIDER - Is last question? $isLastQuestion (${state.questionIndex + 1} >= ${state.totalQuestions})');
+          
+          state = state.copyWith(
+            rankings: rankings,
+            showingLeaderboard: !isLastQuestion,
+          );
+          
+          if (isLastQuestion) {
+            debugPrint('🏁 GAME_PROVIDER - Last question! NOT showing leaderboard popup');
+          } else {
+            debugPrint('✅ GAME_PROVIDER - Leaderboard popup will be shown');
+          }
         }
       }
     } else if (type == 'answer_reveal') {
@@ -158,6 +184,7 @@ class GameNotifier extends Notifier<GameState> {
       state = state.copyWith(correctAnswer: correctAnswer, rankings: rankings);
     } else if (type == 'quiz_completed' || type == 'quiz_ended') {
       // Quiz finished
+      debugPrint('🏁 GAME_PROVIDER - Quiz completed!');
       _stopTimer();
 
       final finalRankings = payload['final_rankings'] ?? payload['results'];
@@ -165,6 +192,7 @@ class GameNotifier extends Notifier<GameState> {
         final rankings = List<Map<String, dynamic>>.from(
           finalRankings.map((item) => Map<String, dynamic>.from(item)),
         );
+        debugPrint('📊 GAME_PROVIDER - Final rankings: ${rankings.length} participants');
         state = state.copyWith(rankings: rankings);
       }
     }
