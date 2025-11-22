@@ -20,5 +20,6 @@ from app.main import app
 __all__ = ['app']
 
 
+# docker compose up -d
 # uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 # ngrok http 8000 --domain=refugia-unorderable-cyrus.ngrok-free.dev
