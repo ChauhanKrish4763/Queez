@@ -61,3 +61,4 @@ async def root():
 
 # uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 # lt --port 8000 --subdomain quizapp2024
+# docker compose up -d

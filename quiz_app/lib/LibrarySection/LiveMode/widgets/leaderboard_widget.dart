@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:quiz_app/utils/quiz_design_system.dart';
+import 'package:quiz_app/utils/color.dart';
 
 class LeaderboardWidget extends StatelessWidget {
   final List<Map<String, dynamic>> rankings;
@@ -15,6 +16,7 @@ class LeaderboardWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       elevation: 4,
+      color: AppColors.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(QuizBorderRadius.lg),
       ),
@@ -22,12 +24,12 @@ class LeaderboardWidget extends StatelessWidget {
         padding: const EdgeInsets.all(QuizSpacing.lg),
         child: Column(
           children: [
-            const Text(
+            Text(
               'LEADERBOARD',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: QuizSpacing.md),
@@ -80,16 +82,14 @@ class LeaderboardWidget extends StatelessWidget {
                     elevation: isCurrentUser ? elevation + 2 : elevation,
                     color:
                         isCurrentUser
-                            ? Theme.of(
-                              context,
-                            ).colorScheme.primary.withValues(alpha: 0.2)
-                            : null,
+                            ? AppColors.primary.withValues(alpha: 0.2)
+                            : Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(QuizBorderRadius.md),
                       side:
                           isCurrentUser
                               ? BorderSide(
-                                color: Theme.of(context).colorScheme.primary,
+                                color: AppColors.primary,
                                 width: 2,
                               )
                               : medalColor != null
@@ -158,7 +158,7 @@ class LeaderboardWidget extends StatelessWidget {
                                   Text(
                                     entry['username'] ?? 'Unknown',
                                     style: TextStyle(
-                                      color: Colors.white,
+                                      color: AppColors.textPrimary,
                                       fontWeight:
                                           isCurrentUser || rank <= 3
                                               ? FontWeight.bold
@@ -173,7 +173,7 @@ class LeaderboardWidget extends StatelessWidget {
                                     Text(
                                       'Q$answeredCount/$totalQuestions',
                                       style: TextStyle(
-                                        color: Colors.white.withValues(alpha: 0.7),
+                                        color: AppColors.textSecondary,
                                         fontSize: 12,
                                       ),
                                     ),
@@ -191,24 +191,19 @@ class LeaderboardWidget extends StatelessWidget {
                               decoration: BoxDecoration(
                                 color:
                                     medalColor?.withValues(alpha: 0.2) ??
-                                    Theme.of(context).colorScheme.primary
-                                        .withValues(alpha: 0.2),
+                                    AppColors.primary.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(
                                   QuizBorderRadius.circular,
                                 ),
                                 border: Border.all(
-                                  color:
-                                      medalColor ??
-                                      Theme.of(context).colorScheme.primary,
+                                  color: medalColor ?? AppColors.primary,
                                   width: 1,
                                 ),
                               ),
                               child: Text(
                                 '${entry['score']}',
                                 style: TextStyle(
-                                  color:
-                                      medalColor ??
-                                      Theme.of(context).colorScheme.primary,
+                                  color: medalColor ?? AppColors.primary,
                                   fontWeight: FontWeight.bold,
                                   fontSize: rank <= 3 ? 16 : 14,
                                 ),

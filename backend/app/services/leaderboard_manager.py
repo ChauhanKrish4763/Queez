@@ -100,3 +100,7 @@ class LeaderboardManager:
                     entry["wrong_answers"] = 0
         
         return leaderboard
+
+    async def get_final_results(self, session_code: str) -> List[Dict[str, Any]]:
+        """Get final results - alias for calculate_final_results"""
+        return await self.calculate_final_results(session_code)
