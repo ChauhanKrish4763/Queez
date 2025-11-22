@@ -80,18 +80,23 @@ async def websocket_endpoint(websocket: WebSocket, session_code: str, user_id: s
 async def handle_join(websocket: WebSocket, session_code: str, user_id: str, payload: dict):
     username = payload.get("username", "Anonymous")
     
+    logger.info(f"📨 JOIN request - session={session_code}, user={user_id}, username={username}")
+    
     # Validate session
     session = await session_manager.get_session(session_code)
     if not session:
+        logger.error(f"❌ Session {session_code} not found!")
         await manager.send_personal_message({"type": "error", "payload": {"message": "Session not found"}}, websocket)
         return
+    
+    logger.info(f"✅ Session {session_code} found. Current status: {session.get('status')}")
     
     # ✅ CHECK IF USER IS HOST FIRST
     is_host = await session_manager.is_host(session_code, user_id)
     
     if is_host:
         # Host is joining - send session state without adding to participants
-        logger.info(f"✅ HOST {user_id} joining their own session {session_code}")
+        logger.info(f"✅ HOST {user_id} ({username}) joining their own session {session_code}")
         
         # Prepare session payload with participants as list
         session_payload = {**session}
@@ -100,6 +105,10 @@ async def handle_join(websocket: WebSocket, session_code: str, user_id: str, pay
         
         # ✅ ADD participant_count for Flutter
         session_payload["participant_count"] = len(participants_list)
+        
+        logger.info(f"📊 HOST - Current participants: {len(participants_list)}")
+        for p in participants_list:
+            logger.info(f"   - {p.get('username', 'Unknown')} (ID: {p.get('user_id', 'Unknown')})")
         
         # Send session state to host
         await manager.send_personal_message({
@@ -111,11 +120,18 @@ async def handle_join(websocket: WebSocket, session_code: str, user_id: str, pay
         return  # Done - host doesn't get added to participants
     
     # ✅ REGULAR PARTICIPANT LOGIC BELOW
+    logger.info(f"👤 PARTICIPANT {user_id} ({username}) joining session {session_code}")
     participants = session.get("participants", {})
     is_reconnecting = user_id in participants
     
+    if is_reconnecting:
+        logger.info(f"🔄 User {user_id} is RECONNECTING")
+    else:
+        logger.info(f"🆕 User {user_id} is a NEW participant")
+    
     # Check if session is still accepting new participants
     if session["status"] != "waiting" and not is_reconnecting:
+        logger.warning(f"❌ Session {session_code} is {session['status']}, cannot accept new participants")
         await manager.send_personal_message({"type": "error", "payload": {"message": "Session is already active"}}, websocket)
         return
     
@@ -123,9 +139,14 @@ async def handle_join(websocket: WebSocket, session_code: str, user_id: str, pay
     success = await session_manager.add_participant(session_code, user_id, username)
     
     if success:
+        logger.info(f"✅ Successfully added {username} (ID: {user_id}) to session {session_code}")
+        
         # Broadcast update to all
         session = await session_manager.get_session(session_code)
         participants_list = list(session["participants"].values())
+        
+        logger.info(f"📡 Broadcasting session_update to all connections in {session_code}")
+        logger.info(f"📊 Total participants after join: {len(participants_list)}")
         
         await manager.broadcast_to_session({
             "type": "session_update",
@@ -135,6 +156,8 @@ async def handle_join(websocket: WebSocket, session_code: str, user_id: str, pay
                 "participants": participants_list
             }
         }, session_code)
+        
+        logger.info(f"✅ Broadcast complete for session {session_code}")
         
         # Send current state to this participant
         session_payload = {**session}
@@ -148,14 +171,20 @@ async def handle_join(websocket: WebSocket, session_code: str, user_id: str, pay
             "payload": session_payload
         }, websocket)
         
+        logger.info(f"✅ Sent session_state to participant {user_id}")
+        
         # If reconnecting during active quiz, send current question
         if is_reconnecting and session["status"] == "active":
+            logger.info(f"🎮 Sending current question to reconnecting user {user_id}")
             question_data = await game_controller.get_current_question(session_code)
             if question_data:
                 await manager.send_personal_message({
                     "type": "question",
                     "payload": question_data
                 }, websocket)
+                logger.info(f"✅ Sent current question to {user_id}")
+    else:
+        logger.error(f"❌ Failed to add {username} (ID: {user_id}) to session {session_code}")
 
 
 async def handle_start_quiz(websocket: WebSocket, session_code: str, user_id: str):

@@ -8,6 +8,16 @@ import 'package:quiz_app/LibrarySection/LiveMode/widgets/true_false_options.dart
 /// Routes to appropriate UI component based on question type
 class QuestionTypeHandler {
   /// Builds the appropriate question UI based on the question type
+  ///
+  /// Parameters:
+  /// - [question]: The question data containing type and options
+  /// - [onAnswerSelected]: Callback when user selects/submits an answer (receives index as int)
+  /// - [hasAnswered]: Whether the user has already answered this question
+  /// - [selectedAnswer]: The answer index the user selected (if any)
+  /// - [isCorrect]: Whether the selected answer was correct (null if not yet revealed)
+  /// - [correctAnswer]: The correct answer index (for display after submission)
+  ///
+  /// Returns the appropriate widget for the question type
   static Widget buildQuestionUI({
     required Map<String, dynamic> question,
     required Function(dynamic) onAnswerSelected,
@@ -23,7 +33,7 @@ class QuestionTypeHandler {
     // Extract options from question data
     final List<String> options = List<String>.from(question['options'] ?? []);
 
-    // ✅ FIX: Convert correctAnswer to String if it's an int
+    // Convert correctAnswer to string for display
     final String? correctAnswerStr = correctAnswer?.toString();
 
     // Route to appropriate UI component based on question type
@@ -33,9 +43,9 @@ class QuestionTypeHandler {
         // Multiple choice questions - render all options as buttons
         return MultipleChoiceOptions(
           options: options,
-          onSelect: (option) => onAnswerSelected(option),
-          selectedAnswer: selectedAnswer as String?,
-          correctAnswer: correctAnswerStr, // ✅ Use converted string
+          onSelect: (index) => onAnswerSelected(index),
+          selectedAnswer: selectedAnswer as int?,
+          correctAnswer: correctAnswerStr,
           hasAnswered: hasAnswered,
           isCorrect: isCorrect,
         );
@@ -43,9 +53,9 @@ class QuestionTypeHandler {
       case QuestionType.trueFalse:
         // True/False questions - render exactly two buttons
         return TrueFalseOptions(
-          onSelect: (value) => onAnswerSelected(value),
-          selectedAnswer: selectedAnswer as bool?,
-          correctAnswer: correctAnswer as bool?,
+          onSelect: (index) => onAnswerSelected(index),
+          selectedAnswer: selectedAnswer as int?,
+          correctAnswer: int.tryParse(correctAnswerStr ?? ''),
           hasAnswered: hasAnswered,
           isCorrect: isCorrect,
         );

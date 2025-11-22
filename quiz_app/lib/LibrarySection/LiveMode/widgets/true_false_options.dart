@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:quiz_app/utils/color.dart';
+import 'package:quiz_app/utils/quiz_design_system.dart';
 
-/// Widget that displays True/False question options for live multiplayer quiz
-/// Renders exactly two buttons with appropriate feedback colors and icons
+/// Widget for True/False questions in live multiplayer mode
 class TrueFalseOptions extends StatelessWidget {
-  final Function(bool) onSelect;
-  final bool? selectedAnswer;
-  final bool? correctAnswer;
+  final Function(int) onSelect;
+  final int? selectedAnswer;
+  final int? correctAnswer;
   final bool hasAnswered;
   final bool? isCorrect;
 
@@ -21,24 +20,20 @@ class TrueFalseOptions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Column(
       children: [
-        Expanded(
-          child: _buildOptionButton(
-            context: context,
-            label: 'True',
-            value: true,
-            icon: Icons.check_circle_outline,
-          ),
+        _buildOptionButton(
+          context: context,
+          label: 'TRUE',
+          value: 0,
+          icon: Icons.check_circle_outline,
         ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: _buildOptionButton(
-            context: context,
-            label: 'False',
-            value: false,
-            icon: Icons.cancel_outlined,
-          ),
+        const SizedBox(height: QuizSpacing.lg),
+        _buildOptionButton(
+          context: context,
+          label: 'FALSE',
+          value: 1,
+          icon: Icons.cancel_outlined,
         ),
       ],
     );
@@ -47,112 +42,107 @@ class TrueFalseOptions extends StatelessWidget {
   Widget _buildOptionButton({
     required BuildContext context,
     required String label,
-    required bool value,
+    required int value,
     required IconData icon,
   }) {
     final isSelected = selectedAnswer == value;
     final isCorrectOption = correctAnswer == value;
 
-    // Determine background color based on answer state
+    // Determine colors based on state
     Color backgroundColor;
     Color borderColor;
+    Color textColor;
     IconData? feedbackIcon;
-    Color? iconColor;
 
     if (hasAnswered) {
       if (isSelected) {
         // User selected this option
         if (isCorrect == true) {
-          // Correct answer - green background
-          backgroundColor = AppColors.success;
-          borderColor = AppColors.success;
+          // Correct answer
+          backgroundColor = QuizColors.correct;
+          borderColor = QuizColors.correct;
+          textColor = Colors.white;
           feedbackIcon = Icons.check_circle;
-          iconColor = AppColors.white;
         } else {
-          // Incorrect answer - red background
-          backgroundColor = AppColors.error;
-          borderColor = AppColors.error;
+          // Incorrect answer
+          backgroundColor = QuizColors.incorrect;
+          borderColor = QuizColors.incorrect;
+          textColor = Colors.white;
           feedbackIcon = Icons.cancel;
-          iconColor = AppColors.white;
         }
       } else if (isCorrectOption) {
-        // Show correct answer with green tint (not selected)
-        backgroundColor = AppColors.success.withValues(alpha: 0.3);
-        borderColor = AppColors.success;
-        feedbackIcon = Icons.check_circle;
-        iconColor = AppColors.success;
+        // Show correct answer (not selected)
+        backgroundColor = QuizColors.correct.withValues(alpha: 0.2);
+        borderColor = QuizColors.correct;
+        textColor = QuizColors.correct;
+        feedbackIcon = Icons.check_circle_outline;
       } else {
-        // Not selected, not correct - neutral
-        backgroundColor = AppColors.white;
-        borderColor = Colors.grey.shade300;
+        // Not selected, not correct
+        backgroundColor = QuizColors.cardBackground;
+        borderColor = QuizColors.divider;
+        textColor = QuizColors.textSecondary;
+        feedbackIcon = null;
       }
     } else {
-      // Not answered yet - neutral state
-      backgroundColor = AppColors.white;
-      borderColor = isSelected ? AppColors.primary : Colors.grey.shade300;
+      // Not answered yet
+      backgroundColor =
+          isSelected
+              ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
+              : QuizColors.cardBackground;
+      borderColor =
+          isSelected
+              ? Theme.of(context).colorScheme.primary
+              : QuizColors.divider;
+      textColor =
+          isSelected
+              ? Theme.of(context).colorScheme.primary
+              : QuizColors.textPrimary;
+      feedbackIcon = null;
     }
 
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
+      duration: QuizAnimations.normal,
       curve: Curves.easeInOut,
-      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(QuizBorderRadius.lg),
         border: Border.all(
           color: borderColor,
           width: isSelected && !hasAnswered ? 3 : 2,
         ),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
+          if (isSelected && !hasAnswered)
+            BoxShadow(
+              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
         ],
       ),
       child: InkWell(
-        onTap: hasAnswered ? null : () => onSelect(value), // Disable after answer submitted
-        borderRadius: BorderRadius.circular(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Main icon
-            Icon(
-              icon,
-              size: 48,
-              color: hasAnswered && isSelected
-                  ? AppColors.white
-                  : (hasAnswered && isCorrectOption
-                      ? AppColors.success
-                      : AppColors.primary),
-            ),
-            const SizedBox(height: 8),
-            // Label text
-            Text(
-              label,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
-              ).copyWith(
-                color: hasAnswered && isSelected
-                    ? AppColors.white
-                    : (hasAnswered && isCorrectOption
-                        ? AppColors.success
-                        : AppColors.textPrimary),
+        onTap: hasAnswered ? null : () => onSelect(value),
+        borderRadius: BorderRadius.circular(QuizBorderRadius.lg),
+        child: Padding(
+          padding: const EdgeInsets.all(QuizSpacing.xl),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 32, color: textColor),
+              const SizedBox(width: QuizSpacing.md),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: textColor,
+                ),
               ),
-            ),
-            // Feedback icon (checkmark or X)
-            if (feedbackIcon != null) ...[
-              const SizedBox(height: 8),
-              Icon(
-                feedbackIcon,
-                size: 32,
-                color: iconColor,
-              ),
+              if (feedbackIcon != null) ...[
+                const Spacer(),
+                Icon(feedbackIcon, size: 32, color: textColor),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );

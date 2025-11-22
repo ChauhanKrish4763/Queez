@@ -56,6 +56,33 @@ class _HostingPageState extends ConsumerState<HostingPage> {
     super.dispose();
   }
 
+  void _updateParticipantsFromWebSocket() {
+    final sessionState = ref.read(sessionProvider);
+    if (sessionState != null && widget.mode == 'live_multiplayer') {
+      debugPrint(
+        '🔄 HOST - WebSocket update: ${sessionState.participants.length} participants',
+      );
+      setState(() {
+        participants =
+            sessionState.participants
+                .map(
+                  (p) => {
+                    'user_id': p.userId,
+                    'username': p.username,
+                    'joined_at': p.joinedAt,
+                    'connected': p.connected,
+                    'score': p.score,
+                  },
+                )
+                .toList();
+        participantCount = participants.length;
+      });
+      debugPrint(
+        '✅ HOST - Updated participant list: $participantCount participants',
+      );
+    }
+  }
+
   Future<void> _createSession() async {
     try {
       setState(() {
@@ -102,8 +129,12 @@ class _HostingPageState extends ConsumerState<HostingPage> {
               ? user!.displayName!
               : (user?.email?.split('@')[0] ?? 'Host');
 
-      debugPrint('🎯 HOST - Attempting to join session $sessionCode as $username');
-      
+      debugPrint(
+        '🎯 HOST - Attempting to join session $sessionCode as $username',
+      );
+      debugPrint('🎯 HOST - User ID: ${widget.hostId}');
+      debugPrint('🎯 HOST - Mode: ${widget.mode}');
+
       // Connect host as a participant via WebSocket
       await ref
           .read(sessionProvider.notifier)
@@ -111,13 +142,22 @@ class _HostingPageState extends ConsumerState<HostingPage> {
           .timeout(
             const Duration(seconds: 10),
             onTimeout: () {
-              debugPrint('⚠️ HOST - Join timeout, but continuing anyway (host can still control session)');
+              debugPrint(
+                '⚠️ HOST - Join timeout after 10s, but continuing anyway (host can still control session)',
+              );
             },
           );
 
-      debugPrint('✅ HOST - Successfully connected to WebSocket');
-    } catch (e) {
-      debugPrint('⚠️ HOST - WebSocket connection issue: $e (continuing anyway)');
+      debugPrint(
+        '✅ HOST - Successfully connected to WebSocket for session $sessionCode',
+      );
+      debugPrint('✅ HOST - Now listening for participant updates in real-time');
+    } catch (e, stackTrace) {
+      debugPrint('⚠️ HOST - WebSocket connection issue: $e');
+      debugPrint('⚠️ HOST - Stack trace: $stackTrace');
+      debugPrint(
+        '⚠️ HOST - Continuing anyway - host can still start quiz via HTTP API',
+      );
       // Don't show error - host can still start the quiz via HTTP API
     }
   }
@@ -357,6 +397,14 @@ class _HostingPageState extends ConsumerState<HostingPage> {
 
   @override
   Widget build(BuildContext context) {
+    // ✅ Listen to WebSocket updates for real-time participant sync
+    ref.listen(sessionProvider, (previous, next) {
+      if (next != null && widget.mode == 'live_multiplayer') {
+        debugPrint('🔔 HOST - sessionProvider updated in HostingPage');
+        _updateParticipantsFromWebSocket();
+      }
+    });
+
     if (isLoading) {
       return Scaffold(
         body: Container(

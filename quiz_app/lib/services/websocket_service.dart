@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io'; // ✅ ADD THIS
 
 import 'package:flutter/foundation.dart';
 import 'package:web_socket_channel/io.dart';
@@ -45,26 +46,44 @@ class WebSocketService {
     const baseUrl = 'refugia-unorderable-cyrus.ngrok-free.dev';
 
     // Construct URI properly - NO trailing characters
-    final uri = Uri.parse(
-      'wss://$baseUrl/api/ws/$cleanSessionCode?user_id=$cleanUserId',
-    );
+    final wsUrl =
+        'wss://$baseUrl/api/ws/$cleanSessionCode?user_id=$cleanUserId';
 
-    debugPrint('🔌 Connecting to WebSocket: $uri'); // Debug log
+    debugPrint('🔌 Connecting to WebSocket: $wsUrl');
 
     try {
       if (_reconnectAttempts > 0) {
         _connectionStatusController.add(ConnectionStatus.reconnecting);
       }
 
-      _channel = IOWebSocketChannel.connect(
-        uri,
-        connectTimeout: const Duration(seconds: 10),
-        headers: {
-          'ngrok-skip-browser-warning': 'true',
+      // ✅ FIX: Create HttpClient that accepts bad certificates (for emulator)
+      final httpClient =
+          HttpClient()
+            ..badCertificateCallback = ((
+              X509Certificate cert,
+              String host,
+              int port,
+            ) {
+              // Accept all certificates in development
+              debugPrint(
+                '⚠️ Accepting certificate for $host (development mode)',
+              );
+              return true;
+            });
+
+      // ✅ Create WebSocket with custom HttpClient
+      final socket = await WebSocket.connect(
+        wsUrl,
+        customClient: httpClient,
+        headers: {'ngrok-skip-browser-warning': 'true'},
+      ).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          throw TimeoutException('WebSocket connection timeout');
         },
       );
 
-      await _channel!.ready;
+      _channel = IOWebSocketChannel(socket);
 
       _isConnected = true;
       _reconnectAttempts = 0;

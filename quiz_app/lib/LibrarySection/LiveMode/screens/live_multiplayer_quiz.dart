@@ -12,6 +12,7 @@ import 'package:quiz_app/LibrarySection/LiveMode/widgets/reconnection_overlay.da
 import 'package:quiz_app/providers/game_provider.dart';
 import 'package:quiz_app/providers/session_provider.dart';
 import 'package:quiz_app/utils/color.dart';
+import 'package:quiz_app/utils/quiz_design_system.dart';
 
 class LiveMultiplayerQuiz extends ConsumerStatefulWidget {
   const LiveMultiplayerQuiz({super.key});

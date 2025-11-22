@@ -5,8 +5,8 @@ import 'package:quiz_app/utils/color.dart';
 /// Renders all options as selectable buttons with appropriate feedback colors and icons
 class MultipleChoiceOptions extends StatelessWidget {
   final List<String> options;
-  final Function(String) onSelect;
-  final String? selectedAnswer;
+  final Function(int) onSelect;
+  final int? selectedAnswer;
   final String? correctAnswer;
   final bool hasAnswered;
   final bool? isCorrect;
@@ -44,8 +44,8 @@ class MultipleChoiceOptions extends StatelessWidget {
     required String option,
     required int index,
   }) {
-    final isSelected = selectedAnswer == option;
-    final isCorrectOption = correctAnswer == option;
+    final isSelected = selectedAnswer == index;
+    final isCorrectOption = correctAnswer == index.toString();
 
     // Determine background color based on answer state
     Color backgroundColor;
@@ -105,7 +105,7 @@ class MultipleChoiceOptions extends StatelessWidget {
         ],
       ),
       child: InkWell(
-        onTap: hasAnswered ? null : () => onSelect(option), // Disable after answer submitted
+        onTap: hasAnswered ? null : () => onSelect(index),
         borderRadius: BorderRadius.circular(16),
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -116,11 +116,12 @@ class MultipleChoiceOptions extends StatelessWidget {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: hasAnswered && isSelected
-                      ? AppColors.white.withValues(alpha: 0.2)
-                      : (hasAnswered && isCorrectOption
-                          ? AppColors.success.withValues(alpha: 0.2)
-                          : AppColors.primary.withValues(alpha: 0.1)),
+                  color:
+                      hasAnswered && isSelected
+                          ? AppColors.white.withValues(alpha: 0.2)
+                          : (hasAnswered && isCorrectOption
+                              ? AppColors.success.withValues(alpha: 0.2)
+                              : AppColors.primary.withValues(alpha: 0.1)),
                   shape: BoxShape.circle,
                 ),
                 child: Center(
@@ -129,11 +130,12 @@ class MultipleChoiceOptions extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: hasAnswered && isSelected
-                          ? AppColors.white
-                          : (hasAnswered && isCorrectOption
-                              ? AppColors.success
-                              : AppColors.primary),
+                      color:
+                          hasAnswered && isSelected
+                              ? AppColors.white
+                              : (hasAnswered && isCorrectOption
+                                  ? AppColors.success
+                                  : AppColors.primary),
                     ),
                   ),
                 ),
@@ -147,22 +149,19 @@ class MultipleChoiceOptions extends StatelessWidget {
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ).copyWith(
-                    color: hasAnswered && isSelected
-                        ? AppColors.white
-                        : (hasAnswered && isCorrectOption
-                            ? AppColors.success
-                            : AppColors.textPrimary),
+                    color:
+                        hasAnswered && isSelected
+                            ? AppColors.white
+                            : (hasAnswered && isCorrectOption
+                                ? AppColors.success
+                                : AppColors.textPrimary),
                   ),
                 ),
               ),
               // Feedback icon (checkmark or X)
               if (feedbackIcon != null) ...[
                 const SizedBox(width: 16),
-                Icon(
-                  feedbackIcon,
-                  size: 32,
-                  color: iconColor,
-                ),
+                Icon(feedbackIcon, size: 32, color: iconColor),
               ],
             ],
           ),
