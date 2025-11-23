@@ -1,0 +1,440 @@
+{
+  "info": {
+    "name": "Quiz App - Automated Test Suite",
+    "description": "Automated test collection with Postman test scripts",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000"
+    },
+    {
+      "key": "quiz_id",
+      "value": ""
+    },
+    {
+      "key": "user_id",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Automated Test Flow",
+      "item": [
+        {
+          "name": "1. Health Check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test 1: Status Code",
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Test 2: Response has message",
+                  "pm.test('Response contains message', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('message');",
+                  "});",
+                  "",
+                  "// Test 3: Message content",
+                  "pm.test('API is running message', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.message).to.include('running');",
+                  "});",
+                  "",
+                  "console.log('✓ Health check passed!');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": ["{{base_url}}"],
+              "path": [""]
+            }
+          }
+        },
+        {
+          "name": "2. Create Quiz",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test: Status code",
+                  "pm.test('Quiz created successfully', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Test: Response has ID",
+                  "pm.test('Response contains quiz ID', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData.id).to.be.a('string');",
+                  "    pm.expect(jsonData.id.length).to.be.greaterThan(0);",
+                  "});",
+                  "",
+                  "// Test: Success message",
+                  "pm.test('Success message present', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.message).to.include('success');",
+                  "});",
+                  "",
+                  "// Save quiz_id for later tests",
+                  "var jsonData = pm.response.json();",
+                  "pm.collectionVariables.set('quiz_id', jsonData.id);",
+                  "console.log('✓ Quiz created with ID:', jsonData.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Automated Test Quiz\",\n  \"description\": \"Created by automated testing\",\n  \"language\": \"English\",\n  \"category\": \"Science and Technology\",\n  \"questions\": [\n    {\n      \"id\": \"1\",\n      \"questionText\": \"What is automated testing?\",\n      \"type\": \"single\",\n      \"options\": [\"Running tests automatically\", \"Manual testing\", \"No testing\", \"Random testing\"],\n      \"correctAnswerIndex\": 0\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/quizzes",
+              "host": ["{{base_url}}"],
+              "path": ["quizzes"]
+            }
+          }
+        },
+        {
+          "name": "3. Get All Quizzes",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response is JSON', function () {",
+                  "    pm.response.to.be.json;",
+                  "});",
+                  "",
+                  "pm.test('Response has required fields', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('success');",
+                  "    pm.expect(jsonData).to.have.property('data');",
+                  "    pm.expect(jsonData).to.have.property('count');",
+                  "});",
+                  "",
+                  "pm.test('Data is an array', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test('Count matches data length', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.count).to.equal(jsonData.data.length);",
+                  "});",
+                  "",
+                  "console.log('✓ Retrieved', pm.response.json().count, 'quizzes');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/quizzes/library",
+              "host": ["{{base_url}}"],
+              "path": ["quizzes", "library"]
+            }
+          }
+        },
+        {
+          "name": "4. Get Quiz by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Quiz has required fields', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData).to.have.property('title');",
+                  "    pm.expect(jsonData).to.have.property('questions');",
+                  "});",
+                  "",
+                  "pm.test('Questions is an array', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.questions).to.be.an('array');",
+                  "});",
+                  "",
+                  "console.log('✓ Retrieved quiz:', pm.response.json().title);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/quizzes/{{quiz_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["quizzes", "{{quiz_id}}"]
+            }
+          }
+        },
+        {
+          "name": "5. Search Quizzes",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Search returns results', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('results');",
+                  "    pm.expect(jsonData.results).to.be.an('array');",
+                  "});",
+                  "",
+                  "console.log('✓ Search found', pm.response.json().count, 'results');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/quizzes/search?q=automated",
+              "host": ["{{base_url}}"],
+              "path": ["quizzes", "search"],
+              "query": [{ "key": "q", "value": "automated" }]
+            }
+          }
+        },
+        {
+          "name": "6. Record Quiz Attempt",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Attempt recorded', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData).to.have.property('percentage');",
+                  "});",
+                  "",
+                  "console.log('✓ Attempt recorded with', pm.response.json().percentage, '% score');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": \"automated_test\",\n  \"score\": 1,\n  \"total_questions\": 1,\n  \"time_taken\": 30,\n  \"answers\": [{\"question_id\": \"1\", \"answer\": 0}]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/quizzes/{{quiz_id}}/attempt",
+              "host": ["{{base_url}}"],
+              "path": ["quizzes", "{{quiz_id}}", "attempt"]
+            }
+          }
+        },
+        {
+          "name": "7. Get Quiz Stats",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Stats contain attempts', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.stats).to.have.property('total_attempts');",
+                  "    pm.expect(jsonData.stats.total_attempts).to.be.at.least(1);",
+                  "});",
+                  "",
+                  "console.log('✓ Stats retrieved:', pm.response.json().stats.total_attempts, 'attempts');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/quizzes/{{quiz_id}}/stats",
+              "host": ["{{base_url}}"],
+              "path": ["quizzes", "{{quiz_id}}", "stats"]
+            }
+          }
+        },
+        {
+          "name": "8. Create User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('User created', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('user_id');",
+                  "});",
+                  "",
+                  "var jsonData = pm.response.json();",
+                  "pm.collectionVariables.set('user_id', jsonData.user_id);",
+                  "console.log('✓ User created with ID:', jsonData.user_id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"auto_tester\",\n  \"email\": \"auto@test.com\",\n  \"full_name\": \"Automated Tester\",\n  \"bio\": \"Created by automated tests\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users",
+              "host": ["{{base_url}}"],
+              "path": ["users"]
+            }
+          }
+        },
+        {
+          "name": "9. Add Review",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Review added', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "});",
+                  "",
+                  "console.log('✓ Review added successfully');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": \"auto_test\",\n  \"username\": \"Auto Tester\",\n  \"rating\": 5,\n  \"comment\": \"Great quiz! (Automated test)\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/quizzes/{{quiz_id}}/reviews",
+              "host": ["{{base_url}}"],
+              "path": ["quizzes", "{{quiz_id}}", "reviews"]
+            }
+          }
+        },
+        {
+          "name": "10. Submit Result",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Result submitted', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData).to.have.property('result_id');",
+                  "});",
+                  "",
+                  "console.log('✓ Result submitted successfully');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quiz_id\": \"{{quiz_id}}\",\n  \"user_id\": \"auto_test\",\n  \"username\": \"Auto Tester\",\n  \"score\": 1,\n  \"total_questions\": 1,\n  \"percentage\": 100,\n  \"time_taken\": 30\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/results",
+              "host": ["{{base_url}}"],
+              "path": ["results"]
+            }
+          }
+        },
+        {
+          "name": "11. Get Dashboard Stats",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Dashboard stats retrieved', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.stats).to.have.property('total_quizzes');",
+                  "    pm.expect(jsonData.stats.total_quizzes).to.be.at.least(1);",
+                  "});",
+                  "",
+                  "console.log('✓ Dashboard shows', pm.response.json().stats.total_quizzes, 'quizzes');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/dashboard/stats",
+              "host": ["{{base_url}}"],
+              "path": ["dashboard", "stats"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
