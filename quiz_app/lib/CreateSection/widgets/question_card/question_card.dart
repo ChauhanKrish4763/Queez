@@ -87,6 +87,23 @@ class _QuestionCardState extends State<QuestionCard>
   void _updateDragDropQuestion() {
     widget.question.dragItems = _dragItemControllers.map((c) => c.text).toList();
     widget.question.dropTargets = _dropTargetControllers.map((c) => c.text).toList();
+    
+    // Build correctMatches map based on index matching
+    // dragItems[0] matches dropTargets[0], dragItems[1] matches dropTargets[1], etc.
+    final correctMatches = <String, String>{};
+    final minLength = widget.question.dragItems!.length < widget.question.dropTargets!.length
+        ? widget.question.dragItems!.length
+        : widget.question.dropTargets!.length;
+    
+    for (int i = 0; i < minLength; i++) {
+      final dragItem = widget.question.dragItems![i].trim();
+      final dropTarget = widget.question.dropTargets![i].trim();
+      if (dragItem.isNotEmpty && dropTarget.isNotEmpty) {
+        correctMatches[dragItem] = dropTarget;
+      }
+    }
+    
+    widget.question.correctMatches = correctMatches;
     widget.onQuestionUpdated(widget.question);
   }
 
