@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:quiz_app/CreateSection/screens/flashcard_details_page.dart';
+import 'package:quiz_app/CreateSection/screens/note_details_page.dart';
 import 'package:quiz_app/CreateSection/widgets/custom_card.dart';
 import 'package:quiz_app/utils/color.dart';
 
@@ -13,9 +14,9 @@ class LearningToolsPage extends StatelessWidget {
   }
 
   void _onNotesTap(BuildContext context) {
-    ScaffoldMessenger.of(
+    Navigator.of(
       context,
-    ).showSnackBar(const SnackBar(content: Text('Create Notes tapped!')));
+    ).push(MaterialPageRoute(builder: (context) => const NoteDetailsPage()));
   }
 
   @override
