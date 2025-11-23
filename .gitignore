@@ -35,3 +35,4 @@ dist/
 *.egg-info/
 
 .kiro/
+backend/
