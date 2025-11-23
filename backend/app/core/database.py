@@ -22,5 +22,11 @@ live_game_results_collection = db.live_game_results
 # Redis client
 import redis.asyncio as redis
 from app.core.config import REDIS_URL
+import ssl
 
-redis_client = redis.from_url(REDIS_URL, decode_responses=True)
+# Configure SSL for Upstash (rediss:// URLs)
+redis_client = redis.from_url(
+    REDIS_URL, 
+    decode_responses=True,
+    ssl_cert_reqs=ssl.CERT_NONE if REDIS_URL.startswith("rediss://") else None
+)
