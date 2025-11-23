@@ -1,32 +1,30 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:quiz_app/CreateSection/services/quiz_service.dart';
-import 'package:quiz_app/LibrarySection/widgets/quiz_library_item.dart';
+import 'package:quiz_app/LibrarySection/models/library_item.dart';
+import 'package:quiz_app/LibrarySection/services/unified_library_service.dart';
 import 'package:quiz_app/providers/auth_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'library_provider.g.dart';
 
-/// Provider for quiz library items
+/// Provider for unified library items (quizzes + flashcards)
 @riverpod
 class QuizLibrary extends _$QuizLibrary {
   @override
-  Future<List<QuizLibraryItem>> build() async {
+  Future<List<LibraryItem>> build() async {
     // Depend on the auth state. If the user logs out, this will auto-rebuild.
     final authState = ref.watch(appAuthProvider);
     final user = FirebaseAuth.instance.currentUser;
 
     // Only fetch if the user is logged in.
     if (authState.value?.loggedIn == true && user != null) {
-      final quizzesData = await QuizService.fetchQuizzesByCreator(user.uid);
-      final quizzes =
-          quizzesData.map((data) => QuizLibraryItem.fromJson(data)).toList();
+      final items = await UnifiedLibraryService.getUnifiedLibrary(user.uid);
 
-      // Fetch usernames from Firestore for quizzes with originalOwner
-      await _fetchUsernames(quizzes);
+      // Fetch usernames from Firestore for items with originalOwner
+      await _fetchUsernames(items);
 
-      return quizzes;
+      return items;
     } else {
       // Return an empty list if not logged in.
       return [];

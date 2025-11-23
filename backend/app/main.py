@@ -12,6 +12,8 @@ from app.core.config import (
 )
 from app.api.routes import (
     quizzes,
+    flashcards,
+    library,
     sessions,
     analytics,
     users,
@@ -40,6 +42,8 @@ app.add_middleware(
 
 # Include routers
 app.include_router(quizzes.router)
+app.include_router(flashcards.router)
+app.include_router(library.router)
 app.include_router(sessions.router)
 app.include_router(analytics.router)
 app.include_router(users.router)
@@ -59,6 +63,7 @@ async def root():
         "endpoints": "/docs for API documentation"
     }
 
+# Local development:
 # uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 # lt --port 8000 --subdomain quizapp2024
 # docker compose up -d

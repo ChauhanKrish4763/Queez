@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quiz_app/LibrarySection/widgets/library_body.dart';
-import 'package:quiz_app/LibrarySection/widgets/quiz_library_item.dart';
+import 'package:quiz_app/LibrarySection/models/library_item.dart';
 import 'package:quiz_app/LibrarySection/widgets/add_quiz_modal.dart';
 import 'package:quiz_app/providers/library_provider.dart';
 import 'package:quiz_app/utils/color.dart';
@@ -30,6 +30,7 @@ class LibraryPageState extends ConsumerState<LibraryPage>
     with TickerProviderStateMixin {
   late AnimationController _fadeController;
   String _searchQuery = '';
+  String? _typeFilter; // null = all, 'quiz', or 'flashcard'
   final TextEditingController _searchController = TextEditingController();
 
   @override
@@ -62,35 +63,96 @@ class LibraryPageState extends ConsumerState<LibraryPage>
     });
   }
 
-  void _filterQuizzes(String query) {
+  void _filterItems(String query) {
     setState(() {
       _searchQuery = query;
     });
   }
 
-  List<QuizLibraryItem> _getFilteredQuizzes(List<QuizLibraryItem> allQuizzes) {
-    if (_searchQuery.isEmpty) {
-      return allQuizzes;
+  void _showFilterDialog() {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: Text('Filter Library'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  title: Text('All Items'),
+                  leading: Radio<String?>(
+                    value: null,
+                    groupValue: _typeFilter,
+                    onChanged: (value) {
+                      setState(() => _typeFilter = value);
+                      Navigator.pop(context);
+                    },
+                  ),
+                ),
+                ListTile(
+                  title: Text('Quizzes Only'),
+                  leading: Radio<String?>(
+                    value: 'quiz',
+                    groupValue: _typeFilter,
+                    onChanged: (value) {
+                      setState(() => _typeFilter = value);
+                      Navigator.pop(context);
+                    },
+                  ),
+                ),
+                ListTile(
+                  title: Text('Flashcards Only'),
+                  leading: Radio<String?>(
+                    value: 'flashcard',
+                    groupValue: _typeFilter,
+                    onChanged: (value) {
+                      setState(() => _typeFilter = value);
+                      Navigator.pop(context);
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+    );
+  }
+
+  List<LibraryItem> _getFilteredItems(List<LibraryItem> allItems) {
+    var filtered = allItems;
+
+    // Apply type filter
+    if (_typeFilter != null) {
+      filtered = filtered.where((item) => item.type == _typeFilter).toList();
     }
 
-    return allQuizzes.where((quiz) {
-      return quiz.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          quiz.description.toLowerCase().contains(_searchQuery.toLowerCase());
-    }).toList();
+    // Apply search filter
+    if (_searchQuery.isNotEmpty) {
+      filtered =
+          filtered.where((item) {
+            return item.title.toLowerCase().contains(
+                  _searchQuery.toLowerCase(),
+                ) ||
+                item.description.toLowerCase().contains(
+                  _searchQuery.toLowerCase(),
+                );
+          }).toList();
+    }
+
+    return filtered;
   }
 
   @override
   Widget build(BuildContext context) {
-    final quizzesAsync = ref.watch(quizLibraryProvider);
+    final itemsAsync = ref.watch(quizLibraryProvider);
 
-    // Get filtered quizzes and loading/error state from AsyncValue
+    // Get filtered items and loading/error state from AsyncValue
     bool isLoading = false;
     String? errorMessage;
-    List<QuizLibraryItem> filteredQuizzes = [];
+    List<LibraryItem> filteredItems = [];
 
-    quizzesAsync.when(
-      data: (quizzes) {
-        filteredQuizzes = _getFilteredQuizzes(quizzes);
+    itemsAsync.when(
+      data: (items) {
+        filteredItems = _getFilteredItems(items);
       },
       loading: () {
         isLoading = true;
@@ -108,18 +170,20 @@ class LibraryPageState extends ConsumerState<LibraryPage>
             child: buildSearchSection(
               searchQuery: _searchQuery,
               searchController: _searchController,
-              onQueryChanged: _filterQuizzes,
+              onQueryChanged: _filterItems,
               context: context,
               onAddQuiz: () {
                 showAddQuizModal(context, _reloadItems);
               },
+              onFilter: _showFilterDialog,
+              typeFilter: _typeFilter,
             ),
           ),
           buildLibraryBody(
             context: context,
             isLoading: isLoading,
             errorMessage: errorMessage,
-            filteredQuizzes: filteredQuizzes,
+            filteredItems: filteredItems,
             searchQuery: _searchQuery,
             onRetry: _reloadItems,
           ),

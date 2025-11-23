@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:quiz_app/CreateSection/screens/flashcard_play_screen_new.dart';
+import 'package:quiz_app/LibrarySection/models/library_item.dart';
 import 'package:quiz_app/LibrarySection/widgets/quiz_library_item.dart';
 import 'package:quiz_app/utils/color.dart';
 import 'package:quiz_app/LibrarySection/screens/mode_selection_sheet.dart';
@@ -7,31 +9,27 @@ import 'package:quiz_app/LibrarySection/PlaySection/screens/quiz_play_screen.dar
 import 'package:quiz_app/utils/animations/page_transition.dart';
 
 class ItemCard extends StatelessWidget {
-  final QuizLibraryItem quiz;
+  final LibraryItem item;
   final VoidCallback onDelete;
-  final VoidCallback onView;
 
-  const ItemCard({
-    super.key,
-    required this.quiz,
-    required this.onDelete,
-    required this.onView,
-  });
+  const ItemCard({Key? key, required this.item, required this.onDelete})
+    : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     // Soft red color for icon background
     final Color softRed = Colors.red.shade50;
 
-    // Check if this quiz was shared in a restrictive mode (self_paced or timed_individual)
+    // Check if this item was shared in a restrictive mode (only for quizzes)
     final isRestrictiveMode =
-        quiz.sharedMode == 'self_paced' ||
-        quiz.sharedMode == 'timed_individual';
+        item.isQuiz &&
+        (item.sharedMode == 'self_paced' ||
+            item.sharedMode == 'timed_individual');
 
     // Show full features if:
-    // 1. No sharedMode (quiz was created by user, not added via code)
+    // 1. No sharedMode (item was created by user, not added via code)
     // 2. sharedMode is 'share' or 'live_multiplayer' (non-restrictive sharing)
-    // Hide features only if sharedMode is 'self_paced' or 'timed_individual'
+    // 3. Item is a flashcard (flashcards don't have sharing restrictions)
     final showFullFeatures = !isRestrictiveMode;
 
     return GestureDetector(
@@ -50,74 +48,109 @@ class ItemCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Top Row: Question count (left) and createdAt + Trash icon (right)
+            // Top Row: Type label + Question count (left) and createdAt + Trash icon (right)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Question count tag
+                  // Type label
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
+                      horizontal: 10,
+                      vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.07),
-                      borderRadius: BorderRadius.circular(16),
+                      color:
+                          item.isQuiz
+                              ? AppColors.primary.withOpacity(0.15)
+                              : AppColors.accentBright.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(6),
                     ),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.quiz_outlined,
-                          size: 18,
-                          color: AppColors.primary,
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          '${quiz.questionCount}',
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
+                    child: Text(
+                      item.isQuiz ? 'QUIZ' : 'FLASHCARD SET',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color:
+                            item.isQuiz
+                                ? AppColors.primary
+                                : AppColors.accentBright,
+                        letterSpacing: 0.5,
+                      ),
                     ),
                   ),
-                  // CreatedAt and Trash icon
+                  const SizedBox(height: 12),
+                  // Question count and date row
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // CreatedAt text
-                      Text(
-                        quiz.createdAt ?? 'Unknown',
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: AppColors.textSecondary,
+                      // Question/Card count tag
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(0.07),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              item.isQuiz
+                                  ? Icons.quiz_outlined
+                                  : Icons.style_outlined,
+                              size: 18,
+                              color: AppColors.primary,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              '${item.itemCount} ${item.isQuiz ? 'Questions' : 'Cards'}',
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      // Trash icon
-                      InkWell(
-                        onTap: onDelete,
-                        borderRadius: BorderRadius.circular(20),
-                        child: Container(
-                          width: 36,
-                          height: 36,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: softRed,
-                            border: Border.all(
-                              color: Colors.transparent,
-                              width: 2,
+                      // CreatedAt and Trash icon
+                      Row(
+                        children: [
+                          // CreatedAt text
+                          Text(
+                            item.createdAt ?? 'Unknown',
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: AppColors.textSecondary,
                             ),
                           ),
-                          child: const Icon(
-                            Icons.delete_outline,
-                            color: Colors.red,
-                            size: 20,
+                          const SizedBox(width: 12),
+                          // Trash icon
+                          InkWell(
+                            onTap: onDelete,
+                            borderRadius: BorderRadius.circular(20),
+                            child: Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: softRed,
+                                border: Border.all(
+                                  color: Colors.transparent,
+                                  width: 2,
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.delete_outline,
+                                color: Colors.red,
+                                size: 20,
+                              ),
+                            ),
                           ),
-                        ),
+                        ],
                       ),
                     ],
                   ),
@@ -131,9 +164,9 @@ class ItemCard extends StatelessWidget {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16),
                 child:
-                    quiz.coverImagePath != null
+                    item.coverImagePath != null
                         ? Image.network(
-                          quiz.coverImagePath!,
+                          item.coverImagePath!,
                           fit: BoxFit.cover,
                           errorBuilder:
                               (context, error, stackTrace) =>
@@ -156,41 +189,23 @@ class ItemCard extends StatelessWidget {
                         : _buildDefaultIcon(),
               ),
             ),
-            // Title and View Icon
+            // Title
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // Title
-                  Expanded(
-                    child: Text(
-                      quiz.title,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  // View icon (only show if showFullFeatures is true)
-                  if (showFullFeatures)
-                    IconButton(
-                      icon: const Icon(
-                        Icons.visibility_rounded,
-                        color: AppColors.iconInactive,
-                      ),
-                      onPressed: onView,
-                      tooltip: 'View',
-                    ),
-                ],
+              child: Text(
+                item.title,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
             // Author info (if available)
-            if (quiz.originalOwnerUsername != null &&
-                quiz.originalOwnerUsername!.isNotEmpty)
+            if (item.originalOwnerUsername != null &&
+                item.originalOwnerUsername!.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
                 child: Row(
@@ -203,7 +218,7 @@ class ItemCard extends StatelessWidget {
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
-                        quiz.originalOwnerUsername!,
+                        item.originalOwnerUsername!,
                         style: TextStyle(
                           fontSize: 13,
                           color: AppColors.textSecondary.withValues(alpha: 0.8),
@@ -220,7 +235,7 @@ class ItemCard extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
               child: Text(
-                quiz.description,
+                item.description,
                 style: const TextStyle(
                   fontSize: 15,
                   color: AppColors.textSecondary,
@@ -230,14 +245,57 @@ class ItemCard extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            // Share and Play Buttons
+            // Buttons - Different layout for Quiz vs Flashcard
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
               child:
-                  showFullFeatures
+                  item.isFlashcard
+                      ? // Flashcards: Only Play button (full width)
+                      SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            final user = FirebaseAuth.instance.currentUser;
+                            if (user != null) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (context) => FlashcardPlayScreen(
+                                        flashcardSetId: item.id,
+                                      ),
+                                ),
+                              );
+                            }
+                          },
+                          icon: const Icon(
+                            Icons.play_arrow,
+                            size: 20,
+                            color: AppColors.white,
+                          ),
+                          label: const Text(
+                            'Play',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: AppColors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      )
+                      : // Quizzes: Share + Play or just Play
+                      showFullFeatures
                       ? Row(
                         children: [
-                          // Share Button (only for showFullFeatures)
+                          // Share Button (only for quizzes with full features)
                           Expanded(
                             child: SizedBox(
                               height: 48,
@@ -248,8 +306,8 @@ class ItemCard extends StatelessWidget {
                                       'anonymous';
                                   showModeSelection(
                                     context: context,
-                                    quizId: quiz.id,
-                                    quizTitle: quiz.title,
+                                    quizId: item.id,
+                                    quizTitle: item.title,
                                     hostId: hostId,
                                   );
                                 },
@@ -286,7 +344,11 @@ class ItemCard extends StatelessWidget {
                                   Navigator.push(
                                     context,
                                     customRoute(
-                                      QuizPlayScreen(quizItem: quiz),
+                                      QuizPlayScreen(
+                                        quizItem: QuizLibraryItem.fromJson(
+                                          item.toQuizLibraryItem(),
+                                        ),
+                                      ),
                                       AnimationType.slideUp,
                                     ),
                                   );
@@ -304,7 +366,7 @@ class ItemCard extends StatelessWidget {
                                   ),
                                 ),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.secondary,
+                                  backgroundColor: AppColors.primary,
                                   foregroundColor: AppColors.white,
                                   elevation: 0,
                                   shape: RoundedRectangleBorder(
@@ -324,7 +386,11 @@ class ItemCard extends StatelessWidget {
                             Navigator.push(
                               context,
                               customRoute(
-                                QuizPlayScreen(quizItem: quiz),
+                                QuizPlayScreen(
+                                  quizItem: QuizLibraryItem.fromJson(
+                                    item.toQuizLibraryItem(),
+                                  ),
+                                ),
                                 AnimationType.slideUp,
                               ),
                             );
@@ -342,7 +408,7 @@ class ItemCard extends StatelessWidget {
                             ),
                           ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.secondary,
+                            backgroundColor: AppColors.primary,
                             foregroundColor: AppColors.white,
                             elevation: 0,
                             shape: RoundedRectangleBorder(

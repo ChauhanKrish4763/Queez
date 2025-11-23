@@ -4,18 +4,13 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import '../../api_config.dart';
 import 'package:quiz_app/CreateSection/models/question.dart';
 
 import '../models/quiz.dart';
 
 class QuizService {
-  static const String baseUrl =
-      'https://refugia-unorderable-cyrus.ngrok-free.dev'; // ngrok tunnel URL
-
-  static Map<String, String> get _headers => {
-    'Content-Type': 'application/json',
-    'ngrok-skip-browser-warning': 'true', // Skip ngrok browser warning
-  };
+  static const String baseUrl = ApiConfig.baseUrl;
 
   static Future<String> createQuiz(Quiz quiz) async {
     try {

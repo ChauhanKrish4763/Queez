@@ -1,6 +1,6 @@
 """
 Automated API Testing Script for Quiz App
-This script automatically tests all 31 endpoints without manual intervention
+This script automatically tests all endpoints including error cases
 Run: python test_api_automated.py
 """
 

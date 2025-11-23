@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:quiz_app/CreateSection/screens/quiz_details.dart';
 import 'package:quiz_app/CreateSection/services/quiz_service.dart';
+import 'package:quiz_app/CreateSection/services/flashcard_service.dart';
 import 'package:quiz_app/LibrarySection/widgets/item_card.dart';
-import 'package:quiz_app/LibrarySection/widgets/quiz_library_item.dart';
-import 'package:quiz_app/utils/animations/page_transition.dart';
+import 'package:quiz_app/LibrarySection/models/library_item.dart';
 import 'package:quiz_app/utils/color.dart';
 
 Widget buildSearchSection({
@@ -12,6 +11,8 @@ Widget buildSearchSection({
   required ValueChanged<String> onQueryChanged,
   required BuildContext context,
   required VoidCallback onAddQuiz,
+  required VoidCallback onFilter,
+  required String? typeFilter,
 }) {
   return Container(
     margin: const EdgeInsets.all(20),
@@ -30,10 +31,36 @@ Widget buildSearchSection({
                 height: 1.2,
               ),
             ),
-            IconButton(
-              onPressed: onAddQuiz,
-              icon: const Icon(Icons.add, size: 24),
-              tooltip: 'Add a quiz',
+            Row(
+              children: [
+                Stack(
+                  children: [
+                    IconButton(
+                      onPressed: onFilter,
+                      icon: const Icon(Icons.filter_list, size: 24),
+                      tooltip: 'Filter library',
+                    ),
+                    if (typeFilter != null)
+                      Positioned(
+                        right: 8,
+                        top: 8,
+                        child: Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: AppColors.primary,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                IconButton(
+                  onPressed: onAddQuiz,
+                  icon: const Icon(Icons.add, size: 24),
+                  tooltip: 'Add a quiz',
+                ),
+              ],
             ),
           ],
         ),
@@ -54,7 +81,7 @@ Widget buildSearchSection({
             controller: searchController,
             onChanged: onQueryChanged,
             decoration: InputDecoration(
-              hintText: 'Search quizzes...',
+              hintText: 'Search quizzes and flashcards...',
               hintStyle: TextStyle(
                 color: AppColors.textSecondary.withValues(alpha: 0.6),
                 fontWeight: FontWeight.w500,
@@ -102,7 +129,7 @@ Widget buildLibraryBody({
   required BuildContext context,
   required bool isLoading,
   required String? errorMessage,
-  required List<QuizLibraryItem> filteredQuizzes,
+  required List<LibraryItem> filteredItems,
   required String searchQuery,
   required VoidCallback onRetry,
 }) {
@@ -128,7 +155,7 @@ Widget buildLibraryBody({
             ),
             const SizedBox(height: 24),
             Text(
-              'Loading your quizzes...',
+              'Loading your library...',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -186,11 +213,11 @@ Widget buildLibraryBody({
     );
   }
 
-  if (filteredQuizzes.isEmpty) {
+  if (filteredItems.isEmpty) {
     return SliverFillRemaining(
       child: Center(
         child: Text(
-          searchQuery.isNotEmpty ? 'No matches found' : 'No quizzes available',
+          searchQuery.isNotEmpty ? 'No matches found' : 'No items in library',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,
@@ -203,52 +230,50 @@ Widget buildLibraryBody({
 
   return SliverPadding(
     padding: const EdgeInsets.all(20),
-    sliver: SliverToBoxAdapter(
-      child: _AnimatedQuizList(quizzes: filteredQuizzes),
-    ),
+    sliver: SliverToBoxAdapter(child: _AnimatedItemList(items: filteredItems)),
   );
 }
 
-class _AnimatedQuizList extends StatefulWidget {
-  final List<QuizLibraryItem> quizzes;
+class _AnimatedItemList extends StatefulWidget {
+  final List<LibraryItem> items;
 
-  const _AnimatedQuizList({required this.quizzes});
+  const _AnimatedItemList({required this.items});
 
   @override
-  State<_AnimatedQuizList> createState() => _AnimatedQuizListState();
+  State<_AnimatedItemList> createState() => _AnimatedItemListState();
 }
 
-class _AnimatedQuizListState extends State<_AnimatedQuizList> {
+class _AnimatedItemListState extends State<_AnimatedItemList> {
   final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
-  late List<QuizLibraryItem> _quizzes;
+  late List<LibraryItem> _items;
 
   @override
   void initState() {
     super.initState();
-    _quizzes = List.from(widget.quizzes);
+    _items = List.from(widget.items);
   }
 
   @override
-  void didUpdateWidget(_AnimatedQuizList oldWidget) {
+  void didUpdateWidget(_AnimatedItemList oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.quizzes.length != _quizzes.length) {
-      _quizzes = List.from(widget.quizzes);
+    if (widget.items.length != _items.length) {
+      _items = List.from(widget.items);
     }
   }
 
   Future<void> _removeItem(int index) async {
-    final removedQuiz = _quizzes[index];
-    _quizzes.removeAt(index);
+    final removedItem = _items[index];
+    _items.removeAt(index);
 
     _listKey.currentState?.removeItem(
       index,
-      (context, animation) => _buildQuizCard(removedQuiz, animation, index),
+      (context, animation) => _buildItemCard(removedItem, animation, index),
       duration: const Duration(milliseconds: 400),
     );
   }
 
-  Widget _buildQuizCard(
-    QuizLibraryItem quiz,
+  Widget _buildItemCard(
+    LibraryItem item,
     Animation<double> animation,
     int index,
   ) {
@@ -264,19 +289,18 @@ class _AnimatedQuizListState extends State<_AnimatedQuizList> {
           child: Container(
             margin: const EdgeInsets.only(bottom: 16),
             child: ItemCard(
-              quiz: quiz,
-              onView: () {
-                _privateNavigator(context, quiz, AnimationType.fade);
-              },
+              item: item,
               onDelete: () async {
                 // Show confirmation dialog
                 final confirmed = await showDialog<bool>(
                   context: context,
                   builder:
                       (context) => AlertDialog(
-                        title: const Text('Delete Quiz'),
+                        title: Text(
+                          'Delete ${item.isQuiz ? 'Quiz' : 'Flashcard Set'}',
+                        ),
                         content: Text(
-                          'Are you sure you want to delete "${quiz.title}"?',
+                          'Are you sure you want to delete "${item.title}"?',
                         ),
                         actions: [
                           TextButton(
@@ -296,31 +320,39 @@ class _AnimatedQuizListState extends State<_AnimatedQuizList> {
 
                 if (confirmed == true) {
                   try {
-                    // Delete from backend
-                    await QuizService.deleteQuiz(quiz.id);
+                    // Delete from backend based on type
+                    if (item.isQuiz) {
+                      await QuizService.deleteQuiz(item.id);
+                    } else {
+                      await FlashcardService.deleteFlashcardSet(item.id);
+                    }
 
                     // Remove item with animation
                     await _removeItem(index);
 
                     // Show success message
-                    if (!mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Quiz deleted successfully'),
-                        backgroundColor: Colors.green,
-                        duration: Duration(seconds: 2),
-                      ),
-                    );
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            '${item.isQuiz ? 'Quiz' : 'Flashcard set'} deleted successfully',
+                          ),
+                          backgroundColor: Colors.green,
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    }
                   } catch (e) {
                     // Show error message
-                    if (!mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Failed to delete quiz: $e'),
-                        backgroundColor: Colors.red,
-                        duration: const Duration(seconds: 3),
-                      ),
-                    );
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Failed to delete: $e'),
+                          backgroundColor: Colors.red,
+                          duration: const Duration(seconds: 3),
+                        ),
+                      );
+                    }
                   }
                 }
               },
@@ -337,34 +369,11 @@ class _AnimatedQuizListState extends State<_AnimatedQuizList> {
       key: _listKey,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      initialItemCount: _quizzes.length,
+      initialItemCount: _items.length,
       itemBuilder: (context, index, animation) {
-        if (index >= _quizzes.length) return const SizedBox.shrink();
-        return _buildQuizCard(_quizzes[index], animation, index);
+        if (index >= _items.length) return const SizedBox.shrink();
+        return _buildItemCard(_items[index], animation, index);
       },
     );
   }
-}
-
-void _privateNavigator(
-  BuildContext context,
-  QuizLibraryItem quizItem,
-  AnimationType animationType, {
-  GlobalKey<NavigatorState>? navigatorKey,
-}) {
-  final navigator = navigatorKey?.currentState ?? Navigator.of(context);
-
-  navigator.push(
-    PageRouteBuilder(
-      settings: RouteSettings(arguments: quizItem),
-      pageBuilder: (context, animation, secondaryAnimation) {
-        return PageTransition(
-          animation: animation,
-          animationType: animationType,
-          child: QuizDetails(quizItem: quizItem),
-        );
-      },
-      transitionDuration: const Duration(milliseconds: 300),
-    ),
-  );
 }

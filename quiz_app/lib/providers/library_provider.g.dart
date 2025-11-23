@@ -8,15 +8,15 @@ part of 'library_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Provider for quiz library items
+/// Provider for unified library items (quizzes + flashcards)
 
 @ProviderFor(QuizLibrary)
 const quizLibraryProvider = QuizLibraryProvider._();
 
-/// Provider for quiz library items
+/// Provider for unified library items (quizzes + flashcards)
 final class QuizLibraryProvider
-    extends $AsyncNotifierProvider<QuizLibrary, List<QuizLibraryItem>> {
-  /// Provider for quiz library items
+    extends $AsyncNotifierProvider<QuizLibrary, List<LibraryItem>> {
+  /// Provider for unified library items (quizzes + flashcards)
   const QuizLibraryProvider._()
     : super(
         from: null,
@@ -36,27 +36,23 @@ final class QuizLibraryProvider
   QuizLibrary create() => QuizLibrary();
 }
 
-String _$quizLibraryHash() => r'777ca8c51b94b195ce8c4353404aa6f7d55142d5';
+String _$quizLibraryHash() => r'c647e5d4bd5c32264c35ba6eb593c15b273e5a98';
 
-/// Provider for quiz library items
+/// Provider for unified library items (quizzes + flashcards)
 
-abstract class _$QuizLibrary extends $AsyncNotifier<List<QuizLibraryItem>> {
-  FutureOr<List<QuizLibraryItem>> build();
+abstract class _$QuizLibrary extends $AsyncNotifier<List<LibraryItem>> {
+  FutureOr<List<LibraryItem>> build();
   @$mustCallSuper
   @override
   void runBuild() {
     final created = build();
     final ref =
-        this.ref
-            as $Ref<AsyncValue<List<QuizLibraryItem>>, List<QuizLibraryItem>>;
+        this.ref as $Ref<AsyncValue<List<LibraryItem>>, List<LibraryItem>>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<
-                AsyncValue<List<QuizLibraryItem>>,
-                List<QuizLibraryItem>
-              >,
-              AsyncValue<List<QuizLibraryItem>>,
+              AnyNotifier<AsyncValue<List<LibraryItem>>, List<LibraryItem>>,
+              AsyncValue<List<LibraryItem>>,
               Object?,
               Object?
             >;
