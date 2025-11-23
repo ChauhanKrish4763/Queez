@@ -21,10 +21,10 @@ class FlashcardCreationPage extends StatefulWidget {
   });
 
   @override
-  _FlashcardCreationPageState createState() => _FlashcardCreationPageState();
+  FlashcardCreationPageState createState() => FlashcardCreationPageState();
 }
 
-class _FlashcardCreationPageState extends State<FlashcardCreationPage> {
+class FlashcardCreationPageState extends State<FlashcardCreationPage> {
   final List<Map<String, String>> _cards = [];
   int currentCardIndex = 0;
   bool _isSaving = false;
@@ -86,7 +86,7 @@ class _FlashcardCreationPageState extends State<FlashcardCreationPage> {
         cards: validCards,
       );
 
-      print('Flashcard set saved with ID: $flashcardSetId');
+      debugPrint('Flashcard set saved with ID: $flashcardSetId');
 
       // Show success dialog
       if (mounted) {
@@ -96,7 +96,7 @@ class _FlashcardCreationPageState extends State<FlashcardCreationPage> {
           message:
               'Your flashcard set has been saved successfully and is ready to use!',
           onDismiss: () {
-            print('Success dialog dismissed');
+            debugPrint('Success dialog dismissed');
             if (mounted) {
               Navigator.of(context).popUntil((route) => route.isFirst);
               WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -108,10 +108,10 @@ class _FlashcardCreationPageState extends State<FlashcardCreationPage> {
             }
           },
         );
-        print('Success dialog shown');
+        debugPrint('Success dialog shown');
       }
     } catch (e, stackTrace) {
-      print('Error in _saveFlashcardSet: $e\n$stackTrace');
+      debugPrint('Error in _saveFlashcardSet: $e\n$stackTrace');
       if (mounted) {
         await showDialog(
           context: context,
@@ -288,7 +288,7 @@ class _FlashcardInputCardState extends State<_FlashcardInputCard> {
             style: const TextStyle(color: Colors.black),
             decoration: InputDecoration(
               hintText: 'Enter your question here...',
-              hintStyle: TextStyle(color: Colors.black.withOpacity(0.6)),
+              hintStyle: TextStyle(color: Colors.black.withValues(alpha: 0.6)),
               filled: true,
               fillColor: Colors.white,
               border: OutlineInputBorder(
@@ -322,7 +322,7 @@ class _FlashcardInputCardState extends State<_FlashcardInputCard> {
             style: const TextStyle(color: Colors.black),
             decoration: InputDecoration(
               hintText: 'Enter your answer here...',
-              hintStyle: TextStyle(color: Colors.black.withOpacity(0.6)),
+              hintStyle: TextStyle(color: Colors.black.withValues(alpha: 0.6)),
               filled: true,
               fillColor: Colors.white,
               border: OutlineInputBorder(
@@ -380,7 +380,7 @@ class _FlashcardInputCardState extends State<_FlashcardInputCard> {
                     borderRadius: BorderRadius.circular(8),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 4,
                         offset: const Offset(0, 2),
                       ),
@@ -396,7 +396,7 @@ class _FlashcardInputCardState extends State<_FlashcardInputCard> {
                         color:
                             _frontController.text.isNotEmpty
                                 ? Colors.black
-                                : Colors.black.withOpacity(0.5),
+                                : Colors.black.withValues(alpha: 0.5),
                         fontWeight: FontWeight.w500,
                       ),
                       textAlign: TextAlign.center,
@@ -433,7 +433,7 @@ class _FlashcardNavigationBar extends StatelessWidget {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, -5),
           ),

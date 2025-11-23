@@ -1,16 +1,19 @@
 // lib/services/quiz_service.dart
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../../api_config.dart';
 import 'package:quiz_app/CreateSection/models/question.dart';
-
 import '../models/quiz.dart';
 
 class QuizService {
   static const String baseUrl = ApiConfig.baseUrl;
+
+  static Map<String, String> get _headers => {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      };
 
   static Future<String> createQuiz(Quiz quiz) async {
     try {

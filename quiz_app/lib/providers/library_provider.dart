@@ -32,16 +32,18 @@ class QuizLibrary extends _$QuizLibrary {
   }
 
   /// Fetch usernames from Firestore for originalOwner (batched for performance)
-  Future<void> _fetchUsernames(List<QuizLibraryItem> quizzes) async {
+  Future<void> _fetchUsernames(List<LibraryItem> items) async {
     final firestore = FirebaseFirestore.instance;
 
     // Collect unique owner IDs
     final uniqueOwnerIds =
-        quizzes
+        items
             .where(
-              (q) => q.originalOwner != null && q.originalOwner!.isNotEmpty,
+              (item) =>
+                  item.originalOwner != null &&
+                  item.originalOwner!.isNotEmpty,
             )
-            .map((q) => q.originalOwner!)
+            .map((item) => item.originalOwner!)
             .toSet()
             .toList();
 
@@ -69,23 +71,24 @@ class QuizLibrary extends _$QuizLibrary {
         }
       }
 
-      // Update all quizzes with fetched usernames
-      for (var i = 0; i < quizzes.length; i++) {
-        final quiz = quizzes[i];
-        if (quiz.originalOwner != null &&
-            usernameMap.containsKey(quiz.originalOwner)) {
-          quizzes[i] = QuizLibraryItem(
-            id: quiz.id,
-            title: quiz.title,
-            description: quiz.description,
-            coverImagePath: quiz.coverImagePath,
-            createdAt: quiz.createdAt,
-            questionCount: quiz.questionCount,
-            language: quiz.language,
-            category: quiz.category,
-            originalOwner: quiz.originalOwner,
-            originalOwnerUsername: usernameMap[quiz.originalOwner]!,
-            sharedMode: quiz.sharedMode,
+      // Update all items with fetched usernames
+      for (var i = 0; i < items.length; i++) {
+        final item = items[i];
+        if (item.originalOwner != null &&
+            usernameMap.containsKey(item.originalOwner)) {
+          items[i] = LibraryItem(
+            id: item.id,
+            type: item.type,
+            title: item.title,
+            description: item.description,
+            coverImagePath: item.coverImagePath,
+            createdAt: item.createdAt,
+            itemCount: item.itemCount,
+            language: item.language,
+            category: item.category,
+            originalOwner: item.originalOwner,
+            originalOwnerUsername: usernameMap[item.originalOwner]!,
+            sharedMode: item.sharedMode,
           );
         }
       }

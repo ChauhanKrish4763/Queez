@@ -1,19 +1,18 @@
-import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:quiz_app/CreateSection/screens/flashcard_play_screen_new.dart';
-import 'package:quiz_app/LibrarySection/models/library_item.dart';
-import 'package:quiz_app/LibrarySection/widgets/quiz_library_item.dart';
-import 'package:quiz_app/utils/color.dart';
-import 'package:quiz_app/LibrarySection/screens/mode_selection_sheet.dart';
 import 'package:quiz_app/LibrarySection/PlaySection/screens/quiz_play_screen.dart';
+import 'package:quiz_app/LibrarySection/models/library_item.dart';
+import 'package:quiz_app/LibrarySection/screens/mode_selection_sheet.dart';
+import 'package:quiz_app/LibrarySection/widgets/quiz_library_item.dart';
 import 'package:quiz_app/utils/animations/page_transition.dart';
+import 'package:quiz_app/utils/color.dart';
 
 class ItemCard extends StatelessWidget {
   final LibraryItem item;
   final VoidCallback onDelete;
 
-  const ItemCard({Key? key, required this.item, required this.onDelete})
-    : super(key: key);
+  const ItemCard({super.key, required this.item, required this.onDelete});
 
   @override
   Widget build(BuildContext context) {
@@ -63,8 +62,8 @@ class ItemCard extends StatelessWidget {
                     decoration: BoxDecoration(
                       color:
                           item.isQuiz
-                              ? AppColors.primary.withOpacity(0.15)
-                              : AppColors.accentBright.withOpacity(0.15),
+                              ? AppColors.primary.withValues(alpha: 0.15)
+                              : AppColors.accentBright.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
@@ -92,7 +91,7 @@ class ItemCard extends StatelessWidget {
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.07),
+                          color: AppColors.primary.withValues(alpha: 0.07),
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Row(

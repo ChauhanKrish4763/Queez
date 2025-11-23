@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:quiz_app/CreateSection/services/quiz_service.dart';
 import 'package:quiz_app/CreateSection/services/flashcard_service.dart';
-import 'package:quiz_app/LibrarySection/widgets/item_card.dart';
+import 'package:quiz_app/CreateSection/services/quiz_service.dart';
 import 'package:quiz_app/LibrarySection/models/library_item.dart';
+import 'package:quiz_app/LibrarySection/widgets/item_card.dart';
 import 'package:quiz_app/utils/color.dart';
 
 Widget buildSearchSection({
@@ -331,28 +331,26 @@ class _AnimatedItemListState extends State<_AnimatedItemList> {
                     await _removeItem(index);
 
                     // Show success message
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            '${item.isQuiz ? 'Quiz' : 'Flashcard set'} deleted successfully',
-                          ),
-                          backgroundColor: Colors.green,
-                          duration: Duration(seconds: 2),
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          '${item.isQuiz ? 'Quiz' : 'Flashcard set'} deleted successfully',
                         ),
-                      );
-                    }
+                        backgroundColor: Colors.green,
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
                   } catch (e) {
                     // Show error message
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Failed to delete: $e'),
-                          backgroundColor: Colors.red,
-                          duration: const Duration(seconds: 3),
-                        ),
-                      );
-                    }
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Failed to delete: $e'),
+                        backgroundColor: Colors.red,
+                        duration: const Duration(seconds: 3),
+                      ),
+                    );
                   }
                 }
               },

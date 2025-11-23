@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:quiz_app/LibrarySection/widgets/library_body.dart';
 import 'package:quiz_app/LibrarySection/models/library_item.dart';
 import 'package:quiz_app/LibrarySection/widgets/add_quiz_modal.dart';
+import 'package:quiz_app/LibrarySection/widgets/library_body.dart';
 import 'package:quiz_app/providers/library_provider.dart';
 import 'package:quiz_app/utils/color.dart';
 
@@ -75,43 +75,33 @@ class LibraryPageState extends ConsumerState<LibraryPage>
       builder:
           (context) => AlertDialog(
             title: Text('Filter Library'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ListTile(
-                  title: Text('All Items'),
-                  leading: Radio<String?>(
-                    value: null,
+            content: StatefulBuilder(
+              builder:
+                  (context, setDialogState) => RadioGroup<String?>(
                     groupValue: _typeFilter,
                     onChanged: (value) {
+                      setDialogState(() => _typeFilter = value);
                       setState(() => _typeFilter = value);
                       Navigator.pop(context);
                     },
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        RadioListTile<String?>(
+                          title: Text('All Items'),
+                          value: null,
+                        ),
+                        RadioListTile<String?>(
+                          title: Text('Quizzes Only'),
+                          value: 'quiz',
+                        ),
+                        RadioListTile<String?>(
+                          title: Text('Flashcards Only'),
+                          value: 'flashcard',
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                ListTile(
-                  title: Text('Quizzes Only'),
-                  leading: Radio<String?>(
-                    value: 'quiz',
-                    groupValue: _typeFilter,
-                    onChanged: (value) {
-                      setState(() => _typeFilter = value);
-                      Navigator.pop(context);
-                    },
-                  ),
-                ),
-                ListTile(
-                  title: Text('Flashcards Only'),
-                  leading: Radio<String?>(
-                    value: 'flashcard',
-                    groupValue: _typeFilter,
-                    onChanged: (value) {
-                      setState(() => _typeFilter = value);
-                      Navigator.pop(context);
-                    },
-                  ),
-                ),
-              ],
             ),
           ),
     );

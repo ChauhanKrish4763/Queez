@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:quiz_app/CreateSection/screens/flashcard_creation_page.dart';
 import 'package:quiz_app/CreateSection/widgets/custom_dropdown.dart';
 import 'package:quiz_app/CreateSection/widgets/custom_text_field.dart';
@@ -12,10 +12,10 @@ class FlashcardDetailsPage extends StatefulWidget {
   const FlashcardDetailsPage({super.key});
 
   @override
-  _FlashcardDetailsPageState createState() => _FlashcardDetailsPageState();
+  FlashcardDetailsPageState createState() => FlashcardDetailsPageState();
 }
 
-class _FlashcardDetailsPageState extends State<FlashcardDetailsPage> {
+class FlashcardDetailsPageState extends State<FlashcardDetailsPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();

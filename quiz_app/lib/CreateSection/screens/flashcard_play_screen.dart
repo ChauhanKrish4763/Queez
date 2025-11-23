@@ -346,7 +346,7 @@ class _FlashcardPlayScreenState extends State<FlashcardPlayScreen>
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: accentColor.withOpacity(0.2),
+            color: accentColor.withValues(alpha: 0.2),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -358,7 +358,7 @@ class _FlashcardPlayScreenState extends State<FlashcardPlayScreen>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              color: accentColor.withOpacity(0.1),
+              color: accentColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
