@@ -47,9 +47,13 @@ class _DragDropInterfaceState extends State<DragDropInterface> {
   void didUpdateWidget(DragDropInterface oldWidget) {
     super.didUpdateWidget(oldWidget);
     
+    debugPrint('🔄 DRAG_DROP - didUpdateWidget called');
+    debugPrint('🔄 DRAG_DROP - hasAnswered: ${widget.hasAnswered}, pendingChanges: $_pendingChanges');
+    
     // Only reset state if items or targets have changed
     if (oldWidget.dragItems != widget.dragItems ||
         oldWidget.dropTargets != widget.dropTargets) {
+      debugPrint('🔄 DRAG_DROP - Items/targets changed, reinitializing');
       _initializeState();
       return;
     }
@@ -57,12 +61,14 @@ class _DragDropInterfaceState extends State<DragDropInterface> {
     // Preserve local state when pending changes exist
     // This prevents external state updates from overwriting user actions
     if (_pendingChanges) {
+      debugPrint('🔄 DRAG_DROP - Pending changes exist, ignoring external updates');
       // Don't accept new props while user is actively making changes
       return;
     }
     
     // If we've already submitted, preserve the submitted state
     if (widget.hasAnswered && _submittedMatches != null) {
+      debugPrint('🔄 DRAG_DROP - Already submitted, preserving state');
       // Don't reset state after submission
       return;
     }
@@ -82,6 +88,8 @@ class _DragDropInterfaceState extends State<DragDropInterface> {
 
   void _handleSubmit() {
     if (_allItemsPlaced && !widget.hasAnswered) {
+      debugPrint('📤 DRAG_DROP - Submitting matches: $_matches');
+      
       // Build the matches map (dragItem -> dropTarget)
       final userMatches = <String, String>{};
       _matches.forEach((target, dragItem) {
@@ -91,11 +99,19 @@ class _DragDropInterfaceState extends State<DragDropInterface> {
       });
       
       // Preserve the submitted matches to prevent state loss
+      // ✅ FIX: Only include non-null values to prevent empty string issues
       setState(() {
-        _submittedMatches = Map<String, String>.from(
-          _matches.map((key, value) => MapEntry(key, value ?? '')),
-        );
+        _submittedMatches = <String, String>{};
+        _matches.forEach((target, dragItem) {
+          if (dragItem != null && dragItem.isNotEmpty) {
+            _submittedMatches![target] = dragItem;
+          }
+        });
+        // Clear pending changes flag since we're submitting
+        _pendingChanges = false;
       });
+      
+      debugPrint('📤 DRAG_DROP - Submitted matches preserved: $_submittedMatches');
       
       widget.onMatchSubmit(userMatches);
     }
@@ -103,6 +119,8 @@ class _DragDropInterfaceState extends State<DragDropInterface> {
 
   void _handleItemPlaced(String dropTarget, String dragItem) {
     if (widget.hasAnswered) return; // Don't allow changes after submission
+
+    debugPrint('🎯 DRAG_DROP - Item placed: $dragItem -> $dropTarget');
 
     setState(() {
       // Remove dragItem from its previous position if it was already placed
@@ -114,6 +132,7 @@ class _DragDropInterfaceState extends State<DragDropInterface> {
       });
 
       if (previousTarget != null) {
+        debugPrint('🎯 DRAG_DROP - Removing $dragItem from previous target: $previousTarget');
         _matches[previousTarget!] = null;
       }
 
@@ -121,7 +140,11 @@ class _DragDropInterfaceState extends State<DragDropInterface> {
       _matches[dropTarget] = dragItem;
       
       // Set pending changes flag to prevent external state overwrites
+      // DO NOT clear this flag with a timeout - keep it until submission
       _pendingChanges = true;
+      
+      debugPrint('🎯 DRAG_DROP - Current matches: $_matches');
+      debugPrint('🎯 DRAG_DROP - Pending changes: $_pendingChanges');
     });
 
     // Force rebuild immediately
@@ -131,14 +154,8 @@ class _DragDropInterfaceState extends State<DragDropInterface> {
       }
     });
     
-    // Clear pending changes after backend confirmation timeout (2 seconds)
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        setState(() {
-          _pendingChanges = false;
-        });
-      }
-    });
+    // ❌ REMOVED: The 2-second timeout that was causing items to revert
+    // The _pendingChanges flag will stay true until submission or widget reset
   }
 
   void _handleItemRemoved(String dropTarget) {
@@ -301,12 +318,19 @@ class _DragDropInterfaceState extends State<DragDropInterface> {
         : _matches[dropTarget];
     final isEmpty = matchedItem == null || matchedItem.isEmpty;
 
+    debugPrint('🎨 DROP_ZONE - Building zone for: $dropTarget');
+    debugPrint('🎨 DROP_ZONE - hasAnswered: ${widget.hasAnswered}');
+    debugPrint('🎨 DROP_ZONE - _submittedMatches: $_submittedMatches');
+    debugPrint('🎨 DROP_ZONE - _matches: ${_matches[dropTarget]}');
+    debugPrint('🎨 DROP_ZONE - matchedItem: $matchedItem');
+    debugPrint('🎨 DROP_ZONE - isEmpty: $isEmpty');
+
     // Check if this match is correct (only after submission)
     bool? isCorrectMatch;
     if (widget.hasAnswered &&
         widget.correctMatches != null &&
-        matchedItem != null) {
-      // 🔥 FIX: Debug logging
+        matchedItem != null &&
+        matchedItem.isNotEmpty) {
       debugPrint('🔍 DROP_ZONE - Checking match: $matchedItem -> $dropTarget');
       debugPrint('🔍 DROP_ZONE - Correct matches: ${widget.correctMatches}');
 

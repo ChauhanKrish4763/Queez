@@ -511,51 +511,27 @@ class _LiveMultiplayerQuizState extends ConsumerState<LiveMultiplayerQuiz> {
               ),
             ),
 
-            // Check if all participants have completed current question
+            // Always show leaderboard - no waiting check
             Builder(
               builder: (context) {
-                final session = ref.watch(sessionProvider);
-                final currentQuestionIndex = gameState.questionIndex;
-                final hostId = session?.hostId;
+                debugPrint('🏆 LEADERBOARD - Rankings count: ${rankings.length}');
                 
-                // Filter out host from participants
-                final nonHostParticipants = session?.participants.where(
-                  (p) => p.userId != hostId
-                ).toList() ?? [];
-                
-                final allParticipantsCompleted = nonHostParticipants.every(
-                  (p) => p.answers.length > currentQuestionIndex
-                );
-
-                if (!allParticipantsCompleted && nonHostParticipants.isNotEmpty) {
-                  final completedCount = nonHostParticipants.where(
-                    (p) => p.answers.length > currentQuestionIndex
-                  ).length;
-                  final totalCount = nonHostParticipants.length;
-
+                // Show message if no rankings yet
+                if (rankings.isEmpty) {
                   return Padding(
                     padding: const EdgeInsets.all(24),
                     child: Column(
                       children: [
                         Icon(
-                          Icons.hourglass_empty,
+                          Icons.leaderboard,
                           size: 48,
-                          color: AppColors.primary,
+                          color: AppColors.textSecondary,
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'Waiting for other players...',
+                          'No rankings available yet',
                           style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          '$completedCount / $totalCount players completed',
-                          style: TextStyle(
-                            fontSize: 14,
+                            fontSize: 16,
                             color: AppColors.textSecondary,
                           ),
                         ),
@@ -563,7 +539,7 @@ class _LiveMultiplayerQuizState extends ConsumerState<LiveMultiplayerQuiz> {
                     ),
                   );
                 }
-
+                
                 // Top 3 Podium
                 if (rankings.length >= 3) {
                   return Padding(
