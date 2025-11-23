@@ -4,9 +4,20 @@
 
 ```
 quiz_app/
+├── .flutter-plugins-dependencies
+├── .gitignore
+├── .metadata
+├── analysis_options.yaml
+├── analyze_output.txt
+├── devtools_options.yaml
+├── pubspec.lock
 ├── pubspec.yaml
+├── TODO.txt
+├── .vscode/
+│   └── settings.json
 ├── lib/
-│   ├── main.dart
+│   ├── api_config.dart
+├── main.dart
 │   ├── config/
 │   ├── CreateSection/
 │   │   ├── mixins/
@@ -61,9 +72,16 @@ quiz_app/
 ├── assets/
 │   ├── icons/
 │   └── ui/
-│       └── sci-fi/
 ├── android/
+│   ├── build.gradle.kts
+│   ├── gradle.properties
+│   ├── gradlew
+│   ├── gradlew.bat
+│   ├── local.properties
+│   ├── settings.gradle.kts
 │   └── app/
+│       ├── build.gradle.kts
+│       ├── google-services.json
 │       └── src/
 ├── web/
 │   ├── index.html
@@ -87,11 +105,14 @@ quiz_app/
     └── widget_test.dart
 ```
 
-## Backend (backend/)
+## Backend (Queez-Backend/)
 
 ```
-backend/
-├── main.py
+Queez-Backend/
+├── .env.example
+├── .gitignore
+├── Dockerfile
+├── render.yaml
 ├── requirements.txt
 ├── app/
 │   ├── __init__.py
@@ -99,9 +120,12 @@ backend/
 │   ├── api/
 │   │   ├── __init__.py
 │   │   └── routes/
+│   │       ├── __init__.py
 │   │       ├── analytics.py
 │   │       ├── categories.py
+│   │       ├── flashcards.py
 │   │       ├── leaderboard.py
+│   │       ├── library.py
 │   │       ├── live_multiplayer.py
 │   │       ├── quizzes.py
 │   │       ├── results.py
@@ -109,26 +133,24 @@ backend/
 │   │       ├── sessions.py
 │   │       ├── users.py
 │   │       ├── websocket.py
-│   │       └── __init__.py
 │   ├── core/
 │   │   ├── __init__.py
 │   │   ├── config.py
 │   │   ├── database.py
-│   │   └── redis_client.py
 │   ├── models/
 │   │   ├── __init__.py
+│   │   ├── flashcard.py
 │   │   ├── quiz.py
-│   │   └── session.py
+│   │   ├── session.py
 │   ├── services/
 │   │   ├── connection_manager.py
 │   │   ├── game_controller.py
 │   │   ├── leaderboard_manager.py
 │   │   ├── session_manager.py
-│   │   └── websocket_manager.py
+│   │   ├── websocket_manager.py
 │   └── utils/
 │       ├── __init__.py
 │       └── helpers.py
-└── tests/
-    ├── test_comprehensive.py
-    └── test_multiplayer.py
+└── image/
+    └── API_TESTING_REPORT/
 ```

@@ -1,564 +1,341 @@
 # Implementation Plan
 
-- [x] 1. Create design system constants and utilities
+- [x] 1. Fix Bug 4: Drag-and-Drop Items Disappearing (CRITICAL)
 
 
 
 
-
-  - Create `quiz_app/lib/utils/quiz_design_system.dart` file
-  - Define QuizColors class with all color constants (correct, incorrect, gold, silver, bronze)
-  - Define QuizTextStyles class with typography constants (questionText, optionText, scoreText, feedbackText, pointsText)
-  - Define QuizSpacing class with spacing constants (xs, sm, md, lg, xl, xxl)
-  - Define QuizBorderRadius class with border radius constants
-  - Define QuizAnimations class with duration constants
-  - _Requirements: 7.1, 7.2, 7.3, 7.5_
-
-- [x] 2. Enhance GameState model with feedback properties
+  - [x] 1.1 Add state preservation mechanism
 
 
-
-
-  - [x] 2.1 Update GameState model in `game_provider.dart`
-
-    - Add `bool? lastAnswerCorrect` field
-    - Add `int? pointsEarned` field
-    - Add `dynamic selectedAnswer` field
-    - Add `String? correctAnswer` field
-    - Add `Map<dynamic, int>? answerDistribution` field
-    - Add `bool showingFeedback` field (default false)
-    - Add `bool showingCorrectAnswer` field (default false)
-    - Add `int feedbackCountdown` field (default 0)
-    - Add `bool isHost` field (default false)
-    - Add `int currentScore` field (default 0)
-    - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.6, 2.7, 4.1, 4.2, 4.4, 5.1_
+    - Modify `quiz_app/lib/LibrarySection/LiveMode/widgets/drag_drop_interface.dart`
+    - Add `_submittedMatches` map to preserve final state after submission
+    - Add `_pendingChanges` bool flag to track optimistic updates
+    - Update `_initializeState` to initialize new state variables
+    - _Requirements: 4.1, 4.2, 4.3_
   
-  - [ ]* 2.2 Write property test for GameState feedback properties
-    - **Property 6, 8: Answer feedback colors**
-    - **Validates: Requirements 2.1, 2.3**
-
-- [x] 3. Create question text display component
+  - [x] 1.2 Implement optimistic UI updates
 
 
-
-
-
-  - [x] 3.1 Create `quiz_app/lib/LibrarySection/LiveMode/widgets/question_text_widget.dart`
-
-
-    - Implement QuestionTextWidget as StatelessWidget
-    - Accept questionText and optional imageUrl parameters
-    - Use Container with padding (24px) and rounded corners (16px)
-    - Display image if imageUrl is provided using ClipRRect
-    - Display question text with QuizTextStyles.questionText
-    - Ensure text wraps properly with no overflow
-    - Add card shadow for depth
-    - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5_
+    - In `_handleItemPlaced` method, set `_pendingChanges = true` when item is placed
+    - Add logic to prevent external state updates when `_pendingChanges` is true
+    - Clear `_pendingChanges` after backend confirmation or timeout
+    - _Requirements: 4.3, 4.5_
   
-  - [ ]* 3.2 Write property test for question text rendering
-    - **Property 1: Question text rendering**
-    - **Validates: Requirements 1.1**
+  - [x] 1.3 Update didUpdateWidget to preserve local state
+
+
+    - Override `didUpdateWidget` method
+    - Check if `_pendingChanges` is true before accepting new props
+    - Merge incoming props with local state intelligently
+    - Only reset state if items or targets have changed
+    - _Requirements: 4.2, 4.5_
   
-  - [ ]* 3.3 Write property test for text wrapping
-    - **Property 5: Text wrapping**
-    - **Validates: Requirements 1.5**
-
-- [x] 4. Create True/False question component
+  - [x] 1.4 Preserve matches on submission
 
 
-
-
-  - [x] 4.1 Create `quiz_app/lib/LibrarySection/LiveMode/widgets/true_false_options.dart`
-
-    - Implement TrueFalseOptions as StatelessWidget
-    - Accept onSelect callback, selectedAnswer, correctAnswer, hasAnswered, isCorrect parameters
-    - Render exactly two buttons: "True" and "False"
-    - Use Row with Expanded for equal width buttons
-    - Implement _buildOptionButton helper method
-    - Apply green background if correct and selected
-    - Apply red background if incorrect and selected
-    - Apply green tint if correct answer (not selected)
-    - Use AnimatedContainer for smooth color transitions (300ms)
-    - Add checkmark icon for correct, X icon for incorrect
-    - Disable buttons after answer is submitted
-    - _Requirements: 3.2, 2.1, 2.2, 2.3, 2.4, 2.5_
+    - In `_handleSubmit` method, copy `_matches` to `_submittedMatches`
+    - Ensure `_submittedMatches` is never cleared after submission
+    - Use `_submittedMatches` for rendering when `hasAnswered` is true
+    - _Requirements: 4.4_
   
-  - [ ]* 4.2 Write unit test for True/False rendering
-    - Verify exactly 2 buttons are rendered
-    - Verify buttons are labeled "True" and "False"
-    - _Requirements: 3.2_
-
-- [x] 5. Create Single Answer input component
-
-
-
-
-  - [x] 5.1 Create `quiz_app/lib/LibrarySection/LiveMode/widgets/single_answer_input.dart`
-
-
-    - Implement SingleAnswerInput as StatefulWidget
-    - Accept onSubmit callback, hasAnswered, isCorrect parameters
-    - Render TextField with custom decoration
-    - Add submit button below text field
-    - Disable input after submission
-    - Show feedback icon (checkmark or X) after submission
-    - Apply border color based on correctness (green/red)
-    - Use QuizTextStyles for text styling
-    - _Requirements: 3.3, 2.1, 2.2, 2.3, 2.4_
-
-- [x] 6. Create Drag and Drop question component
-
-
-
-
-
-  - [x] 6.1 Create `quiz_app/lib/LibrarySection/LiveMode/widgets/drag_drop_interface.dart`
-
-
-    - Implement DragDropInterface as StatefulWidget
-    - Accept items list, onOrderSubmit callback, hasAnswered, isCorrect parameters
-    - Render draggable items using Draggable widget
-    - Render drop zones using DragTarget widget
-    - Track item order in local state
-    - Show submit button when all items are placed
-    - Disable dragging after submission
-    - Show feedback (green/red borders) after submission
-    - _Requirements: 3.4, 2.1, 2.3_
-
-- [x] 7. Create question type handler utility
-
-
-
-
-  - [x] 7.1 Create `quiz_app/lib/LibrarySection/LiveMode/utils/question_type_handler.dart`
-
-
-    - Implement QuestionTypeHandler class with static buildQuestionUI method
-    - Accept question, onAnswerSelected, hasAnswered, selectedAnswer, isCorrect parameters
-    - Use switch statement on question.type
-    - Return MultipleChoiceOptions for QuestionType.multipleChoice
-    - Return TrueFalseOptions for QuestionType.trueFalse
-    - Return SingleAnswerInput for QuestionType.singleAnswer
-    - Return DragDropInterface for QuestionType.dragAndDrop
-    - Default to MultipleChoiceOptions as fallback
-    - _Requirements: 3.5_
-  
-  - [ ]* 7.2 Write property test for question type routing
-    - **Property 13: Question type routing**
-    - **Validates: Requirements 3.5**
-
-- [x] 8. Create answer feedback overlay component
-
-
-
-
-  - [x] 8.1 Create `quiz_app/lib/LibrarySection/LiveMode/widgets/answer_feedback_overlay.dart`
-
-
-    - Implement AnswerFeedbackOverlay as StatefulWidget with SingleTickerProviderStateMixin
-    - Accept isCorrect, pointsEarned, onComplete parameters
-    - Create AnimationController with 600ms duration
-    - Create scale animation (0.0 to 1.0) with elasticOut curve
-    - Create fade animation (0.0 to 1.0) with easeIn curve
-    - Display circular container with green (correct) or red (incorrect) background
-    - Show checkmark icon for correct, X icon for incorrect (size 80)
-    - Display "Correct!" or "Incorrect" text
-    - Include PointsEarnedPopup for correct answers
-    - Auto-dismiss after 2 seconds by calling onComplete
-    - Add glow shadow effect matching background color
-    - Dispose controller in dispose method
-    - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 6.4_
-  
-  - [ ]* 8.2 Write property test for feedback display duration
-    - **Property 10: Feedback display duration**
-    - **Validates: Requirements 2.6**
-
-- [x] 9. Create points earned popup component
-
-
-
-
-  - [x] 9.1 Create `quiz_app/lib/LibrarySection/LiveMode/widgets/points_earned_popup.dart`
-
-
-    - Implement PointsEarnedPopup as StatefulWidget with SingleTickerProviderStateMixin
-    - Accept points parameter
-    - Create AnimationController with 1000ms duration
-    - Create slide animation (Offset(0,0) to Offset(0,-0.5)) with easeOut curve
-    - Create fade animation (1.0 to 0.0) starting at 50% progress
-    - Display "+{points}" text in yellow with large font (36px)
-    - Add text shadow for visibility
-    - Use SlideTransition and Opacity for animations
-    - Auto-start animation in initState
-    - Dispose controller in dispose method
-    - _Requirements: 2.7, 6.5_
-  
-  - [ ]* 9.2 Write property test for points popup animations
-    - **Property 24: Points popup animations**
-    - **Validates: Requirements 6.5**
-
-- [x] 10. Create animated score counter component
-
-
-
-
-  - [x] 10.1 Create `quiz_app/lib/LibrarySection/LiveMode/widgets/animated_score_counter.dart`
-
-
-    - Implement AnimatedScoreCounter as StatefulWidget with SingleTickerProviderStateMixin
-    - Accept score and style parameters
-    - Create AnimationController with 800ms duration
-    - Create IntTween animation from previous score to new score
-    - Use easeOut curve for smooth counting
-    - Track previous score in state
-    - Update animation when score prop changes
-    - Display animated score value using AnimatedBuilder
-    - Dispose controller in dispose method
-    - _Requirements: 6.2_
-  
-  - [ ]* 10.2 Write property test for score counter animation
-    - **Property 21: Score counter animation**
-    - **Validates: Requirements 6.2**
-
-- [x] 11. Create participant score card component
-
-
-
-
-  - [x] 11.1 Create `quiz_app/lib/LibrarySection/LiveMode/widgets/participant_score_card.dart`
-
-    - Implement ParticipantScoreCard as StatelessWidget
-    - Accept currentScore, pointsEarned, lastAnswerCorrect parameters
-    - Use Container with card styling (padding, border radius, shadow)
-    - Display "Your Score" label in secondary text color
-    - Use AnimatedScoreCounter for score display
-    - Show correctness icon (checkmark or X) if lastAnswerCorrect is not null
-    - Use Row for horizontal layout
-    - Apply QuizColors and QuizSpacing from design system
-    - _Requirements: 4.1, 4.2, 4.4_
-  
-  - [ ]* 11.2 Write property test for participant score display
-    - **Property 16: Participant points display**
-    - **Validates: Requirements 4.4**
-
-- [ ] 12. Create answer distribution chart component
-
-
-  - [x] 12.1 Create `quiz_app/lib/LibrarySection/LiveMode/widgets/answer_distribution_chart.dart`
-
-
-
-    - Implement AnswerDistributionChart as StatelessWidget
-    - Accept distribution Map<dynamic, int> parameter
-    - Calculate total responses
-    - For each option, display horizontal bar showing percentage
-    - Use Container with AnimatedContainer for bar width
-    - Show option label and count
-    - Use different colors for each bar
-    - Apply rounded corners to bars
-    - _Requirements: 9.3_
-
-- [x] 13. Create animated leaderboard entry component
-
-
-
-
-  - [x] 13.1 Create `quiz_app/lib/LibrarySection/LiveMode/widgets/animated_leaderboard_entry.dart`
-
-
-    - Implement AnimatedLeaderboardEntry as StatefulWidget
-    - Accept entry (LeaderboardEntry) and index parameters
-    - Track previous rank in state
-    - Detect rank changes (moved up, moved down, stayed same)
-    - Apply pulse animation when rank improves
-    - Use AnimatedContainer for smooth position transitions
-    - Display rank badge with special styling for top 3 (gold, silver, bronze)
-    - Show username and score
-    - Highlight rank changes with color indicators
-    - _Requirements: 5.3, 5.4, 6.3, 8.6, 8.7_
-  
-  - [ ]* 13.2 Write property test for rank change animations
-    - **Property 22: Leaderboard rank animations**
-    - **Validates: Requirements 6.3**
-
-- [x] 14. Create enhanced host leaderboard panel
-
-
-
-
-  - [x] 14.1 Create `quiz_app/lib/LibrarySection/LiveMode/widgets/host_leaderboard_panel.dart`
-
-
-    - Implement HostLeaderboardPanel as StatelessWidget
-    - Accept rankings, answerDistribution, questionIndex, totalQuestions, participantCount, averageScore parameters
-    - Display header with question progress ("Question X/Y")
-    - Show participant count with icon
-    - Display average score in highlighted container
-    - Render leaderboard title
-    - Use ListView.builder for rankings list with AnimatedLeaderboardEntry
-    - Include AnswerDistributionChart if answerDistribution is provided
-    - Apply card styling with padding and border radius
-    - Use QuizColors and QuizSpacing from design system
-    - _Requirements: 5.1, 5.2, 5.4, 5.5, 8.1, 8.2, 8.3, 8.4, 8.5, 9.3_
-  
-  - [ ]* 14.2 Write property test for average score calculation
-    - **Property 32: Average score calculation**
-    - **Validates: Requirements 8.4**
-
-- [x] 15. Update live_multiplayer_quiz.dart to display question text
-
-
-
-  - [x] 15.1 Modify `quiz_app/lib/LibrarySection/LiveMode/screens/live_multiplayer_quiz.dart`
-
-
-    - Import QuestionTextWidget
-    - Add QuestionTextWidget above answer options in build method
-    - Pass currentQuestion['question'] as questionText parameter
-    - Pass currentQuestion['imageUrl'] if available
-    - Ensure proper spacing between question and options (24px)
-    - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5_
-  
-  - [ ]* 15.2 Write property test for question text inclusion
-    - **Property 1: Question text rendering**
-    - **Validates: Requirements 1.1**
-
-- [x] 16. Update live_multiplayer_quiz.dart to handle question types
-
-
-
-
-  - [x] 16.1 Modify `quiz_app/lib/LibrarySection/LiveMode/screens/live_multiplayer_quiz.dart`
-
-
-    - Import QuestionTypeHandler
-    - Replace hardcoded MultipleChoiceOptions with QuestionTypeHandler.buildQuestionUI
-    - Pass currentQuestion, onAnswerSelected callback, hasAnswered, selectedAnswer, isCorrect
-    - Remove assumption that all questions are multiple choice
-    - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5_
-  
-  - [ ]* 16.2 Write property test for question type routing
-    - **Property 13: Question type routing**
-    - **Validates: Requirements 3.5**
-
-- [x] 17. Update live_multiplayer_quiz.dart to show answer feedback
-
-
-
-
-
-  - [x] 17.1 Modify `quiz_app/lib/LibrarySection/LiveMode/screens/live_multiplayer_quiz.dart`
-
-
-    - Import AnswerFeedbackOverlay
-    - Add conditional rendering of AnswerFeedbackOverlay when showingFeedback is true
-    - Pass isCorrect, pointsEarned from gameState
-    - Implement onComplete callback to hide feedback and advance
-    - Use Stack to overlay feedback on top of quiz content
-    - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7_
-  
-  - [ ]* 17.2 Write property test for feedback visibility
-    - **Property 15: Participant feedback visibility**
+  - [ ]* 1.5 Write property test for item persistence
+    - **Property 8: Drop zone item persistence**
     - **Validates: Requirements 4.2**
-- [x] 18. Update live_multiplayer_quiz.dart to remove leaderboard for participants
-
-
-
-- [ ] 18. Update live_multiplayer_quiz.dart to remove leaderboard for participants
-
-  - [x] 18.1 Modify `quiz_app/lib/LibrarySection/LiveMode/screens/live_multiplayer_quiz.dart`
-
-
-    - Remove LeaderboardWidget from participant view
-    - Add conditional check: only show leaderboard if isHost is true
-    - Replace leaderboard with ParticipantScoreCard for participants
-    - Pass currentScore, pointsEarned, lastAnswerCorrect to ParticipantScoreCard
-    - _Requirements: 4.1, 4.3, 4.5_
+    - Create test that places items and verifies they remain after delays
+    - Test with multiple rapid placements
+    - Verify state doesn't revert on widget rebuild
   
-  - [ ]* 18.2 Write property test for participant leaderboard exclusion
-    - **Property 14: Participant leaderboard exclusion**
-    - **Validates: Requirements 4.1, 4.3**
-
-- [x] 19. Update live_host_view.dart with enhanced dashboard
-
-
-
-
-  - [x] 19.1 Modify `quiz_app/lib/LibrarySection/LiveMode/screens/live_host_view.dart`
-
-
-    - Import HostLeaderboardPanel
-    - Replace basic leaderboard with HostLeaderboardPanel
-    - Calculate and pass averageScore (sum of scores / participant count)
-    - Pass questionIndex, totalQuestions, participantCount
-    - Pass answerDistribution if available
-    - Add session code display with copy button at top
-    - Highlight participants who haven't answered yet
-    - Use QuizColors and QuizSpacing for consistent styling
-    - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 8.1, 8.2, 8.3, 8.4, 8.5_
-  
-  - [ ]* 19.2 Write property test for host leaderboard visibility
-    - **Property 17: Host leaderboard visibility**
-    - **Validates: Requirements 5.1**
-
-
-- [x] 20. Update game_provider.dart to handle answer feedback messages
-
-
-
-  - [x] 20.1 Modify `quiz_app/lib/providers/game_provider.dart`
-
-    - Add handler for "answer_feedback" message type
-    - Extract isCorrect, pointsEarned, correctAnswer, yourScore, answerDistribution from payload
-    - Update state with lastAnswerCorrect, pointsEarned, correctAnswer, answerDistribution, currentScore
-    - Set showingFeedback to true
-    - Start 2-second timer to set showingFeedback to false
-    - _Requirements: 2.6, 4.2, 4.4, 10.2, 10.3_
-  
-  - [ ]* 20.2 Write property test for answer feedback state updates
-    - **Property 39: Answer response completeness**
-    - **Validates: Requirements 10.3**
-
-- [x] 21. Update game_provider.dart to handle leaderboard update messages
-
-
-
-- [ ] 21. Update game_provider.dart to handle leaderboard update messages
-  - [x] 21.1 Modify `quiz_app/lib/providers/game_provider.dart`
-
-
-    - Add handler for "leaderboard_update" message type (host only)
-    - Extract rankings and answerDistribution from payload
-    - Update leaderboard state with new rankings
-    - Store answerDistribution in game state
-    - Only process if isHost is true
-    - _Requirements: 5.5, 10.1_
-  
-  - [ ]* 21.2 Write property test for host-only leaderboard updates
-    - **Property 20: Real-time leaderboard updates**
-    - **Validates: Requirements 5.5**
+  - [ ]* 1.6 Write property test for optimistic updates
+    - **Property 9: Optimistic UI state preservation**
+    - **Validates: Requirements 4.3**
+    - Simulate backend delays and verify UI maintains local state
+    - Test with concurrent state updates
+    - Verify local changes take priority
 -
 
-- [x] 22. Update backend websocket.py for role-based messaging
+- [x] 2. Fix Bug 2: Wrong Answer Not Highlighting Red (HIGH)
 
 
 
-  - [x] 22.1 Modify `backend/app/services/websocket_manager.py`
+
+  - [x] 2.1 Add debug logging to MCQ options
 
 
-    - Add broadcast_to_host method to send messages only to host connection
-    - Track isHost flag for each connection in session
-    - Modify reveal_answer to send different messages to host vs participants
-    - Send "leaderboard_update" with rankings to host only
-    - Send "answer_feedback" with personal data to each participant individually
-    - Include answerDistribution in both message types
-    - _Requirements: 10.1, 10.2_
+    - Modify `quiz_app/lib/LibrarySection/LiveMode/widgets/multiple_choice_options.dart`
+    - Add debug prints in `_buildOptionButton` to log `correctAnswer`, `selectedAnswer`, `isCorrectOption`
+    - Log the comparison logic results
+    - Add prints at lines 48-56 and 71-76
+    - _Requirements: 2.1, 2.2_
   
-  - [ ]* 22.2 Write property test for host-only broadcast
-    - **Property 37: Host-only leaderboard broadcast**
-    - **Validates: Requirements 10.1**
-
-- [x] 23. Update backend game_controller.py to include question text
+  - [x] 2.2 Verify correctAnswer prop passing
 
 
-
-
-
-  - [x] 23.1 Modify `backend/app/services/game_controller.py`
-
-
-    - Ensure get_current_question includes 'question' field in returned dict
-    - Verify question text is not empty before sending
-    - Include questionType field in question payload
-    - _Requirements: 10.5_
+    - Check `quiz_app/lib/LibrarySection/LiveMode/utils/question_type_handler.dart`
+    - Ensure `correctAnswer` is passed to `MultipleChoiceOptions` widget
+    - Verify the value is set when `hasAnswered` is true
+    - Check that the value matches the expected format (index or text)
+    - _Requirements: 2.1, 2.2, 2.3_
   
-  - [ ]* 23.2 Write property test for question text inclusion
-    - **Property 41: Question text inclusion**
-    - **Validates: Requirements 10.5**
-
-- [x] 24. Add correct answer highlighting and countdown
+  - [x] 2.3 Fix color logic if needed
 
 
-
-
-
-  - [x] 24.1 Create `quiz_app/lib/LibrarySection/LiveMode/widgets/correct_answer_highlight.dart`
-
-
-    - Implement CorrectAnswerHighlight as StatefulWidget
-    - Accept correctAnswer and countdown parameters
-    - Display correct answer with distinct green highlight
-    - Show countdown timer (2 seconds)
-    - Use AnimatedContainer for smooth color transition
-    - Auto-advance when countdown reaches 0
-    - _Requirements: 9.1, 9.2, 9.5_
+    - Based on debug logs, identify why red highlighting isn't showing
+    - Ensure `isSelected && !isCorrectOption` condition is met
+    - Verify `AppColors.error` is being applied correctly
+    - Test with both index-based and text-based correct answers
+    - _Requirements: 2.1, 2.2_
   
-  - [x] 24.2 Integrate CorrectAnswerHighlight into live_multiplayer_quiz.dart
+  - [x] 2.4 Ensure dual highlighting works
 
 
-    - Show after answer feedback is dismissed
-    - Pass correctAnswer from game state
-    - Start 2-second countdown
-    - Transition to next question when countdown completes
-    - _Requirements: 9.1, 9.2, 9.4, 9.5_
-- [x] 25. Add question transition animations
-
-
-
-- [ ] 25. Add question transition animations
-
-  - [x] 25.1 Create `quiz_app/lib/LibrarySection/LiveMode/utils/transition_animation_controller.dart`
-
-
-    - Implement TransitionAnimationController class
-    - Add static transitionToNextQuestion method
-    - Implement fade-out of current question (200ms)
-    - Show QuestionTransitionOverlay with loading indicator
-    - Wait 400ms for transition
-    - Call onComplete callback to load next question
-    - Fade-in new question
-    - _Requirements: 6.1, 9.4_
+    - Verify that when wrong answer is selected, both conditions execute:
+      - Selected option gets red (lines 71-76)
+      - Correct option gets green (lines 77-84)
+    - Test that both highlights appear simultaneously
+    - _Requirements: 2.3_
   
-  - [x] 25.2 Integrate transition animations into live_multiplayer_quiz.dart
-
-
-
-
-
-
-
-    - Use TransitionAnimationController when advancing to next question
-    - Apply fade transition effect
-    - Show "Next Question..." message during transition
-    - _Requirements: 6.1, 9.4_
-
-
-- [x] 26. Apply consistent styling across all components
-
-
-
-  - [x] 26.1 Audit all live quiz components for style consistency
-
-
-    - Replace hardcoded colors with QuizColors constants
-    - Replace hardcoded spacing with QuizSpacing constants
-    - Replace hardcoded text styles with QuizTextStyles constants
-    - Replace hardcoded border radius with QuizBorderRadius constants
-    - Replace hardcoded durations with QuizAnimations constants
-    - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5_
+  - [ ]* 2.5 Write property test for incorrect answer feedback
+    - **Property 3: Incorrect answer red highlighting**
+    - **Property 4: Incorrect answer X icon**
+    - **Validates: Requirements 2.1, 2.2**
+    - Generate random incorrect selections
+    - Verify red background and X icon appear
+    - Test with various question types
   
-  - [ ]* 26.2 Write property tests for design consistency
-    - **Property 26: Theme color consistency**
-    - **Property 27: Spacing consistency**
-    - **Property 28: Button style consistency**
-    - **Property 29: Panel style consistency**
-    - **Validates: Requirements 7.1, 7.3, 7.4, 7.5**
--
+  - [ ]* 2.6 Write property test for dual highlighting
+    - **Property 5: Dual highlighting for wrong answers**
+    - **Validates: Requirements 2.3**
+    - Generate random wrong answers
+    - Verify both red (wrong) and green (correct) highlights appear
+    - Ensure both are visible simultaneously
 
-- [x] 27. Checkpoint - Ensure all tests pass
+- [x] 3. Fix Bug 5: Drag-and-Drop Post-Submission Feedback (HIGH)
+
+
+
+
+
+  - [x] 3.1 Update _buildDropZone to use submitted state
+
+
+    - Modify `quiz_app/lib/LibrarySection/LiveMode/widgets/drag_drop_interface.dart`
+    - In `_buildDropZone` method (lines 248-413), check if `hasAnswered` is true
+    - If `hasAnswered`, use `_submittedMatches[dropTarget]` instead of `_matches[dropTarget]`
+    - Ensure `matchedItem` is never null when displaying feedback
+    - _Requirements: 5.1, 5.4, 5.5_
+  
+  - [x] 3.2 Fix matched item display logic
+
+
+    - Update the `isEmpty` check to use `_submittedMatches` when `hasAnswered`
+    - Ensure the matched item text is displayed (not "Drop here" placeholder)
+    - Verify the item container renders with correct styling
+    - _Requirements: 5.1, 5.5_
+  
+  - [x] 3.3 Ensure feedback icons display correctly
+
+
+    - Verify `isCorrectMatch` logic works with `_submittedMatches`
+    - Ensure checkmark icon appears for correct matches
+    - Ensure X icon appears for incorrect matches
+    - Test that icons are visible with correct colors
+    - _Requirements: 5.2, 5.3_
+  
+  - [x] 3.4 Update feedback colors
+
+
+    - Ensure correct matches use `AppColors.success` for background
+    - Ensure incorrect matches use `AppColors.error` for background
+    - Verify both target label and matched item are highlighted
+    - Test color contrast for accessibility
+    - _Requirements: 5.2, 5.3_
+  
+  - [ ]* 3.5 Write property test for post-submission display
+    - **Property 12: Post-submission matched pair display**
+    - **Property 15: No placeholder after submission**
+    - **Validates: Requirements 5.1, 5.4**
+    - Generate random matches and submit
+    - Verify all matched items display (no placeholders)
+    - Test with various match combinations
+  
+  - [ ]* 3.6 Write property test for feedback colors
+    - **Property 13: Correct match green feedback**
+    - **Property 14: Incorrect match red feedback**
+    - **Validates: Requirements 5.2, 5.3**
+    - Generate random correct and incorrect matches
+    - Verify green highlighting for correct, red for incorrect
+    - Verify icons appear with correct colors
+
+
+- [x] 4. Checkpoint - Test drag-and-drop fixes
 
 
 
 
   - Ensure all tests pass, ask the user if questions arise.
 
+- [x] 5. Fix Bug 1: Host Dashboard Podium Display (MEDIUM)
+
+
+
+
+
+
+  - [x] 5.1 Verify rankings prop in LiveHostView
+
+    - Check `quiz_app/lib/LibrarySection/LiveMode/screens/live_host_view.dart`
+    - Ensure `rankings` is passed to `HostLeaderboardPanel`
+    - Verify rankings data is updated from `gameState.rankings`
+    - Check that rankings update in real-time as scores change
+    - _Requirements: 1.1, 1.2_
+  
+
+
+  - [x] 5.2 Verify HostLeaderboardPanel podium rendering
+
+    - Review `quiz_app/lib/LibrarySection/LiveMode/widgets/host_leaderboard_panel.dart`
+    - Confirm PodiumWidget is rendered when `rankings.length >= 3` (lines 73-79)
+    - Verify the structure is correct (podium above participant list)
+    - Check that `currentUserId` is passed correctly (empty string for host)
+    - _Requirements: 1.1, 1.4_
+  
+  - [x] 5.3 Test podium display during quiz
+
+
+    - Start quiz as host with 3+ participants
+    - Verify podium appears on dashboard
+    - Have participants answer questions to change scores
+    - Verify podium updates in real-time
+    - _Requirements: 1.1, 1.2, 1.3_
+  
+
+  - [x] 5.4 Test with fewer than 3 participants
+
+    - Start quiz with 1 participant
+    - Verify small leaderboard displays (not podium)
+    - Start quiz with 2 participants
+    - Verify small leaderboard displays
+    - _Requirements: 1.5_
+  
+  - [ ]* 5.5 Write property test for podium updates
+    - **Property 1: Podium real-time updates**
+    - **Validates: Requirements 1.2**
+    - Generate random score changes
+    - Verify podium re-renders with updated rankings
+    - Test with various score combinations
+  
+  - [ ]* 5.6 Write property test for color assignments
+    - **Property 2: Podium color assignments**
+    - **Validates: Requirements 1.3**
+    - Generate random top 3 participants
+    - Verify gold for 1st, silver for 2nd, bronze for 3rd
+    - Test color values match QuizColors constants
+
+
+- [x] 6. Fix Bug 3: Drag-and-Drop Color Inconsistency (LOW)
+
+
+
+  - [x] 6.1 Update draggable item colors
+
+
+    - Modify `quiz_app/lib/LibrarySection/LiveMode/widgets/drag_drop_interface.dart`
+    - In `_buildDraggableItem` and `_buildItemChip` methods
+    - Replace `Theme.of(context).primaryColor` with `AppColors.primary`
+    - Replace `Theme.of(context).cardColor` with `AppColors.white`
+    - Update border colors to use `AppColors.primary`
+    - _Requirements: 3.1, 3.2_
+  
+  - [x] 6.2 Update drop zone colors
+
+
+    - In `_buildDropZone` method (lines 248-413)
+    - Replace `Theme.of(context).primaryColor` with `AppColors.primary`
+    - Replace `Theme.of(context).cardColor` with `AppColors.white`
+    - Use `AppColors.primaryLight` for empty drop zone backgrounds
+    - Update hover colors to use `AppColors.accentLight`
+    - _Requirements: 3.1, 3.3_
+  
+  - [x] 6.3 Update drag feedback colors
+
+    - In `Draggable<String>` feedback widget
+    - Replace `Theme.of(context).primaryColor` with `AppColors.accentBright`
+    - Ensure feedback widget uses green theme colors
+    - _Requirements: 3.1, 3.4_
+  
+  - [x] 6.4 Update feedback state colors
+
+
+    - Replace `QuizColors.correct` with `AppColors.success`
+    - Replace `QuizColors.incorrect` with `AppColors.error`
+    - Ensure all color references use AppColors constants
+    - Remove any hardcoded color values
+    - _Requirements: 3.1_
+  
+  - [x] 6.5 Update solo play drag-and-drop colors
+
+
+    - Modify `quiz_app/lib/LibrarySection/PlaySection/widgets/question_types/drag_drop_options.dart`
+    - Apply the same color updates as live multiplayer version
+    - Ensure consistency across both play modes
+    - _Requirements: 3.1, 3.2, 3.3, 3.4_
+  
+  - [ ]* 6.6 Write unit test for color consistency
+    - Verify all rendered colors come from AppColors palette
+    - Test draggable items use correct colors
+    - Test drop zones use correct colors
+    - Test feedback widgets use correct colors
+- [ ] 7. Integration Testing
+
+
+
+
+- [ ] 7. Integration Testing
+
+  - [x] 7.1 Test complete MCQ flow
+
+
+    - Start quiz with multiple participants
+    - Answer MCQ with wrong answer
+    - Verify red highlighting with X icon
+    - Verify correct answer shows green with checkmark
+    - Answer MCQ with correct answer
+    - Verify only green highlighting appears
+    - _Requirements: 2.1, 2.2, 2.3, 2.5_
+  
+  - [x] 7.2 Test complete drag-and-drop flow
+
+    - Load quiz with drag-and-drop question
+    - Drag items to drop zones
+    - Verify items stay in place immediately
+    - Wait 30 seconds, verify items still in place
+    - Submit answer
+    - Verify matched pairs display with correct feedback
+    - Verify no "Drop item here" text appears
+    - Verify correct matches show green, incorrect show red
+    - _Requirements: 4.1, 4.2, 4.3, 4.4, 5.1, 5.2, 5.3, 5.4, 5.5_
+  
+  - [x] 7.3 Test host dashboard podium
+
+    - Start quiz as host with 3+ participants
+    - Verify podium appears on dashboard
+    - Have participants answer questions
+    - Verify podium updates in real-time
+    - Verify colors are correct (gold/silver/bronze)
+    - _Requirements: 1.1, 1.2, 1.3, 1.4_
+  
+  - [x] 7.4 Test color consistency across all components
+
+    - Verify all drag-and-drop colors use green theme
+    - Verify no purple or off-theme colors appear
+    - Test on different screen sizes and devices
+    - _Requirements: 3.1, 3.2, 3.3, 3.4_
+
+
+- [x] 8. Final Checkpoint - Ensure all tests pass
+
+
+
+
+  - Ensure all tests pass, ask the user if questions arise.

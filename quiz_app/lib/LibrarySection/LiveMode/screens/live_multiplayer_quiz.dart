@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quiz_app/LibrarySection/LiveMode/screens/live_multiplayer_results.dart';
 import 'package:quiz_app/LibrarySection/LiveMode/utils/question_type_handler.dart';
-import 'package:quiz_app/LibrarySection/LiveMode/widgets/leaderboard_popup.dart';
 import 'package:quiz_app/LibrarySection/LiveMode/widgets/podium_widget.dart';
 import 'package:quiz_app/LibrarySection/LiveMode/widgets/question_text_widget.dart';
 import 'package:quiz_app/LibrarySection/LiveMode/widgets/reconnection_overlay.dart';
@@ -274,6 +273,9 @@ class _LiveMultiplayerQuizState extends ConsumerState<LiveMultiplayerQuiz> {
                               onAnswerSelected: (answer) {
                                 ref.read(gameProvider.notifier).submitAnswer(answer);
                               },
+                              onNextQuestion: () {
+                                ref.read(gameProvider.notifier).requestNextQuestion();
+                              },
                               hasAnswered: gameState.hasAnswered,
                               selectedAnswer: gameState.selectedAnswer,
                               isCorrect: gameState.isCorrect,
@@ -287,24 +289,27 @@ class _LiveMultiplayerQuizState extends ConsumerState<LiveMultiplayerQuiz> {
 
                     // Show Leaderboard Button - Always Visible
                     if (!isHost)
-                      ElevatedButton(
-                        onPressed: () {
-                          _showLeaderboardBottomSheet(context, ref);
-                        },
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          backgroundColor: AppColors.primary,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 16),
+                        child: ElevatedButton(
+                          onPressed: () {
+                            _showLeaderboardBottomSheet(context, ref);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            backgroundColor: AppColors.primary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 4,
                           ),
-                          elevation: 4,
-                        ),
-                        child: const Text(
-                          'Show Leaderboard',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                          child: const Text(
+                            'Show Leaderboard',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ),
@@ -424,28 +429,28 @@ class _LiveMultiplayerQuizState extends ConsumerState<LiveMultiplayerQuiz> {
               ),
             ),
 
-            // Leaderboard Popup - shown after answering (NOT on last question)
-            if (gameState.showingLeaderboard &&
-                gameState.rankings != null &&
-                gameState.rankings!.isNotEmpty &&
-                gameState.questionIndex + 1 < gameState.totalQuestions)
-              LeaderboardPopup(
-                rankings: gameState.rankings!,
-                currentUserId: currentUserId ?? '',
-                displayDuration: 3,
-                onComplete: () {
-                  debugPrint('🎮 QUIZ_SCREEN - Leaderboard popup completed');
-                  // Hide leaderboard and request next question
-                  ref.read(gameProvider.notifier).hideLeaderboard();
-                  // Auto-request next question for participant
-                  if (!isHost) {
-                    debugPrint('👤 QUIZ_SCREEN - Participant requesting next question');
-                    ref.read(gameProvider.notifier).requestNextQuestion();
-                  } else {
-                    debugPrint('👑 QUIZ_SCREEN - Host waiting for manual next question');
-                  }
-                },
-              ),
+            // Leaderboard Popup - DISABLED FOR NOW (keeping code for future use)
+            // if (gameState.showingLeaderboard &&
+            //     gameState.rankings != null &&
+            //     gameState.rankings!.isNotEmpty &&
+            //     gameState.questionIndex + 1 < gameState.totalQuestions)
+            //   LeaderboardPopup(
+            //     rankings: gameState.rankings!,
+            //     currentUserId: currentUserId ?? '',
+            //     displayDuration: 3,
+            //     onComplete: () {
+            //       debugPrint('🎮 QUIZ_SCREEN - Leaderboard popup completed');
+            //       // Hide leaderboard and request next question
+            //       ref.read(gameProvider.notifier).hideLeaderboard();
+            //       // Auto-request next question for participant
+            //       if (!isHost) {
+            //         debugPrint('👤 QUIZ_SCREEN - Participant requesting next question');
+            //         ref.read(gameProvider.notifier).requestNextQuestion();
+            //       } else {
+            //         debugPrint('👑 QUIZ_SCREEN - Host waiting for manual next question');
+            //       }
+            //     },
+            //   ),
           ],
         ),
       ),

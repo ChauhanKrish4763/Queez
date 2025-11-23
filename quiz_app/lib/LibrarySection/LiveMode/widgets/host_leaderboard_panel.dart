@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:quiz_app/LibrarySection/LiveMode/widgets/podium_widget.dart';
 import 'package:quiz_app/utils/color.dart';
-import 'package:quiz_app/LibrarySection/LiveMode/widgets/animated_leaderboard_entry.dart';
-import 'package:quiz_app/LibrarySection/LiveMode/widgets/answer_distribution_chart.dart';
 
 /// Enhanced host leaderboard panel that displays comprehensive session statistics
 /// and participant rankings. This panel is only shown to the quiz host and provides
@@ -30,6 +29,9 @@ class HostLeaderboardPanel extends StatelessWidget {
   /// List of participant rankings with username and score
   final List<Map<String, dynamic>> rankings;
 
+  /// ALL participants from session (including those with 0 points)
+  final List<dynamic> allParticipants;
+
   /// Distribution of answers across options (option index -> count)
   final Map<dynamic, int>? answerDistribution;
 
@@ -48,6 +50,7 @@ class HostLeaderboardPanel extends StatelessWidget {
   const HostLeaderboardPanel({
     super.key,
     required this.rankings,
+    required this.allParticipants,
     this.answerDistribution,
     required this.questionIndex,
     required this.totalQuestions,
@@ -73,143 +76,203 @@ class HostLeaderboardPanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header with question progress and participant count
-          _buildHeader(context),
-          const SizedBox(height: 16),
+          // Use the same PodiumWidget as participants see
+          if (rankings.length >= 3)
+            PodiumWidget(
+              topThree: rankings.take(3).toList(),
+              currentUserId: '', // Host doesn't need highlighting
+            )
+          else if (rankings.isNotEmpty)
+            _buildSmallLeaderboard(),
 
-          // Average score display
-          _buildAverageScoreCard(context),
           const SizedBox(height: 24),
 
-          // Leaderboard title
-          const Text(
-            'Leaderboard',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
-            ),
+          // Participant count header
+          Row(
+            children: [
+              const Icon(Icons.people, size: 20, color: AppColors.primary),
+              const SizedBox(width: 8),
+              Text(
+                '$participantCount ${participantCount == 1 ? 'participant' : 'participants'}',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 16),
 
-          // Leaderboard list
-          Expanded(
-            child: _buildLeaderboardList(),
-          ),
-
-          // Answer distribution (if available)
-          if (answerDistribution != null) ...[
-            const SizedBox(height: 24),
-            const Text(
-              'Answer Distribution',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 16),
-            AnswerDistributionChart(distribution: answerDistribution!),
-          ],
+          // Participant list with progress
+          Expanded(child: _buildParticipantList()),
         ],
       ),
     );
   }
 
-  /// Builds the header section with question progress and participant count
-  Widget _buildHeader(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        // Question progress
-        Text(
-          'Question $questionIndex/$totalQuestions',
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: AppColors.textPrimary,
-          ),
-        ),
-
-        // Participant count with icon
-        Row(
-          children: [
-            const Icon(
-              Icons.people,
-              size: 20,
-              color: AppColors.primary,
-            ),
-            const SizedBox(width: 8),
-            Text(
-              '$participantCount ${participantCount == 1 ? 'participant' : 'participants'}',
-              style: const TextStyle(
-                fontSize: 16,
-                color: AppColors.textSecondary,
+  /// Builds small leaderboard for less than 3 participants
+  Widget _buildSmallLeaderboard() {
+    return Column(
+      children:
+          rankings.map((entry) {
+            final index = rankings.indexOf(entry);
+            return Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.primary),
               ),
-            ),
-          ],
-        ),
-      ],
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundColor: AppColors.primary,
+                    child: Text(
+                      '${index + 1}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Text(
+                      entry['username'] ?? 'Unknown',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    '${entry['score']}',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
     );
   }
 
-  /// Builds the average score card with highlighted styling
-  Widget _buildAverageScoreCard(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: AppColors.primary.withValues(alpha: 0.2),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        children: [
-          const Icon(
-            Icons.analytics,
-            color: AppColors.primary,
-            size: 24,
-          ),
-          const SizedBox(width: 16),
-          Text(
-            'Average Score: ${averageScore.toStringAsFixed(0)}',
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Builds the scrollable leaderboard list with animated entries
-  Widget _buildLeaderboardList() {
-    if (rankings.isEmpty) {
+  /// Builds participant list with their progress - shows ALL participants
+  Widget _buildParticipantList() {
+    if (allParticipants.isEmpty) {
       return const Center(
-        child: Padding(
-          padding: EdgeInsets.all(24),
-          child: Text(
-            'No participants yet',
-            style: TextStyle(
-              fontSize: 16,
-              color: AppColors.textSecondary,
-            ),
-          ),
+        child: Text(
+          'No participants yet',
+          style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
         ),
       );
     }
 
+    // Create a map of userId -> ranking data for quick lookup
+    final rankingMap = <String, Map<String, dynamic>>{};
+    for (var ranking in rankings) {
+      rankingMap[ranking['user_id']] = ranking;
+    }
+
     return ListView.builder(
-      itemCount: rankings.length,
+      itemCount: allParticipants.length,
       itemBuilder: (context, index) {
-        final entry = rankings[index];
-        return AnimatedLeaderboardEntry(
-          entry: entry,
-          index: index,
+        final participant = allParticipants[index];
+        final userId = participant.userId;
+        final username = participant.username;
+        final answersCount = participant.answers.length;
+        final currentQuestion = answersCount + 1;
+
+        // Get score from rankings, default to 0
+        final score = rankingMap[userId]?['score'] ?? 0;
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade300),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              // Rank or position indicator
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                ),
+                child: Center(
+                  child: Text(
+                    '${index + 1}',
+                    style: const TextStyle(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              // Name
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      username,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Q$currentQuestion/$totalQuestions',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Score
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Text(
+                  '$score',
+                  style: const TextStyle(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            ],
+          ),
         );
       },
     );

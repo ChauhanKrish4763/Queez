@@ -17,7 +17,10 @@ class LiveHostView extends ConsumerWidget {
     final sessionState = ref.watch(sessionProvider);
     final rankings = gameState.rankings ?? [];
     final totalQuestions = sessionState?.totalQuestions ?? 0;
-    final participantCount = rankings.length;
+    
+    // Get ALL participants from session, not just rankings
+    final allParticipants = sessionState?.participants ?? [];
+    final participantCount = allParticipants.length;
     
     // Calculate average score across all participants
     final averageScore = rankings.isEmpty
@@ -59,6 +62,7 @@ class LiveHostView extends ConsumerWidget {
               Expanded(
                 child: HostLeaderboardPanel(
                   rankings: rankings,
+                  allParticipants: allParticipants,
                   answerDistribution: gameState.answerDistribution,
                   questionIndex: gameState.questionIndex + 1, // 1-indexed
                   totalQuestions: totalQuestions,

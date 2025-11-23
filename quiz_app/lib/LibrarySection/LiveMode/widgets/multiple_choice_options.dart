@@ -23,6 +23,7 @@ class MultipleChoiceOptions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('[MCQ Debug] Building MCQ widget - hasAnswered: $hasAnswered, selectedAnswer: $selectedAnswer, correctAnswer: $correctAnswer, isCorrect: $isCorrect');
     return ListView.separated(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -45,45 +46,64 @@ class MultipleChoiceOptions extends StatelessWidget {
     required int index,
   }) {
     final isSelected = selectedAnswer == index;
-    final isCorrectOption = correctAnswer == index.toString();
+    bool isCorrectOption = false;
+    if (correctAnswer != null) {
+      // Try parsing as index first
+      final correctIndex = int.tryParse(correctAnswer!);
+      if (correctIndex != null) {
+        isCorrectOption = correctIndex == index;
+        debugPrint('[MCQ Debug] correctAnswer: "$correctAnswer" (parsed as index: $correctIndex), option index: $index, isCorrectOption: $isCorrectOption');
+      } else {
+        // Fall back to text comparison (case-insensitive)
+        isCorrectOption = correctAnswer!.toLowerCase() == option.toLowerCase();
+        debugPrint('[MCQ Debug] correctAnswer: "$correctAnswer" (text), option: "$option", isCorrectOption: $isCorrectOption');
+      }
+    }
+    
+    debugPrint('[MCQ Debug] Option $index: isSelected=$isSelected, isCorrectOption=$isCorrectOption, hasAnswered=$hasAnswered, selectedAnswer=$selectedAnswer, correctAnswer=$correctAnswer');
 
     // Determine background color based on answer state
     Color backgroundColor;
     Color borderColor;
+    Color textColor;
     IconData? feedbackIcon;
     Color? iconColor;
 
     if (hasAnswered) {
-      if (isSelected) {
-        // User selected this option
-        if (isCorrect == true) {
-          // Correct answer - green background
-          backgroundColor = AppColors.success;
-          borderColor = AppColors.success;
-          feedbackIcon = Icons.check_circle;
-          iconColor = AppColors.white;
-        } else {
-          // Incorrect answer - red background
-          backgroundColor = AppColors.error;
-          borderColor = AppColors.error;
-          feedbackIcon = Icons.cancel;
-          iconColor = AppColors.white;
-        }
-      } else if (isCorrectOption) {
-        // Show correct answer with green tint (not selected)
-        backgroundColor = AppColors.success.withValues(alpha: 0.3);
+      if (isSelected && isCorrectOption) {
+        // User selected correct answer - green
+        backgroundColor = AppColors.success;
         borderColor = AppColors.success;
+        textColor = AppColors.white;
         feedbackIcon = Icons.check_circle;
+        iconColor = AppColors.white;
+      } else if (isSelected && !isCorrectOption) {
+        // User selected wrong answer - red
+        debugPrint('[MCQ Debug] Applying RED highlighting for wrong answer at index $index');
+        backgroundColor = AppColors.error;
+        borderColor = AppColors.error;
+        textColor = AppColors.white;
+        feedbackIcon = Icons.cancel;
+        iconColor = AppColors.white;
+      } else if (!isSelected && isCorrectOption) {
+        debugPrint('[MCQ Debug] Applying GREEN highlighting for correct answer at index $index (not selected)');
+        // Correct answer but user didn't select - light green
+        backgroundColor = AppColors.success.withValues(alpha: 0.2);
+        borderColor = AppColors.success;
+        textColor = AppColors.success;
+        feedbackIcon = Icons.check_circle_outline;
         iconColor = AppColors.success;
       } else {
         // Not selected, not correct - neutral
         backgroundColor = AppColors.white;
         borderColor = Colors.grey.shade300;
+        textColor = AppColors.textPrimary;
       }
     } else {
       // Not answered yet - neutral state
       backgroundColor = AppColors.white;
       borderColor = isSelected ? AppColors.primary : Colors.grey.shade300;
+      textColor = AppColors.textPrimary;
     }
 
     return AnimatedContainer(
@@ -117,11 +137,11 @@ class MultipleChoiceOptions extends StatelessWidget {
                 height: 40,
                 decoration: BoxDecoration(
                   color:
-                      hasAnswered && isSelected
-                          ? AppColors.white.withValues(alpha: 0.2)
-                          : (hasAnswered && isCorrectOption
-                              ? AppColors.success.withValues(alpha: 0.2)
-                              : AppColors.primary.withValues(alpha: 0.1)),
+                      hasAnswered && (isSelected || isCorrectOption)
+                          ? (isSelected
+                              ? AppColors.white.withValues(alpha: 0.2)
+                              : AppColors.success.withValues(alpha: 0.2))
+                          : AppColors.primary.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Center(
@@ -131,11 +151,11 @@ class MultipleChoiceOptions extends StatelessWidget {
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color:
-                          hasAnswered && isSelected
-                              ? AppColors.white
-                              : (hasAnswered && isCorrectOption
-                                  ? AppColors.success
-                                  : AppColors.primary),
+                          hasAnswered && (isSelected || isCorrectOption)
+                              ? (isSelected
+                                  ? AppColors.white
+                                  : AppColors.success)
+                              : AppColors.primary,
                     ),
                   ),
                 ),
@@ -145,16 +165,10 @@ class MultipleChoiceOptions extends StatelessWidget {
               Expanded(
                 child: Text(
                   option,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                  ).copyWith(
-                    color:
-                        hasAnswered && isSelected
-                            ? AppColors.white
-                            : (hasAnswered && isCorrectOption
-                                ? AppColors.success
-                                : AppColors.textPrimary),
+                    color: textColor,
                   ),
                 ),
               ),

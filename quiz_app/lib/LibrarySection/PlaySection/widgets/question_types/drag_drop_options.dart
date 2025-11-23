@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'dart:async';
+
+import 'package:flutter/material.dart';
 import 'package:quiz_app/CreateSection/models/question.dart';
 import 'package:quiz_app/utils/color.dart';
 
@@ -240,7 +241,9 @@ class _DragDropOptionsState extends State<DragDropOptions> {
             decoration: BoxDecoration(
               color: AppColors.success.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.success.withValues(alpha: 0.3)),
+              border: Border.all(
+                color: AppColors.success.withValues(alpha: 0.3),
+              ),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -275,18 +278,18 @@ class _DragDropOptionsState extends State<DragDropOptions> {
           decoration: BoxDecoration(
             color:
                 placedItem != null
-                    ? AppColors.primary.withValues(alpha: 0.1)
+                    ? AppColors.white
                     : isHovering
-                    ? AppColors.secondary.withValues(alpha: 0.1)
-                    : AppColors.surface,
+                    ? AppColors.accentLight
+                    : AppColors.primaryLight,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color:
                   placedItem != null
                       ? AppColors.primary
                       : isHovering
-                      ? AppColors.secondary
-                      : AppColors.textSecondary.withValues(alpha: 0.3),
+                      ? AppColors.primary
+                      : Colors.grey.shade300,
               width: 2,
             ),
           ),
@@ -363,7 +366,9 @@ class _DragDropOptionsState extends State<DragDropOptions> {
                             color: Colors.transparent,
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                              color: AppColors.textSecondary.withValues(alpha: 0.3),
+                              color: AppColors.textSecondary.withValues(
+                                alpha: 0.3,
+                              ),
                               style: BorderStyle.solid,
                             ),
                           ),
@@ -372,7 +377,9 @@ class _DragDropOptionsState extends State<DragDropOptions> {
                               'Drop here',
                               style: TextStyle(
                                 fontSize: 14,
-                                color: AppColors.textSecondary.withValues(alpha: 0.5),
+                                color: AppColors.textSecondary.withValues(
+                                  alpha: 0.5,
+                                ),
                                 fontStyle: FontStyle.italic,
                               ),
                             ),
@@ -397,11 +404,11 @@ class _DragDropOptionsState extends State<DragDropOptions> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: AppColors.secondary,
+            color: AppColors.accentBright,
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: AppColors.secondary.withValues(alpha: 0.3),
+                color: AppColors.accentBright.withValues(alpha: 0.3),
                 blurRadius: 8,
                 offset: const Offset(0, 4),
               ),
@@ -417,7 +424,7 @@ class _DragDropOptionsState extends State<DragDropOptions> {
           ),
         ),
       ),
-      childWhenDragging: Opacity(opacity: 0.3, child: _buildItemChip(item)),
+      childWhenDragging: Opacity(opacity: 0.5, child: _buildItemChip(item)),
       child: _buildItemChip(item),
     );
   }
@@ -426,11 +433,15 @@ class _DragDropOptionsState extends State<DragDropOptions> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.secondary,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: AppColors.primary,
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.secondary.withValues(alpha: 0.2),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -439,14 +450,14 @@ class _DragDropOptionsState extends State<DragDropOptions> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.drag_indicator, color: AppColors.white, size: 18),
+          Icon(Icons.drag_indicator, color: AppColors.primary, size: 18),
           const SizedBox(width: 8),
           Text(
             item,
             style: const TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w600,
-              color: AppColors.white,
+              color: AppColors.textPrimary,
             ),
           ),
         ],

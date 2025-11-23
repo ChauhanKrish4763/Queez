@@ -40,7 +40,8 @@ class GameNotifier extends Notifier<GameState> {
       'timestamp': DateTime.now().millisecondsSinceEpoch / 1000,
     });
 
-    state = state.copyWith(hasAnswered: true, selectedAnswer: answer);
+    // Only mark as answered, don't set selectedAnswer yet (wait for backend response)
+    state = state.copyWith(hasAnswered: true);
     debugPrint('✅ GAME_PROVIDER - Answer submitted, hasAnswered=true');
   }
 
@@ -96,22 +97,38 @@ class GameNotifier extends Notifier<GameState> {
         '✅ GAME_PROVIDER - State updated, currentQuestion is now: ${state.currentQuestion != null ? "SET" : "NULL"}',
       );
     } else if (type == 'answer_result') {
-      // Handle answer result - just update state, no overlays
+      // Handle answer result - update state with user's answer and correctness
       final isCorrect = payload['is_correct'] as bool? ?? false;
       final points = payload['points'] as int? ?? 0;
       final correctAnswer = payload['correct_answer'];
       final newScore = payload['new_total_score'] as int? ?? state.currentScore;
+      final questionType = payload['question_type'] as String?;
+      
+      // Get the user's submitted answer from the payload if available
+      final userAnswer = payload['user_answer'];
 
       debugPrint('✅ GAME_PROVIDER - Answer result: ${isCorrect ? "CORRECT" : "INCORRECT"}');
       debugPrint('💰 GAME_PROVIDER - Points earned: $points, New score: $newScore');
       debugPrint('🎯 GAME_PROVIDER - Correct answer was: $correctAnswer');
+      debugPrint('👤 GAME_PROVIDER - User answer was: $userAnswer');
+      debugPrint('📝 GAME_PROVIDER - Question type: $questionType');
 
       state = state.copyWith(
         isCorrect: isCorrect,
         correctAnswer: correctAnswer,
+        selectedAnswer: userAnswer,
         pointsEarned: points,
         currentScore: newScore,
       );
+      
+      // Auto-advance for single choice and true/false after 2 seconds
+      if (questionType == 'singleMcq' || questionType == 'trueFalse') {
+        debugPrint('⏱️ GAME_PROVIDER - Auto-advancing to next question in 2s');
+        Future.delayed(const Duration(seconds: 2), () {
+          debugPrint('➡️ GAME_PROVIDER - Auto-requesting next question');
+          requestNextQuestion();
+        });
+      }
     } else if (type == 'answer_feedback') {
       // Handle answer feedback message for participants (alternative message type)
       final isCorrect = payload['is_correct'] as bool? ?? false;
@@ -132,7 +149,7 @@ class GameNotifier extends Notifier<GameState> {
         answerDistribution: answerDistribution,
       );
     } else if (type == 'leaderboard_update') {
-      // Update leaderboard and show popup
+      // Update leaderboard - POPUP DISABLED, just update rankings
       final leaderboard = payload['leaderboard'];
 
       debugPrint('🏆 GAME_PROVIDER - Leaderboard update received');
@@ -151,20 +168,13 @@ class GameNotifier extends Notifier<GameState> {
             debugPrint('   ${i + 1}. ${rankings[i]['username']}: ${rankings[i]['score']} pts');
           }
           
-          // Don't show leaderboard popup on last question
-          final isLastQuestion = state.questionIndex + 1 >= state.totalQuestions;
-          debugPrint('🔍 GAME_PROVIDER - Is last question? $isLastQuestion (${state.questionIndex + 1} >= ${state.totalQuestions})');
-          
+          // Update rankings but DON'T show popup (disabled for now)
           state = state.copyWith(
             rankings: rankings,
-            showingLeaderboard: !isLastQuestion,
+            showingLeaderboard: false, // DISABLED
           );
           
-          if (isLastQuestion) {
-            debugPrint('🏁 GAME_PROVIDER - Last question! NOT showing leaderboard popup');
-          } else {
-            debugPrint('✅ GAME_PROVIDER - Leaderboard popup will be shown');
-          }
+          debugPrint('✅ GAME_PROVIDER - Rankings updated (popup disabled)');
         }
       }
     } else if (type == 'answer_reveal') {
