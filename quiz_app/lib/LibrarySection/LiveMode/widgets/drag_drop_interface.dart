@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:quiz_app/utils/quiz_design_system.dart';
 
-/// Widget that displays a drag and drop interface for ordering items in live multiplayer quiz
-/// Allows participants to drag items into the correct order with visual feedback after submission
+/// Widget that displays a drag and drop interface for matching items in live multiplayer quiz
+/// Allows participants to drag items to their matching targets with visual feedback after submission
 class DragDropInterface extends StatefulWidget {
-  final List<String> items;
-  final Function(List<String>) onOrderSubmit;
+  final List<String> items; // dragItems
+  final List<String>? dropTargets; // drop targets to match with items
+  final Function(Map<String, String>) onOrderSubmit;
   final bool hasAnswered;
   final bool? isCorrect;
 
   const DragDropInterface({
     super.key,
     required this.items,
+    this.dropTargets,
     required this.onOrderSubmit,
     required this.hasAnswered,
     this.isCorrect,
@@ -22,8 +24,8 @@ class DragDropInterface extends StatefulWidget {
 }
 
 class _DragDropInterfaceState extends State<DragDropInterface> {
-  // Track the current order of items in drop zones
-  late List<String?> _dropZoneItems;
+  // Track the mapping of drop targets to placed items
+  late Map<String, String?> _dropTargetValues;
   // Track which items are still available to drag
   late List<String> _availableItems;
 
@@ -37,61 +39,71 @@ class _DragDropInterfaceState extends State<DragDropInterface> {
   void didUpdateWidget(DragDropInterface oldWidget) {
     super.didUpdateWidget(oldWidget);
     // Reset state if items change
-    if (oldWidget.items != widget.items) {
+    if (oldWidget.items != widget.items || oldWidget.dropTargets != widget.dropTargets) {
       _initializeState();
     }
   }
 
   void _initializeState() {
-    // Initialize drop zones as empty
-    _dropZoneItems = List<String?>.filled(widget.items.length, null);
+    // Initialize drop targets with null values
+    _dropTargetValues = {};
+    final targets = widget.dropTargets ?? widget.items;
+    for (var target in targets) {
+      _dropTargetValues[target] = null;
+    }
+    
     // All items start as available to drag
     _availableItems = List<String>.from(widget.items);
   }
 
   bool get _allItemsPlaced {
-    return _dropZoneItems.every((item) => item != null);
+    return !_dropTargetValues.values.contains(null);
   }
 
   void _handleSubmit() {
     if (_allItemsPlaced && !widget.hasAnswered) {
-      // Filter out nulls and submit the order
-      final orderedItems = _dropZoneItems.whereType<String>().toList();
-      widget.onOrderSubmit(orderedItems);
+      // Convert to Map<String, String> for submission
+      final answer = Map<String, String>.fromEntries(
+        _dropTargetValues.entries
+            .where((e) => e.value != null)
+            .map((e) => MapEntry(e.key, e.value!)),
+      );
+      widget.onOrderSubmit(answer);
     }
   }
 
-  void _handleItemPlaced(int dropIndex, String item) {
+  void _handleItemPlaced(String target, String item) {
     if (widget.hasAnswered) return; // Don't allow changes after submission
 
     setState(() {
-      // Remove item from its previous position if it was already placed
-      final previousIndex = _dropZoneItems.indexOf(item);
-      if (previousIndex != -1) {
-        _dropZoneItems[previousIndex] = null;
-      } else {
-        // Remove from available items if it's being placed for the first time
-        _availableItems.remove(item);
-      }
+      // Remove item from its previous target if it was placed
+      _dropTargetValues.forEach((key, value) {
+        if (value == item) {
+          _dropTargetValues[key] = null;
+        }
+      });
 
-      // Place item in new position
-      // If the drop zone already has an item, swap them
-      final existingItem = _dropZoneItems[dropIndex];
+      // Place item in new target
+      // If the target already has an item, return it to available items
+      final existingItem = _dropTargetValues[target];
       if (existingItem != null) {
         _availableItems.add(existingItem);
       }
 
-      _dropZoneItems[dropIndex] = item;
+      _dropTargetValues[target] = item;
+      
+      // Remove from available items if not already removed
+      _availableItems.remove(item);
     });
   }
 
-  void _handleItemRemoved(int dropIndex) {
+  void _handleItemRemoved(String target) {
     if (widget.hasAnswered) return; // Don't allow changes after submission
 
     setState(() {
-      final item = _dropZoneItems[dropIndex];
+      final item = _dropTargetValues[target];
       if (item != null) {
-        _dropZoneItems[dropIndex] = null;
+        _dropTargetValues[target] = null;
         _availableItems.add(item);
       }
     });
@@ -156,10 +168,7 @@ class _DragDropInterfaceState extends State<DragDropInterface> {
             borderRadius: BorderRadius.circular(QuizBorderRadius.lg),
           ),
           child: Column(
-            children: List.generate(
-              widget.items.length,
-              (index) => _buildDropZone(index),
-            ),
+            children: (widget.dropTargets ?? widget.items).map((target) => _buildDropZone(target)).toList(),
           ),
         ),
         const SizedBox(height: QuizSpacing.lg),
@@ -227,13 +236,13 @@ class _DragDropInterfaceState extends State<DragDropInterface> {
     );
   }
 
-  Widget _buildDropZone(int index) {
-    final item = _dropZoneItems[index];
-    final isEmpty = item == null;
+  Widget _buildDropZone(String target) {
+    final placedItem = _dropTargetValues[target];
+    final isEmpty = placedItem == null;
 
     return DragTarget<String>(
       onWillAcceptWithDetails: (details) => !widget.hasAnswered,
-      onAcceptWithDetails: (details) => _handleItemPlaced(index, details.data),
+      onAcceptWithDetails: (details) => _handleItemPlaced(target, details.data),
       builder: (context, candidateData, rejectedData) {
         final isHovering = candidateData.isNotEmpty;
 
@@ -271,61 +280,73 @@ class _DragDropInterfaceState extends State<DragDropInterface> {
           ),
           child: Row(
             children: [
-              // Position number
-              Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: isEmpty
-                      ? Colors.grey.shade300
-                      : Theme.of(context).primaryColor,
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Text(
-                    '${index + 1}',
-                    style: TextStyle(
-                      color: isEmpty ? QuizColors.textSecondary : Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
+              // Target label
+              Expanded(
+                flex: 2,
+                child: Text(
+                  target,
+                  style: QuizTextStyles.optionText.copyWith(
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
               const SizedBox(width: QuizSpacing.md),
-              // Item content or placeholder
+              // Arrow
+              Icon(
+                Icons.arrow_forward,
+                color: QuizColors.textSecondary.withValues(alpha: 0.5),
+                size: 20,
+              ),
+              const SizedBox(width: QuizSpacing.md),
+              // Placed item or placeholder
               Expanded(
+                flex: 2,
                 child: isEmpty
                     ? Text(
-                        'Drop item here',
+                        'Drop here',
                         style: QuizTextStyles.optionText.copyWith(
                           color: QuizColors.textSecondary,
                           fontStyle: FontStyle.italic,
                         ),
                       )
-                    : Row(
-                        children: [
-                          if (!widget.hasAnswered)
-                            Icon(
-                              Icons.drag_indicator,
-                              color: QuizColors.textSecondary,
-                              size: 20,
+                    : Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: QuizSpacing.sm,
+                          vertical: QuizSpacing.xs,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).primaryColor,
+                          borderRadius: BorderRadius.circular(QuizBorderRadius.sm),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (!widget.hasAnswered)
+                              Icon(
+                                Icons.drag_indicator,
+                                color: Colors.white,
+                                size: 16,
+                              ),
+                            if (!widget.hasAnswered) const SizedBox(width: QuizSpacing.xs),
+                            Expanded(
+                              child: Text(
+                                placedItem,
+                                style: QuizTextStyles.optionText.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
-                          if (!widget.hasAnswered) const SizedBox(width: QuizSpacing.sm),
-                          Expanded(
-                            child: Text(
-                              item,
-                              style: QuizTextStyles.optionText,
-                            ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
               ),
               // Remove button (only if item is placed and not answered)
               if (!isEmpty && !widget.hasAnswered)
                 IconButton(
-                  icon: const Icon(Icons.close, size: 20),
-                  onPressed: () => _handleItemRemoved(index),
+                  icon: const Icon(Icons.close, size: 18),
+                  onPressed: () => _handleItemRemoved(target),
                   color: QuizColors.textSecondary,
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),

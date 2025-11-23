@@ -65,9 +65,13 @@ class QuestionTypeHandler {
         final List<String> items = List<String>.from(
           question['dragItems'] ?? options,
         );
+        final List<String>? dropTargets = question['dropTargets'] != null
+            ? List<String>.from(question['dropTargets'])
+            : null;
         return DragDropInterface(
           items: items,
-          onOrderSubmit: (order) => onAnswerSelected(order),
+          dropTargets: dropTargets,
+          onOrderSubmit: (matches) => onAnswerSelected(matches),
           hasAnswered: hasAnswered,
           isCorrect: isCorrect,
         );

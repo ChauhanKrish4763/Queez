@@ -108,10 +108,11 @@ class GameController:
         
         logger.info(f"📝 Processing answer for user {user_id} on question {current_index}")
         
-        # Get session state
-        session_data = await self.redis.hmget(session_key, ["quiz_id", "participants"])
+        # Get session state including question start time
+        session_data = await self.redis.hmget(session_key, ["quiz_id", "participants", "question_start_time"])
         quiz_id = session_data[0]
         participants_json = session_data[1]
+        question_start_time = session_data[2]
         
         if not quiz_id:
             return {"error": "Session not found"}
@@ -178,12 +179,17 @@ class GameController:
         points = 0
         if is_correct:
             base_points = 1000
-            # Use timestamp if provided, otherwise no time bonus
+            # Calculate time bonus based on elapsed time
             time_bonus = 0
-            if timestamp:
-                # Assume 30 seconds per question
-                elapsed = min(timestamp, QUESTION_TIME_SECONDS)
+            if timestamp and question_start_time:
+                # Calculate elapsed time from question start
+                start_time_dt = datetime.fromisoformat(question_start_time)
+                answer_time_dt = datetime.fromtimestamp(timestamp)
+                elapsed = (answer_time_dt - start_time_dt).total_seconds()
+                # Cap elapsed time at QUESTION_TIME_SECONDS
+                elapsed = min(max(0, elapsed), QUESTION_TIME_SECONDS)
                 time_bonus = int(max(0, (1 - elapsed / QUESTION_TIME_SECONDS) * 500))
+                logger.info(f"⏱️ Time calculation: start={question_start_time}, answer={timestamp}, elapsed={elapsed:.2f}s")
             points = base_points + time_bonus
             logger.info(f"✅ Correct answer! Base: {base_points}, Time bonus: {time_bonus}, Total: {points}")
         

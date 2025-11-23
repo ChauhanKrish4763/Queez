@@ -53,7 +53,8 @@ class MultipleChoiceOptions extends StatelessWidget {
     IconData? feedbackIcon;
     Color? iconColor;
 
-    if (hasAnswered) {
+    if (hasAnswered && isCorrect != null) {
+      // Only show feedback after backend response (isCorrect is set)
       if (isSelected) {
         // User selected this option
         if (isCorrect == true) {
@@ -81,7 +82,7 @@ class MultipleChoiceOptions extends StatelessWidget {
         borderColor = Colors.grey.shade300;
       }
     } else {
-      // Not answered yet - neutral state
+      // Not answered yet OR waiting for backend response - neutral state
       backgroundColor = AppColors.white;
       borderColor = isSelected ? AppColors.primary : Colors.grey.shade300;
     }
@@ -117,9 +118,9 @@ class MultipleChoiceOptions extends StatelessWidget {
                 height: 40,
                 decoration: BoxDecoration(
                   color:
-                      hasAnswered && isSelected
+                      hasAnswered && isCorrect != null && isSelected
                           ? AppColors.white.withValues(alpha: 0.2)
-                          : (hasAnswered && isCorrectOption
+                          : (hasAnswered && isCorrect != null && isCorrectOption
                               ? AppColors.success.withValues(alpha: 0.2)
                               : AppColors.primary.withValues(alpha: 0.1)),
                   shape: BoxShape.circle,
@@ -131,9 +132,9 @@ class MultipleChoiceOptions extends StatelessWidget {
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color:
-                          hasAnswered && isSelected
+                          hasAnswered && isCorrect != null && isSelected
                               ? AppColors.white
-                              : (hasAnswered && isCorrectOption
+                              : (hasAnswered && isCorrect != null && isCorrectOption
                                   ? AppColors.success
                                   : AppColors.primary),
                     ),
@@ -150,9 +151,9 @@ class MultipleChoiceOptions extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                   ).copyWith(
                     color:
-                        hasAnswered && isSelected
+                        hasAnswered && isCorrect != null && isSelected
                             ? AppColors.white
-                            : (hasAnswered && isCorrectOption
+                            : (hasAnswered && isCorrect != null && isCorrectOption
                                 ? AppColors.success
                                 : AppColors.textPrimary),
                   ),

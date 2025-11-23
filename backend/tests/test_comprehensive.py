@@ -2,6 +2,7 @@ import pytest
 from app.services.session_manager import SessionManager
 from app.services.game_controller import GameController
 from app.services.leaderboard_manager import LeaderboardManager
+from app.core.database import redis_client
 from datetime import datetime
 import json
 from bson import ObjectId
@@ -71,6 +72,9 @@ class MockRedis:
     
     async def get(self, name):
         return self.data.get(name)
+    
+    async def set(self, name, value):
+        self.data[name] = str(value) if not isinstance(value, str) else value
 
 @pytest.fixture
 def mock_redis():
@@ -99,21 +103,51 @@ async def test_leaderboard_operations(leaderboard_manager):
     """Test leaderboard CRUD operations"""
     session_code = "TEST123"
     
-    # Add scores
-    await leaderboard_manager.update_score(session_code, "user1", 1500)
-    await leaderboard_manager.update_score(session_code, "user2", 2000)
-    await leaderboard_manager.update_score(session_code, "user3", 1000)
+    # Setup session with participants in Redis
+    session_key = f"session:{session_code}"
+    participants = {
+        "user1": {
+            "user_id": "user1",
+            "username": "User1",
+            "score": 1500,
+            "connected": True,
+            "answers": []
+        },
+        "user2": {
+            "user_id": "user2",
+            "username": "User2",
+            "score": 2000,
+            "connected": True,
+            "answers": []
+        },
+        "user3": {
+            "user_id": "user3",
+            "username": "User3",
+            "score": 1000,
+            "connected": True,
+            "answers": []
+        }
+    }
     
-    # Get rankings
-    rankings = await leaderboard_manager.get_rankings(session_code, limit=10)
-    assert len(rankings) == 3
-    assert rankings[0]["user_id"] == "user2"
-    assert rankings[0]["score"] == 2000
-    assert rankings[0]["rank"] == 1
+    await redis_client.hset(session_key, mapping={
+        "participants": json.dumps(participants),
+        "current_question_index": "0",
+        "total_questions": "5"
+    })
+    
+    # Get leaderboard
+    leaderboard = await leaderboard_manager.get_leaderboard(session_code)
+    assert len(leaderboard) == 3
+    assert leaderboard[0]["user_id"] == "user2"
+    assert leaderboard[0]["score"] == 2000
+    assert leaderboard[0]["position"] == 1
     
     # Get user rank
-    rank = await leaderboard_manager.get_user_rank(session_code, "user1")
-    assert rank == 2
+    rank_info = await leaderboard_manager.get_participant_rank(session_code, "user1")
+    assert rank_info["position"] == 2
+    
+    # Cleanup
+    await redis_client.delete(session_key)
     
     # Clear leaderboard
     await leaderboard_manager.clear_leaderboard(session_code)
@@ -269,3 +303,118 @@ async def test_get_current_question_handles_legacy_field_names(game_controller, 
     assert question_data is not None
     question = question_data["question"]
     assert question["question"] == "Legacy question text"
+
+@pytest.mark.asyncio
+async def test_self_paced_progression(game_controller, mock_redis, monkeypatch):
+    """Test that participants progress independently through questions (Bug 3 fix)"""
+    quiz_id = str(ObjectId())
+    session_code = "SELFPACED"
+    
+    # Mock quiz with 3 questions
+    async def mock_find_one(*args, **kwargs):
+        return {
+            "_id": ObjectId(quiz_id),
+            "title": "Self-Paced Quiz",
+            "questions": [
+                {
+                    "id": "q1",
+                    "questionText": "Question 1",
+                    "type": "singleMcq",
+                    "options": ["A", "B", "C", "D"],
+                    "correctAnswerIndex": 0
+                },
+                {
+                    "id": "q2",
+                    "questionText": "Question 2",
+                    "type": "singleMcq",
+                    "options": ["A", "B", "C", "D"],
+                    "correctAnswerIndex": 1
+                },
+                {
+                    "id": "q3",
+                    "questionText": "Question 3",
+                    "type": "singleMcq",
+                    "options": ["A", "B", "C", "D"],
+                    "correctAnswerIndex": 2
+                }
+            ]
+        }
+    monkeypatch.setattr("app.core.database.collection.find_one", mock_find_one)
+    
+    # Set up session with 3 participants
+    participants = {
+        "user_a": {
+            "user_id": "user_a",
+            "username": "Participant A",
+            "score": 0,
+            "connected": True,
+            "answers": []
+        },
+        "user_b": {
+            "user_id": "user_b",
+            "username": "Participant B",
+            "score": 0,
+            "connected": True,
+            "answers": []
+        },
+        "user_c": {
+            "user_id": "user_c",
+            "username": "Participant C",
+            "score": 0,
+            "connected": True,
+            "answers": []
+        }
+    }
+    
+    await mock_redis.hset(f"session:{session_code}", mapping={
+        "quiz_id": quiz_id,
+        "current_question_index": "0",
+        "participants": json.dumps(participants)
+    })
+    
+    # Initialize all participants to question 0
+    await game_controller.set_participant_question_index(session_code, "user_a", 0)
+    await game_controller.set_participant_question_index(session_code, "user_b", 0)
+    await game_controller.set_participant_question_index(session_code, "user_c", 0)
+    
+    # Verify all start at question 0
+    assert await game_controller.get_participant_question_index(session_code, "user_a") == 0
+    assert await game_controller.get_participant_question_index(session_code, "user_b") == 0
+    assert await game_controller.get_participant_question_index(session_code, "user_c") == 0
+    
+    # Participant A answers question 1 and advances
+    await game_controller.submit_answer(session_code, "user_a", 0, 5.0)
+    await game_controller.set_participant_question_index(session_code, "user_a", 1)
+    
+    # Verify: A is on question 1, B and C remain on question 0
+    assert await game_controller.get_participant_question_index(session_code, "user_a") == 1
+    assert await game_controller.get_participant_question_index(session_code, "user_b") == 0
+    assert await game_controller.get_participant_question_index(session_code, "user_c") == 0
+    
+    # Participant B answers question 1 and advances
+    await game_controller.submit_answer(session_code, "user_b", 0, 10.0)
+    await game_controller.set_participant_question_index(session_code, "user_b", 1)
+    
+    # Verify: A is on question 1, B is on question 1, C still on question 0
+    assert await game_controller.get_participant_question_index(session_code, "user_a") == 1
+    assert await game_controller.get_participant_question_index(session_code, "user_b") == 1
+    assert await game_controller.get_participant_question_index(session_code, "user_c") == 0
+    
+    # Participant A answers question 2 and advances to question 2
+    await game_controller.submit_answer(session_code, "user_a", 1, 7.0)
+    await game_controller.set_participant_question_index(session_code, "user_a", 2)
+    
+    # Final verification: A is on question 2, B on question 1, C still on question 0
+    assert await game_controller.get_participant_question_index(session_code, "user_a") == 2
+    assert await game_controller.get_participant_question_index(session_code, "user_b") == 1
+    assert await game_controller.get_participant_question_index(session_code, "user_c") == 0
+    
+    # Verify each participant can get their correct question
+    question_a = await game_controller.get_question_by_index(session_code, 2)
+    assert question_a["question"]["question"] == "Question 3"
+    
+    question_b = await game_controller.get_question_by_index(session_code, 1)
+    assert question_b["question"]["question"] == "Question 2"
+    
+    question_c = await game_controller.get_question_by_index(session_code, 0)
+    assert question_c["question"]["question"] == "Question 1"

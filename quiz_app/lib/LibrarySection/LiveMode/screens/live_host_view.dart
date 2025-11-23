@@ -5,14 +5,53 @@ import 'package:quiz_app/providers/game_provider.dart';
 import 'package:quiz_app/providers/session_provider.dart';
 import 'package:quiz_app/utils/color.dart';
 import 'package:quiz_app/LibrarySection/LiveMode/widgets/host_leaderboard_panel.dart';
+import 'package:quiz_app/LibrarySection/LiveMode/screens/live_multiplayer_results.dart';
 
-class LiveHostView extends ConsumerWidget {
+class LiveHostView extends ConsumerStatefulWidget {
   final String sessionCode;
 
   const LiveHostView({super.key, required this.sessionCode});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<LiveHostView> createState() => _LiveHostViewState();
+}
+
+class _LiveHostViewState extends ConsumerState<LiveHostView> {
+  @override
+  Widget build(BuildContext context) {
+    // Listen for quiz completion and navigate to results
+    ref.listen(sessionProvider, (previous, next) {
+      if (next != null && next.status == 'completed') {
+        debugPrint('🏁 HOST_VIEW - Session completed, navigating to results');
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const LiveMultiplayerResults(),
+          ),
+        );
+      }
+    });
+
+    ref.listen(gameProvider, (previous, next) {
+      // Check if quiz completed message received (quiz_ended or quiz_completed)
+      if (previous?.currentQuestion != null && 
+          next.currentQuestion == null && 
+          next.rankings != null && 
+          next.rankings!.isNotEmpty) {
+        debugPrint('🏁 HOST_VIEW - Quiz completed, navigating to results');
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (context.mounted) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const LiveMultiplayerResults(),
+              ),
+            );
+          }
+        });
+      }
+    });
+
     final gameState = ref.watch(gameProvider);
     final sessionState = ref.watch(sessionProvider);
     final rankings = gameState.rankings ?? [];
@@ -110,7 +149,7 @@ class LiveHostView extends ConsumerWidget {
                   size: 20,
                 ),
                 onPressed: () {
-                  Clipboard.setData(ClipboardData(text: sessionCode));
+                  Clipboard.setData(ClipboardData(text: widget.sessionCode));
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Session code copied to clipboard'),
@@ -125,7 +164,7 @@ class LiveHostView extends ConsumerWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            sessionCode,
+            widget.sessionCode,
             style: const TextStyle(
               fontSize: 48,
               letterSpacing: 12,

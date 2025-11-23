@@ -54,7 +54,8 @@ class TrueFalseOptions extends StatelessWidget {
     Color textColor;
     IconData? feedbackIcon;
 
-    if (hasAnswered) {
+    if (hasAnswered && isCorrect != null) {
+      // Only show feedback after backend response (isCorrect is set)
       if (isSelected) {
         // User selected this option
         if (isCorrect == true) {
@@ -84,7 +85,7 @@ class TrueFalseOptions extends StatelessWidget {
         feedbackIcon = null;
       }
     } else {
-      // Not answered yet
+      // Not answered yet OR waiting for backend response
       backgroundColor =
           isSelected
               ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
