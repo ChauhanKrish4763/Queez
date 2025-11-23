@@ -42,8 +42,8 @@ class WebSocketService {
     final cleanSessionCode = sessionCode.trim();
     final cleanUserId = userId.trim();
 
-    // Use ngrok tunnel URL with secure WebSocket (wss://)
-    const baseUrl = 'refugia-unorderable-cyrus.ngrok-free.dev';
+    // Use Render backend URL with secure WebSocket (wss://)
+    const baseUrl = 'queez-backend.onrender.com';
 
     // Construct URI properly - NO trailing characters
     final wsUrl =
@@ -75,7 +75,6 @@ class WebSocketService {
       final socket = await WebSocket.connect(
         wsUrl,
         customClient: httpClient,
-        headers: {'ngrok-skip-browser-warning': 'true'},
       ).timeout(
         const Duration(seconds: 10),
         onTimeout: () {
