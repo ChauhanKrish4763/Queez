@@ -1,12 +1,18 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:quiz_app/CreateSection/models/note.dart';
 import 'package:quiz_app/CreateSection/screens/flashcard_play_screen_new.dart';
+import 'package:quiz_app/CreateSection/screens/note_viewer_page.dart';
 import 'package:quiz_app/LibrarySection/PlaySection/screens/quiz_play_screen.dart';
 import 'package:quiz_app/LibrarySection/models/library_item.dart';
 import 'package:quiz_app/LibrarySection/screens/mode_selection_sheet.dart';
 import 'package:quiz_app/LibrarySection/widgets/quiz_library_item.dart';
 import 'package:quiz_app/utils/animations/page_transition.dart';
 import 'package:quiz_app/utils/color.dart';
+import 'package:quiz_app/widgets/wait_screen.dart';
+import 'package:quiz_app/CreateSection/services/flashcard_service.dart';
+import 'package:quiz_app/CreateSection/services/quiz_service.dart';
+import 'package:quiz_app/CreateSection/services/note_service.dart';
 
 class ItemCard extends StatelessWidget {
   final LibraryItem item;
@@ -63,18 +69,22 @@ class ItemCard extends StatelessWidget {
                       color:
                           item.isQuiz
                               ? AppColors.primary.withValues(alpha: 0.15)
-                              : AppColors.accentBright.withValues(alpha: 0.15),
+                              : item.isNote
+                                  ? AppColors.warning.withValues(alpha: 0.15)
+                                  : AppColors.accentBright.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
-                      item.isQuiz ? 'QUIZ' : 'FLASHCARD SET',
+                      item.isQuiz ? 'QUIZ' : item.isNote ? 'NOTE' : 'FLASHCARD SET',
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
                         color:
                             item.isQuiz
                                 ? AppColors.primary
-                                : AppColors.accentBright,
+                                : item.isNote
+                                    ? AppColors.warning
+                                    : AppColors.accentBright,
                         letterSpacing: 0.5,
                       ),
                     ),
@@ -99,13 +109,17 @@ class ItemCard extends StatelessWidget {
                             Icon(
                               item.isQuiz
                                   ? Icons.quiz_outlined
-                                  : Icons.style_outlined,
+                                  : item.isNote
+                                      ? Icons.description_outlined
+                                      : Icons.style_outlined,
                               size: 18,
                               color: AppColors.primary,
                             ),
                             const SizedBox(width: 6),
                             Text(
-                              '${item.itemCount} ${item.isQuiz ? 'Questions' : 'Cards'}',
+                              item.isNote
+                                  ? 'Note'
+                                  : '${item.itemCount} ${item.isQuiz ? 'Questions' : 'Cards'}',
                               style: const TextStyle(
                                 fontSize: 13,
                                 color: AppColors.primary,
@@ -244,11 +258,72 @@ class ItemCard extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            // Buttons - Different layout for Quiz vs Flashcard
+            // Buttons - Different layout for Quiz vs Flashcard vs Note
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
               child:
-                  item.isFlashcard
+                  item.isNote
+                      ? // Notes: Only View button (full width)
+                      SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            final user = FirebaseAuth.instance.currentUser;
+                            if (user != null) {
+                              Note? loadedNote;
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => WaitScreen(
+                                    loadingMessage: 'Loading note',
+                                    onLoadComplete: () async {
+                                      // Preload note and store it
+                                      loadedNote = await NoteService.getNote(
+                                        item.id,
+                                        user.uid,
+                                      );
+                                    },
+                                    onNavigate: () {
+                                      Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => NoteViewerPage(
+                                            noteId: item.id,
+                                            userId: user.uid,
+                                            preloadedNote: loadedNote,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              );
+                            }
+                          },
+                          icon: const Icon(
+                            Icons.visibility,
+                            size: 20,
+                            color: AppColors.white,
+                          ),
+                          label: const Text(
+                            'View',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.warning,
+                            foregroundColor: AppColors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      )
+                      : item.isFlashcard
                       ? // Flashcards: Only Play button (full width)
                       SizedBox(
                         width: double.infinity,
@@ -257,13 +332,31 @@ class ItemCard extends StatelessWidget {
                           onPressed: () {
                             final user = FirebaseAuth.instance.currentUser;
                             if (user != null) {
+                              var loadedFlashcardSet;
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder:
-                                      (context) => FlashcardPlayScreen(
-                                        flashcardSetId: item.id,
-                                      ),
+                                  builder: (context) => WaitScreen(
+                                    loadingMessage: 'Loading flashcards',
+                                    onLoadComplete: () async {
+                                      // Preload flashcard set and store it
+                                      loadedFlashcardSet = await FlashcardService.getFlashcardSet(
+                                        item.id,
+                                        user.uid,
+                                      );
+                                    },
+                                    onNavigate: () {
+                                      Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => FlashcardPlayScreen(
+                                            flashcardSetId: item.id,
+                                            preloadedFlashcardSet: loadedFlashcardSet,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
                                 ),
                               );
                             }
@@ -340,17 +433,39 @@ class ItemCard extends StatelessWidget {
                               height: 48,
                               child: ElevatedButton.icon(
                                 onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    customRoute(
-                                      QuizPlayScreen(
-                                        quizItem: QuizLibraryItem.fromJson(
-                                          item.toQuizLibraryItem(),
+                                  final user = FirebaseAuth.instance.currentUser;
+                                  if (user != null) {
+                                    var loadedQuestions;
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => WaitScreen(
+                                          loadingMessage: 'Loading quiz',
+                                          onLoadComplete: () async {
+                                            // Preload quiz questions and store them
+                                            loadedQuestions = await QuizService.fetchQuestionsByQuizId(
+                                              item.id,
+                                              user.uid,
+                                            );
+                                          },
+                                          onNavigate: () {
+                                            Navigator.pushReplacement(
+                                              context,
+                                              customRoute(
+                                                QuizPlayScreen(
+                                                  quizItem: QuizLibraryItem.fromJson(
+                                                    item.toQuizLibraryItem(),
+                                                  ),
+                                                  preloadedQuestions: loadedQuestions,
+                                                ),
+                                                AnimationType.slideUp,
+                                              ),
+                                            );
+                                          },
                                         ),
                                       ),
-                                      AnimationType.slideUp,
-                                    ),
-                                  );
+                                    );
+                                  }
                                 },
                                 icon: const Icon(
                                   Icons.play_arrow,
@@ -382,17 +497,39 @@ class ItemCard extends StatelessWidget {
                         height: 48,
                         child: ElevatedButton.icon(
                           onPressed: () {
-                            Navigator.push(
-                              context,
-                              customRoute(
-                                QuizPlayScreen(
-                                  quizItem: QuizLibraryItem.fromJson(
-                                    item.toQuizLibraryItem(),
+                            final user = FirebaseAuth.instance.currentUser;
+                            if (user != null) {
+                              var loadedQuestions;
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => WaitScreen(
+                                    loadingMessage: 'Loading quiz',
+                                    onLoadComplete: () async {
+                                      // Preload quiz questions and store them
+                                      loadedQuestions = await QuizService.fetchQuestionsByQuizId(
+                                        item.id,
+                                        user.uid,
+                                      );
+                                    },
+                                    onNavigate: () {
+                                      Navigator.pushReplacement(
+                                        context,
+                                        customRoute(
+                                          QuizPlayScreen(
+                                            quizItem: QuizLibraryItem.fromJson(
+                                              item.toQuizLibraryItem(),
+                                            ),
+                                            preloadedQuestions: loadedQuestions,
+                                          ),
+                                          AnimationType.slideUp,
+                                        ),
+                                      );
+                                    },
                                   ),
                                 ),
-                                AnimationType.slideUp,
-                              ),
-                            );
+                              );
+                            }
                           },
                           icon: const Icon(
                             Icons.play_arrow,

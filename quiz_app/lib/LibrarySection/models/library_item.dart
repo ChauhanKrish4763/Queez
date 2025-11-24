@@ -46,6 +46,7 @@ class LibraryItem {
 
   bool get isQuiz => type == 'quiz';
   bool get isFlashcard => type == 'flashcard';
+  bool get isNote => type == 'note';
 
   // Convert to QuizLibraryItem (for quizzes only)
   dynamic toQuizLibraryItem() {

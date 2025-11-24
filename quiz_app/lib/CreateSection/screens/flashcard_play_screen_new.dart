@@ -7,8 +7,13 @@ import '../../CreateSection/services/flashcard_service.dart';
 
 class FlashcardPlayScreen extends StatefulWidget {
   final String flashcardSetId;
+  final FlashcardSet? preloadedFlashcardSet;
 
-  const FlashcardPlayScreen({super.key, required this.flashcardSetId});
+  const FlashcardPlayScreen({
+    super.key,
+    required this.flashcardSetId,
+    this.preloadedFlashcardSet,
+  });
 
   @override
   State<FlashcardPlayScreen> createState() => _FlashcardPlayScreenState();
@@ -17,14 +22,17 @@ class FlashcardPlayScreen extends StatefulWidget {
 class _FlashcardPlayScreenState extends State<FlashcardPlayScreen> {
   final CardSwiperController _controller = CardSwiperController();
   FlashcardSet? _flashcardSet;
-  bool _isLoading = true;
-  String? _errorMessage;
   int? _currentIndex = 0;
 
   @override
   void initState() {
     super.initState();
-    _loadFlashcardSet();
+    // Use preloaded flashcard set if available, otherwise fetch
+    if (widget.preloadedFlashcardSet != null) {
+      _flashcardSet = widget.preloadedFlashcardSet;
+    } else {
+      _loadFlashcardSet();
+    }
   }
 
   @override
@@ -47,53 +55,26 @@ class _FlashcardPlayScreenState extends State<FlashcardPlayScreen> {
 
       setState(() {
         _flashcardSet = flashcardSet;
-        _isLoading = false;
       });
     } catch (e) {
-      setState(() {
-        _errorMessage = e.toString();
-        _isLoading = false;
-      });
+      // Show error in snackbar instead of state
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: Colors.red,
+          ),
+        );
+        Navigator.of(context).pop();
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
+    if (_flashcardSet == null || _flashcardSet!.cards.isEmpty) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Loading...')),
-        body: const Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    if (_errorMessage != null) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Error')),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, size: 64, color: Colors.red),
-              const SizedBox(height: 16),
-              Text(
-                'Failed to load flashcard set',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                _errorMessage!,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    if (_flashcardSet!.cards.isEmpty) {
-      return Scaffold(
-        appBar: AppBar(title: Text(_flashcardSet!.title)),
+        appBar: AppBar(title: const Text('Flashcards')),
         body: const Center(child: Text('No flashcards in this set')),
       );
     }

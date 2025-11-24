@@ -12,8 +12,13 @@ import 'package:quiz_app/utils/color.dart';
 
 class QuizPlayScreen extends StatefulWidget {
   final QuizLibraryItem quizItem;
+  final List<Question>? preloadedQuestions;
 
-  const QuizPlayScreen({super.key, required this.quizItem});
+  const QuizPlayScreen({
+    super.key,
+    required this.quizItem,
+    this.preloadedQuestions,
+  });
 
   @override
   State<QuizPlayScreen> createState() => _QuizPlayScreenState();
@@ -23,8 +28,6 @@ class _QuizPlayScreenState extends State<QuizPlayScreen>
     with TickerProviderStateMixin {
   QuizAttempt? _quizAttempt;
   int _currentIndex = 0;
-  bool _isLoading = true;
-  String? _errorMessage;
 
   late AnimationController _progressController;
   late AnimationController _cardAnimationController;
@@ -34,8 +37,7 @@ class _QuizPlayScreenState extends State<QuizPlayScreen>
   @override
   void initState() {
     super.initState();
-    _fetchQuestions();
-
+    
     _progressController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 300),
@@ -55,6 +57,15 @@ class _QuizPlayScreenState extends State<QuizPlayScreen>
         curve: Curves.easeInOutCubic,
       ),
     );
+    
+    // Use preloaded questions if available, otherwise fetch
+    if (widget.preloadedQuestions != null && widget.preloadedQuestions!.isNotEmpty) {
+      _quizAttempt = QuizAttempt(questions: widget.preloadedQuestions!);
+      _progressController.animateTo(1 / widget.preloadedQuestions!.length);
+      _cardAnimationController.forward();
+    } else {
+      _fetchQuestions();
+    }
   }
 
   @override
@@ -80,16 +91,21 @@ class _QuizPlayScreenState extends State<QuizPlayScreen>
       }
       setState(() {
         _quizAttempt = QuizAttempt(questions: questions);
-        _isLoading = false;
         _progressController.animateTo(1 / questions.length);
         _cardAnimationController.forward();
       });
       return questions;
     } catch (e) {
-      setState(() {
-        _errorMessage = e.toString().replaceAll('Exception: ', '');
-        _isLoading = false;
-      });
+      // Show error in snackbar instead of state
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceAll('Exception: ', '')),
+            backgroundColor: AppColors.error,
+          ),
+        );
+        Navigator.of(context).pop();
+      }
       return [];
     }
   }
@@ -162,25 +178,6 @@ class _QuizPlayScreenState extends State<QuizPlayScreen>
   }
 
   Widget _buildBody() {
-    if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: AppColors.primary),
-      );
-    }
-
-    if (_errorMessage != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Text(
-            _errorMessage!,
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: AppColors.error, fontSize: 16),
-          ),
-        ),
-      );
-    }
-
     if (_quizAttempt == null || _quizAttempt!.questions.isEmpty) {
       return const Center(
         child: Text(
