@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:quiz_app/utils/quiz_design_system.dart';
+import 'package:quiz_app/utils/color.dart';
 
-/// Widget for True/False questions in live multiplayer mode
-class TrueFalseOptions extends StatelessWidget {
+class TrueFalseOptions extends StatefulWidget {
   final Function(int) onSelect;
   final int? selectedAnswer;
   final int? correctAnswer;
@@ -19,130 +18,147 @@ class TrueFalseOptions extends StatelessWidget {
   });
 
   @override
+  State<TrueFalseOptions> createState() => _TrueFalseOptionsState();
+}
+
+class _TrueFalseOptionsState extends State<TrueFalseOptions> {
+  int? _localSelectedValue;
+  bool _waitingForResult = false;
+
+  void _handleTap(int value) {
+    if (_waitingForResult || widget.hasAnswered) return;
+    
+    debugPrint('📝 TRUE_FALSE - User tapped: ${value == 0 ? "TRUE" : "FALSE"}');
+    setState(() {
+      _localSelectedValue = value;
+      _waitingForResult = true;
+    });
+    widget.onSelect(value);
+  }
+
+  @override
+  void didUpdateWidget(TrueFalseOptions oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    
+    // When we get the result back from backend
+    if (widget.correctAnswer != null && oldWidget.correctAnswer == null) {
+      debugPrint('📝 TRUE_FALSE - Got result from backend');
+      setState(() {
+        _waitingForResult = false;
+      });
+    }
+    
+    // Reset when moving to new question (correctAnswer becomes null again)
+    if (widget.correctAnswer == null && oldWidget.correctAnswer != null) {
+      debugPrint('📝 TRUE_FALSE - New question, resetting');
+      setState(() {
+        _localSelectedValue = null;
+        _waitingForResult = false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final effectiveSelectedValue = widget.selectedAnswer ?? _localSelectedValue;
+    final hasResult = widget.correctAnswer != null;
+    
     return Column(
       children: [
         _buildOptionButton(
-          context: context,
           label: 'TRUE',
           value: 0,
-          icon: Icons.check_circle_outline,
+          effectiveSelectedValue: effectiveSelectedValue,
+          hasResult: hasResult,
         ),
-        const SizedBox(height: QuizSpacing.lg),
+        const SizedBox(height: 16),
         _buildOptionButton(
-          context: context,
           label: 'FALSE',
           value: 1,
-          icon: Icons.cancel_outlined,
+          effectiveSelectedValue: effectiveSelectedValue,
+          hasResult: hasResult,
         ),
       ],
     );
   }
 
   Widget _buildOptionButton({
-    required BuildContext context,
     required String label,
     required int value,
-    required IconData icon,
+    required int? effectiveSelectedValue,
+    required bool hasResult,
   }) {
-    final isSelected = selectedAnswer == value;
-    final isCorrectOption = correctAnswer == value;
-
-    // Determine colors based on state
+    final isSelected = effectiveSelectedValue == value;
+    final isCorrectOption = widget.correctAnswer == value;
+    final isDisabled = _waitingForResult || widget.hasAnswered;
+    
     Color backgroundColor;
     Color borderColor;
     Color textColor;
     IconData? feedbackIcon;
-
-    if (hasAnswered) {
-      if (isSelected) {
-        // User selected this option
-        if (isCorrect == true) {
-          // Correct answer
-          backgroundColor = QuizColors.correct;
-          borderColor = QuizColors.correct;
-          textColor = Colors.white;
-          feedbackIcon = Icons.check_circle;
-        } else {
-          // Incorrect answer
-          backgroundColor = QuizColors.incorrect;
-          borderColor = QuizColors.incorrect;
-          textColor = Colors.white;
-          feedbackIcon = Icons.cancel;
-        }
-      } else if (isCorrectOption) {
-        // Show correct answer (not selected)
-        backgroundColor = QuizColors.correct.withValues(alpha: 0.2);
-        borderColor = QuizColors.correct;
-        textColor = QuizColors.correct;
-        feedbackIcon = Icons.check_circle_outline;
+    
+    if (hasResult) {
+      // Show final result
+      if (isCorrectOption) {
+        backgroundColor = AppColors.success;
+        borderColor = AppColors.success;
+        textColor = Colors.white;
+        feedbackIcon = Icons.check_circle;
+      } else if (isSelected && !isCorrectOption) {
+        backgroundColor = const Color(0xFFE53935);
+        borderColor = const Color(0xFFE53935);
+        textColor = Colors.white;
+        feedbackIcon = Icons.cancel;
       } else {
-        // Not selected, not correct
-        backgroundColor = QuizColors.cardBackground;
-        borderColor = QuizColors.divider;
-        textColor = QuizColors.textSecondary;
+        backgroundColor = AppColors.white;
+        borderColor = Colors.grey.shade300;
+        textColor = AppColors.textPrimary;
         feedbackIcon = null;
       }
+    } else if (_waitingForResult && isSelected) {
+      // Waiting - use BLUE to indicate selection (not green)
+      backgroundColor = AppColors.info;
+      borderColor = AppColors.info;
+      textColor = Colors.white;
+      feedbackIcon = null;
     } else {
-      // Not answered yet
-      backgroundColor =
-          isSelected
-              ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
-              : QuizColors.cardBackground;
-      borderColor =
-          isSelected
-              ? Theme.of(context).colorScheme.primary
-              : QuizColors.divider;
-      textColor =
-          isSelected
-              ? Theme.of(context).colorScheme.primary
-              : QuizColors.textPrimary;
+      backgroundColor = AppColors.white;
+      borderColor = Colors.grey.shade300;
+      textColor = AppColors.textPrimary;
       feedbackIcon = null;
     }
 
-    return AnimatedContainer(
-      duration: QuizAnimations.normal,
-      curve: Curves.easeInOut,
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(QuizBorderRadius.lg),
-        border: Border.all(
-          color: borderColor,
-          width: isSelected && !hasAnswered ? 3 : 2,
-        ),
-        boxShadow: [
-          if (isSelected && !hasAnswered)
-            BoxShadow(
-              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-        ],
-      ),
-      child: InkWell(
-        onTap: hasAnswered ? null : () => onSelect(value),
-        borderRadius: BorderRadius.circular(QuizBorderRadius.lg),
-        child: Padding(
-          padding: const EdgeInsets.all(QuizSpacing.xl),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 32, color: textColor),
-              const SizedBox(width: QuizSpacing.md),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: textColor,
-                ),
-              ),
-              if (feedbackIcon != null) ...[
-                const Spacer(),
-                Icon(feedbackIcon, size: 32, color: textColor),
-              ],
-            ],
+    return GestureDetector(
+      onTap: isDisabled ? null : () => _handleTap(value),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        margin: const EdgeInsets.symmetric(horizontal: 4),
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: borderColor,
+            width: isSelected ? 2.5 : 1.5,
           ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: textColor,
+                letterSpacing: 1.5,
+              ),
+            ),
+            if (feedbackIcon != null) ...[
+              const SizedBox(width: 16),
+              Icon(feedbackIcon, color: Colors.white, size: 28),
+            ],
+          ],
         ),
       ),
     );

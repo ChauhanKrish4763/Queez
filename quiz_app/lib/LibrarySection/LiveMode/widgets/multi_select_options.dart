@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:quiz_app/utils/color.dart';
 
-/// Widget that displays multiple choice question options with checkboxes for live multiplayer quiz
-/// Allows users to select multiple answers and submit them together
 class MultiSelectOptions extends StatefulWidget {
   final List<String> options;
   final Function(List<int>) onSubmit;
@@ -28,284 +26,320 @@ class MultiSelectOptions extends StatefulWidget {
 }
 
 class _MultiSelectOptionsState extends State<MultiSelectOptions> {
-  late Set<int> _selectedIndices;
+  Set<int> _localSelectedIndices = {};
+  bool _submitted = false;
 
   @override
   void initState() {
     super.initState();
-    _selectedIndices = widget.selectedAnswers?.toSet() ?? {};
+    _localSelectedIndices = {};
+  }
+
+  @override
+  void didUpdateWidget(MultiSelectOptions oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    
+    // Reset when question changes (new options)
+    if (widget.options.length != oldWidget.options.length ||
+        (widget.options.isNotEmpty && oldWidget.options.isNotEmpty && 
+         widget.options[0] != oldWidget.options[0])) {
+      debugPrint('📝 MULTI_SELECT - New question detected, resetting');
+      setState(() {
+        _localSelectedIndices = {};
+        _submitted = false;
+      });
+    }
+    
+    // Also reset if hasAnswered goes from true to false (new question)
+    if (!widget.hasAnswered && oldWidget.hasAnswered) {
+      debugPrint('📝 MULTI_SELECT - hasAnswered changed to false, resetting');
+      setState(() {
+        _localSelectedIndices = {};
+        _submitted = false;
+      });
+    }
   }
 
   void _toggleOption(int index) {
-    if (widget.hasAnswered) return;
+    if (widget.hasAnswered || _submitted) return;
 
     setState(() {
-      if (_selectedIndices.contains(index)) {
-        _selectedIndices.remove(index);
+      if (_localSelectedIndices.contains(index)) {
+        _localSelectedIndices.remove(index);
       } else {
-        _selectedIndices.add(index);
+        _localSelectedIndices.add(index);
       }
     });
   }
 
   void _handleSubmit() {
-    if (_selectedIndices.isNotEmpty && !widget.hasAnswered) {
-      widget.onSubmit(_selectedIndices.toList()..sort());
+    if (_localSelectedIndices.isNotEmpty && !widget.hasAnswered && !_submitted) {
+      debugPrint('📝 MULTI_SELECT - Submitting: ${_localSelectedIndices.toList()..sort()}');
+      setState(() {
+        _submitted = true;
+      });
+      widget.onSubmit(_localSelectedIndices.toList()..sort());
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final hasResult = widget.correctAnswers != null;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Options list
         ListView.separated(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           itemCount: widget.options.length,
-          separatorBuilder: (context, index) => const SizedBox(height: 16),
+          separatorBuilder: (_, __) => const SizedBox(height: 12),
           itemBuilder: (context, index) {
-            final option = widget.options[index];
-            return _buildOptionButton(
-              context: context,
-              option: option,
-              index: index,
-            );
+            return _buildOptionButton(index: index, hasResult: hasResult);
           },
         ),
+        const SizedBox(height: 20),
         
-        const SizedBox(height: 24),
-        
-        // Submit button
-        ElevatedButton(
-          onPressed: (_selectedIndices.isNotEmpty && !widget.hasAnswered) 
-              ? _handleSubmit 
-              : null,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary,
-            foregroundColor: AppColors.white,
-            disabledBackgroundColor: AppColors.disabledBackground,
-            disabledForegroundColor: AppColors.textDisabled,
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+        // Submit button (before submission)
+        if (!widget.hasAnswered && !_submitted)
+          ElevatedButton(
+            onPressed: _localSelectedIndices.isNotEmpty ? _handleSubmit : null,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: AppColors.white,
+              disabledBackgroundColor: AppColors.disabledBackground,
+              disabledForegroundColor: AppColors.textDisabled,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: Text(
+              _localSelectedIndices.isEmpty 
+                  ? 'Select at least one option' 
+                  : 'Submit (${_localSelectedIndices.length} selected)',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (widget.hasAnswered && widget.isCorrect != null) ...[
+        
+        // Waiting for result
+        if (_submitted && !hasResult)
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.info.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.info, width: 2),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: AppColors.info,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'Checking answers...',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.info,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        
+        // Result feedback
+        if (hasResult)
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: widget.isCorrect == true 
+                  ? AppColors.success.withValues(alpha: 0.1)
+                  : const Color(0xFFE53935).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: widget.isCorrect == true 
+                    ? AppColors.success 
+                    : const Color(0xFFE53935),
+                width: 2,
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
                 Icon(
-                  widget.isCorrect! ? Icons.check_circle : Icons.cancel,
+                  widget.isCorrect == true ? Icons.check_circle : Icons.cancel,
+                  color: widget.isCorrect == true 
+                      ? AppColors.success 
+                      : const Color(0xFFE53935),
                   size: 24,
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 12),
+                Text(
+                  widget.isCorrect == true ? 'Correct!' : 'Incorrect',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: widget.isCorrect == true 
+                        ? AppColors.success 
+                        : const Color(0xFFE53935),
+                  ),
+                ),
               ],
-              Text(
-                widget.hasAnswered
-                    ? 'Submitted'
-                    : (_selectedIndices.isEmpty 
-                        ? 'Select at least one option' 
-                        : 'Submit Options (${_selectedIndices.length} selected)'),
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ],
-          ),
-        ),
-        
-        // Next Question Button (after submission)
-        if (widget.hasAnswered && widget.onNextQuestion != null)
-          Padding(
-            padding: const EdgeInsets.only(top: 16),
-            child: ElevatedButton(
-              onPressed: widget.onNextQuestion,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.secondary,
-                foregroundColor: AppColors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Text(
-                'Next Question',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.5,
-                ),
-              ),
             ),
           ),
       ],
     );
   }
 
-  Widget _buildOptionButton({
-    required BuildContext context,
-    required String option,
-    required int index,
-  }) {
-    final isSelected = _selectedIndices.contains(index);
+  Widget _buildOptionButton({required int index, required bool hasResult}) {
+    final isLocalSelected = _localSelectedIndices.contains(index);
     final isCorrectOption = widget.correctAnswers?.contains(index) ?? false;
-    final wasSelected = widget.selectedAnswers?.contains(index) ?? false;
-
-    // Determine background color based on answer state
+    final wasSubmittedSelected = widget.selectedAnswers?.contains(index) ?? false;
+    
     Color backgroundColor;
     Color borderColor;
-    Color checkboxColor;
+    Color textColor;
     IconData? feedbackIcon;
-    Color? iconColor;
+    bool showCheckbox;
 
-    if (widget.hasAnswered) {
-      // Check if this option was selected by the user
-      final userSelected = wasSelected;
-      
-      if (isCorrectOption && userSelected) {
-        // User selected this AND it's correct - solid green
+    if (hasResult) {
+      // Show final result - use backend's selectedAnswers
+      showCheckbox = wasSubmittedSelected;
+      if (isCorrectOption && wasSubmittedSelected) {
         backgroundColor = AppColors.success;
         borderColor = AppColors.success;
-        checkboxColor = AppColors.white;
+        textColor = Colors.white;
         feedbackIcon = Icons.check_circle;
-        iconColor = AppColors.white;
-      } else if (isCorrectOption && !userSelected) {
-        // User DIDN'T select but it's correct - light green with border (missed correct answer)
-        backgroundColor = AppColors.success.withValues(alpha: 0.2);
+      } else if (isCorrectOption && !wasSubmittedSelected) {
+        backgroundColor = AppColors.success.withValues(alpha: 0.15);
         borderColor = AppColors.success;
-        checkboxColor = AppColors.success;
+        textColor = AppColors.success;
         feedbackIcon = Icons.check_circle_outline;
-        iconColor = AppColors.success;
-      } else if (!isCorrectOption && userSelected) {
-        // User selected this BUT it's wrong - RED
-        backgroundColor = AppColors.error;
-        borderColor = AppColors.error;
-        checkboxColor = AppColors.white;
+      } else if (!isCorrectOption && wasSubmittedSelected) {
+        backgroundColor = const Color(0xFFE53935);
+        borderColor = const Color(0xFFE53935);
+        textColor = Colors.white;
         feedbackIcon = Icons.cancel;
-        iconColor = AppColors.white;
       } else {
-        // Not selected, not correct - neutral
         backgroundColor = AppColors.white;
         borderColor = Colors.grey.shade300;
-        checkboxColor = Colors.grey.shade400;
+        textColor = AppColors.textPrimary;
+        feedbackIcon = null;
+      }
+    } else if (_submitted) {
+      // Submitted, waiting for result - use BLUE
+      showCheckbox = isLocalSelected;
+      if (isLocalSelected) {
+        backgroundColor = AppColors.info.withValues(alpha: 0.1);
+        borderColor = AppColors.info;
+        textColor = AppColors.textPrimary;
+        feedbackIcon = null;
+      } else {
+        backgroundColor = AppColors.white;
+        borderColor = Colors.grey.shade300;
+        textColor = AppColors.textPrimary;
+        feedbackIcon = null;
       }
     } else {
-      // Not answered yet - neutral state
+      // Not submitted yet - local selection
+      showCheckbox = isLocalSelected;
       backgroundColor = AppColors.white;
-      borderColor = isSelected ? AppColors.primary : Colors.grey.shade300;
-      checkboxColor = isSelected ? AppColors.primary : Colors.grey.shade400;
+      borderColor = isLocalSelected ? AppColors.info : Colors.grey.shade300;
+      textColor = AppColors.textPrimary;
+      feedbackIcon = null;
     }
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: borderColor,
-          width: isSelected && !widget.hasAnswered ? 3 : 2,
+    return GestureDetector(
+      onTap: (widget.hasAnswered || _submitted) ? null : () => _toggleOption(index),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: borderColor, width: 2),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: InkWell(
-        onTap: widget.hasAnswered ? null : () => _toggleOption(index),
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Row(
-            children: [
-              // Checkbox
-              Container(
-                width: 28,
-                height: 28,
-                decoration: BoxDecoration(
-                  color: isSelected || (widget.hasAnswered && wasSelected)
-                      ? checkboxColor
-                      : Colors.transparent,
-                  border: Border.all(
-                    color: checkboxColor,
-                    width: 2,
-                  ),
-                  borderRadius: BorderRadius.circular(6),
+        child: Row(
+          children: [
+            // Checkbox
+            Container(
+              width: 26,
+              height: 26,
+              decoration: BoxDecoration(
+                color: showCheckbox
+                    ? (hasResult && wasSubmittedSelected
+                        ? Colors.white.withValues(alpha: 0.3)
+                        : AppColors.info)
+                    : Colors.transparent,
+                border: Border.all(
+                  color: showCheckbox
+                      ? (hasResult ? Colors.white.withValues(alpha: 0.5) : AppColors.info)
+                      : Colors.grey.shade400,
+                  width: 2,
                 ),
-                child: (isSelected || (widget.hasAnswered && wasSelected))
-                    ? Icon(
-                        Icons.check,
-                        size: 20,
-                        color: widget.hasAnswered && wasSelected
-                            ? (isCorrectOption ? AppColors.white : AppColors.white)
-                            : AppColors.white,
-                      )
-                    : null,
+                borderRadius: BorderRadius.circular(6),
               ),
-              const SizedBox(width: 16),
-              
-              // Option letter (A, B, C, D)
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: widget.hasAnswered && wasSelected
-                      ? AppColors.white.withValues(alpha: 0.2)
-                      : (widget.hasAnswered && isCorrectOption
-                          ? AppColors.success.withValues(alpha: 0.2)
-                          : AppColors.primary.withValues(alpha: 0.1)),
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Text(
-                    String.fromCharCode(65 + index), // A, B, C, D...
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: widget.hasAnswered && wasSelected
-                          ? AppColors.white
-                          : (widget.hasAnswered && isCorrectOption
-                              ? AppColors.success
-                              : AppColors.primary),
-                    ),
-                  ),
-                ),
+              child: showCheckbox
+                  ? const Icon(Icons.check, size: 18, color: Colors.white)
+                  : null,
+            ),
+            const SizedBox(width: 14),
+            
+            // Option letter
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: (hasResult && (wasSubmittedSelected || isCorrectOption))
+                    ? Colors.white.withValues(alpha: 0.2)
+                    : AppColors.primary.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
               ),
-              const SizedBox(width: 16),
-              
-              // Option text
-              Expanded(
+              child: Center(
                 child: Text(
-                  option,
-                  style: const TextStyle(
+                  String.fromCharCode(65 + index),
+                  style: TextStyle(
                     fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ).copyWith(
-                    color: widget.hasAnswered && wasSelected
-                        ? AppColors.white
-                        : (widget.hasAnswered && isCorrectOption
-                            ? AppColors.success
-                            : AppColors.textPrimary),
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
                   ),
                 ),
               ),
-              
-              // Feedback icon (checkmark or X)
-              if (feedbackIcon != null) ...[
-                const SizedBox(width: 16),
-                Icon(feedbackIcon, size: 32, color: iconColor),
-              ],
+            ),
+            const SizedBox(width: 14),
+            
+            // Option text
+            Expanded(
+              child: Text(
+                widget.options[index],
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: textColor,
+                ),
+              ),
+            ),
+            
+            if (feedbackIcon != null) ...[
+              const SizedBox(width: 12),
+              Icon(
+                feedbackIcon,
+                size: 28,
+                color: (hasResult && wasSubmittedSelected) || (hasResult && isCorrectOption && !wasSubmittedSelected)
+                    ? (isCorrectOption ? (wasSubmittedSelected ? Colors.white : AppColors.success) : Colors.white)
+                    : Colors.grey,
+              ),
             ],
-          ),
+          ],
         ),
       ),
     );

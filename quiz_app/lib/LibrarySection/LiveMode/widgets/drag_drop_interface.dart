@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:quiz_app/utils/color.dart';
-import 'package:quiz_app/utils/quiz_design_system.dart';
 
-/// Widget that displays a drag and drop interface for matching items to targets in live multiplayer quiz
-/// Shows fixed drag items on top and drop targets below for users to match
 class DragDropInterface extends StatefulWidget {
   final List<String> dragItems;
   final List<String> dropTargets;
@@ -27,159 +24,138 @@ class DragDropInterface extends StatefulWidget {
 }
 
 class _DragDropInterfaceState extends State<DragDropInterface> {
-  // Track which drag item is matched to which drop target
-  // Key: dropTarget, Value: dragItem
   late Map<String, String?> _matches;
-  
-  // Preserve final state after submission to prevent state loss
-  Map<String, String>? _submittedMatches;
-  
-  // Track optimistic updates to prevent external state overwrites
-  bool _pendingChanges = false;
+  Map<String, String>? _frozenSubmittedMatches;
+  bool _hasEverSubmitted = false;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     _initializeState();
+    debugPrint('📝 DRAG_DROP - Initialized with ${widget.dragItems.length} items and ${widget.dropTargets.length} targets');
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
   void didUpdateWidget(DragDropInterface oldWidget) {
     super.didUpdateWidget(oldWidget);
     
-    debugPrint('🔄 DRAG_DROP - didUpdateWidget called');
-    debugPrint('🔄 DRAG_DROP - hasAnswered: ${widget.hasAnswered}, pendingChanges: $_pendingChanges');
-    
-    // Only reset state if items or targets have changed
-    if (oldWidget.dragItems != widget.dragItems ||
-        oldWidget.dropTargets != widget.dropTargets) {
-      debugPrint('🔄 DRAG_DROP - Items/targets changed, reinitializing');
+    // Only reinitialize if question changed (different items/targets)
+    if (!_listEquals(oldWidget.dragItems, widget.dragItems) ||
+        !_listEquals(oldWidget.dropTargets, widget.dropTargets)) {
+      debugPrint('📝 DRAG_DROP - Question changed, reinitializing state');
       _initializeState();
       return;
     }
     
-    // Preserve local state when pending changes exist
-    // This prevents external state updates from overwriting user actions
-    if (_pendingChanges) {
-      debugPrint('🔄 DRAG_DROP - Pending changes exist, ignoring external updates');
-      // Don't accept new props while user is actively making changes
+    // Don't reset state after submission
+    if (_hasEverSubmitted) {
+      debugPrint('📝 DRAG_DROP - Already submitted, keeping frozen state');
       return;
     }
-    
-    // If we've already submitted, preserve the submitted state
-    if (widget.hasAnswered && _submittedMatches != null) {
-      debugPrint('🔄 DRAG_DROP - Already submitted, preserving state');
-      // Don't reset state after submission
-      return;
+  }
+
+  bool _listEquals(List<String> a, List<String> b) {
+    if (a.length != b.length) return false;
+    for (int i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
     }
+    return true;
   }
 
   void _initializeState() {
-    // Initialize all drop targets as empty
     _matches = {for (var target in widget.dropTargets) target: null};
-    // Initialize state preservation variables
-    _submittedMatches = null;
-    _pendingChanges = false;
+    _frozenSubmittedMatches = null;
+    _hasEverSubmitted = false;
+    debugPrint('📝 DRAG_DROP - State initialized: $_matches');
   }
 
   bool get _allItemsPlaced {
-    return _matches.values.every((item) => item != null);
+    final allPlaced = _matches.values.every((item) => item != null && item.isNotEmpty);
+    debugPrint('📝 DRAG_DROP - All items placed: $allPlaced, matches: $_matches');
+    return allPlaced;
   }
 
   void _handleSubmit() {
     if (_allItemsPlaced && !widget.hasAnswered) {
-      debugPrint('📤 DRAG_DROP - Submitting matches: $_matches');
-      
-      // Build the matches map (dragItem -> dropTarget)
       final userMatches = <String, String>{};
       _matches.forEach((target, dragItem) {
-        if (dragItem != null) {
+        if (dragItem != null && dragItem.isNotEmpty) {
           userMatches[dragItem] = target;
         }
       });
-      
-      // Preserve the submitted matches to prevent state loss
-      // ✅ FIX: Only include non-null values to prevent empty string issues
+
+      debugPrint('📝 DRAG_DROP - Submitting matches: $userMatches');
+
       setState(() {
-        _submittedMatches = <String, String>{};
-        _matches.forEach((target, dragItem) {
-          if (dragItem != null && dragItem.isNotEmpty) {
-            _submittedMatches![target] = dragItem;
-          }
-        });
-        // Clear pending changes flag since we're submitting
-        _pendingChanges = false;
+        _frozenSubmittedMatches = Map<String, String>.unmodifiable(
+          Map.fromEntries(
+            _matches.entries
+                .where((e) => e.value != null && e.value!.isNotEmpty)
+                .map((e) => MapEntry(e.key, e.value!)),
+          ),
+        );
+        _hasEverSubmitted = true;
       });
-      
-      debugPrint('📤 DRAG_DROP - Submitted matches preserved: $_submittedMatches');
-      
       widget.onMatchSubmit(userMatches);
     }
   }
 
   void _handleItemPlaced(String dropTarget, String dragItem) {
-    if (widget.hasAnswered) return; // Don't allow changes after submission
-
-    debugPrint('🎯 DRAG_DROP - Item placed: $dragItem -> $dropTarget');
-
+    if (widget.hasAnswered || _hasEverSubmitted) {
+      debugPrint('📝 DRAG_DROP - Cannot place item, already answered or submitted');
+      return;
+    }
+    
+    debugPrint('📝 DRAG_DROP - Placing "$dragItem" into "$dropTarget"');
+    
     setState(() {
-      // Remove dragItem from its previous position if it was already placed
+      // Remove item from any previous target
       String? previousTarget;
       _matches.forEach((target, item) {
         if (item == dragItem) {
           previousTarget = target;
         }
       });
-
       if (previousTarget != null) {
-        debugPrint('🎯 DRAG_DROP - Removing $dragItem from previous target: $previousTarget');
+        debugPrint('📝 DRAG_DROP - Removing "$dragItem" from previous target "$previousTarget"');
         _matches[previousTarget!] = null;
       }
-
-      // If the drop target already has an item, it will be replaced
+      
+      // Place item in new target
       _matches[dropTarget] = dragItem;
-      
-      // Set pending changes flag to prevent external state overwrites
-      // DO NOT clear this flag with a timeout - keep it until submission
-      _pendingChanges = true;
-      
-      debugPrint('🎯 DRAG_DROP - Current matches: $_matches');
-      debugPrint('🎯 DRAG_DROP - Pending changes: $_pendingChanges');
-    });
-
-    // Force rebuild immediately
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        setState(() {});
-      }
     });
     
-    // ❌ REMOVED: The 2-second timeout that was causing items to revert
-    // The _pendingChanges flag will stay true until submission or widget reset
+    debugPrint('📝 DRAG_DROP - Updated matches: $_matches');
   }
 
   void _handleItemRemoved(String dropTarget) {
-    if (widget.hasAnswered) return; // Don't allow changes after submission
-
+    if (widget.hasAnswered || _hasEverSubmitted) return;
+    
+    debugPrint('📝 DRAG_DROP - Removing item from "$dropTarget"');
     setState(() {
       _matches[dropTarget] = null;
     });
   }
 
-  // Check if a drag item is already placed somewhere
   bool _isItemPlaced(String dragItem) {
     return _matches.values.contains(dragItem);
   }
 
   @override
   Widget build(BuildContext context) {
-    // Determine border color based on answer state
     Color feedbackColor;
     if (widget.hasAnswered) {
       if (widget.isCorrect == true) {
         feedbackColor = AppColors.success;
       } else if (widget.isCorrect == false) {
-        feedbackColor = AppColors.error;
+        feedbackColor = const Color(0xFFE53935);
       } else {
         feedbackColor = Colors.grey.shade300;
       }
@@ -192,91 +168,88 @@ class _DragDropInterfaceState extends State<DragDropInterface> {
       children: [
         // Instructions
         Container(
-          padding: const EdgeInsets.all(QuizSpacing.md),
+          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: QuizColors.info.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(QuizBorderRadius.md),
+            color: AppColors.info.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: AppColors.info.withValues(alpha: 0.3)),
           ),
           child: Row(
             children: [
-              Icon(Icons.info_outline, color: QuizColors.info, size: 20),
-              const SizedBox(width: QuizSpacing.sm),
+              Icon(Icons.info_outline, color: AppColors.info, size: 20),
+              const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  'Drag items to match them with the correct targets',
-                  style: QuizTextStyles.optionText.copyWith(
+                  'Drag items and drop them on matching targets',
+                  style: TextStyle(
                     fontSize: 14,
-                    color: QuizColors.textSecondary,
+                    color: AppColors.textSecondary,
                   ),
                 ),
               ),
             ],
           ),
         ),
-        const SizedBox(height: QuizSpacing.lg),
-
-        // Fixed Drag Items Section
+        const SizedBox(height: 20),
+        
+        // Items to drag
         Text(
           'Items to Match:',
-          style: QuizTextStyles.optionText.copyWith(
+          style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 16,
+            color: AppColors.textPrimary,
           ),
         ),
-        const SizedBox(height: QuizSpacing.md),
+        const SizedBox(height: 12),
         Wrap(
-          spacing: QuizSpacing.md,
-          runSpacing: QuizSpacing.md,
-          children:
-              widget.dragItems.map((item) {
-                final isPlaced = _isItemPlaced(item);
-                return _buildDraggableItem(item, isPlaced);
-              }).toList(),
+          spacing: 10,
+          runSpacing: 10,
+          children: widget.dragItems.map((item) {
+            final isPlaced = _isItemPlaced(item);
+            return _buildDraggableItem(item, isPlaced);
+          }).toList(),
         ),
-        const SizedBox(height: QuizSpacing.xl),
-
-        // Drop Targets Section
+        const SizedBox(height: 24),
+        
+        // Drop targets
         Text(
           'Drop Targets:',
-          style: QuizTextStyles.optionText.copyWith(
+          style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 16,
+            color: AppColors.textPrimary,
           ),
         ),
-        const SizedBox(height: QuizSpacing.md),
+        const SizedBox(height: 12),
         AnimatedContainer(
-          duration: QuizAnimations.normal,
+          duration: const Duration(milliseconds: 300),
           decoration: BoxDecoration(
             border: Border.all(
               color: feedbackColor,
               width: widget.hasAnswered ? 3 : 0,
             ),
-            borderRadius: BorderRadius.circular(QuizBorderRadius.lg),
+            borderRadius: BorderRadius.circular(12),
           ),
           child: Column(
-            children:
-                widget.dropTargets
-                    .map((target) => _buildDropZone(target))
-                    .toList(),
+            children: widget.dropTargets.map((target) => _buildDropZone(target)).toList(),
           ),
         ),
-        const SizedBox(height: QuizSpacing.lg),
-
+        const SizedBox(height: 20),
+        
         // Submit button
         ElevatedButton(
-          onPressed:
-              (_allItemsPlaced && !widget.hasAnswered) ? _handleSubmit : null,
+          onPressed: (_allItemsPlaced && !widget.hasAnswered && !_hasEverSubmitted) 
+              ? _handleSubmit 
+              : null,
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primary,
             foregroundColor: Colors.white,
             disabledBackgroundColor: Colors.grey.shade300,
             disabledForegroundColor: Colors.grey.shade600,
-            padding: const EdgeInsets.symmetric(
-              vertical: QuizSpacing.md,
-              horizontal: QuizSpacing.xl,
-            ),
+            padding: const EdgeInsets.symmetric(vertical: 16),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(QuizBorderRadius.lg),
+              borderRadius: BorderRadius.circular(12),
             ),
             elevation: widget.hasAnswered || !_allItemsPlaced ? 0 : 2,
           ),
@@ -288,19 +261,14 @@ class _DragDropInterfaceState extends State<DragDropInterface> {
                   widget.isCorrect! ? Icons.check_circle : Icons.cancel,
                   size: 24,
                 ),
-                const SizedBox(width: QuizSpacing.sm),
+                const SizedBox(width: 10),
               ],
               Text(
                 widget.hasAnswered
-                    ? 'Submitted'
-                    : (_allItemsPlaced
-                        ? 'Submit Matches'
-                        : 'Match all items first'),
-                style: QuizTextStyles.optionText.copyWith(
-                  color:
-                      widget.hasAnswered || !_allItemsPlaced
-                          ? Colors.grey.shade600
-                          : Colors.white,
+                    ? (widget.isCorrect == true ? 'Correct!' : 'Incorrect')
+                    : (_allItemsPlaced ? 'Submit Matches' : 'Match all items first'),
+                style: const TextStyle(
+                  fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -312,40 +280,37 @@ class _DragDropInterfaceState extends State<DragDropInterface> {
   }
 
   Widget _buildDropZone(String dropTarget) {
-    // Use submitted matches when hasAnswered is true to preserve state
-    final matchedItem = widget.hasAnswered && _submittedMatches != null
-        ? _submittedMatches![dropTarget]
-        : _matches[dropTarget];
+    final String? matchedItem;
+
+    if (_hasEverSubmitted && _frozenSubmittedMatches != null) {
+      matchedItem = _frozenSubmittedMatches![dropTarget];
+    } else {
+      matchedItem = _matches[dropTarget];
+    }
+
     final isEmpty = matchedItem == null || matchedItem.isEmpty;
 
-    debugPrint('🎨 DROP_ZONE - Building zone for: $dropTarget');
-    debugPrint('🎨 DROP_ZONE - hasAnswered: ${widget.hasAnswered}');
-    debugPrint('🎨 DROP_ZONE - _submittedMatches: $_submittedMatches');
-    debugPrint('🎨 DROP_ZONE - _matches: ${_matches[dropTarget]}');
-    debugPrint('🎨 DROP_ZONE - matchedItem: $matchedItem');
-    debugPrint('🎨 DROP_ZONE - isEmpty: $isEmpty');
-
-    // Check if this match is correct (only after submission)
     bool? isCorrectMatch;
     if (widget.hasAnswered &&
         widget.correctMatches != null &&
         matchedItem != null &&
         matchedItem.isNotEmpty) {
-      debugPrint('🔍 DROP_ZONE - Checking match: $matchedItem -> $dropTarget');
-      debugPrint('🔍 DROP_ZONE - Correct matches: ${widget.correctMatches}');
-
       isCorrectMatch = widget.correctMatches![matchedItem] == dropTarget;
-      debugPrint('🔍 DROP_ZONE - Is correct? $isCorrectMatch');
     }
 
     return DragTarget<String>(
-      onWillAcceptWithDetails: (details) => !widget.hasAnswered,
-      onAcceptWithDetails:
-          (details) => _handleItemPlaced(dropTarget, details.data),
+      onWillAcceptWithDetails: (details) {
+        if (widget.hasAnswered || _hasEverSubmitted) return false;
+        debugPrint('📝 DRAG_DROP - Will accept "${details.data}" on "$dropTarget"');
+        return true;
+      },
+      onAcceptWithDetails: (details) {
+        debugPrint('📝 DRAG_DROP - Accepted "${details.data}" on "$dropTarget"');
+        _handleItemPlaced(dropTarget, details.data);
+      },
       builder: (context, candidateData, rejectedData) {
         final isHovering = candidateData.isNotEmpty;
-
-        // Determine colors based on correctness
+        
         Color backgroundColor;
         Color borderColor;
         Color itemBackgroundColor;
@@ -358,9 +323,9 @@ class _DragDropInterfaceState extends State<DragDropInterface> {
             itemBackgroundColor = AppColors.success;
             itemTextColor = Colors.white;
           } else if (isCorrectMatch == false) {
-            backgroundColor = AppColors.error.withValues(alpha: 0.15);
-            borderColor = AppColors.error;
-            itemBackgroundColor = AppColors.error;
+            backgroundColor = const Color(0xFFE53935).withValues(alpha: 0.15);
+            borderColor = const Color(0xFFE53935);
+            itemBackgroundColor = const Color(0xFFE53935);
             itemTextColor = Colors.white;
           } else {
             backgroundColor = AppColors.white;
@@ -369,44 +334,36 @@ class _DragDropInterfaceState extends State<DragDropInterface> {
             itemTextColor = AppColors.textPrimary;
           }
         } else {
-          backgroundColor =
-              isEmpty
-                  ? (isHovering
-                      ? AppColors.accentLight
-                      : AppColors.primaryLight)
-                  : AppColors.white;
-          borderColor =
-              isEmpty
-                  ? (isHovering ? AppColors.primary : Colors.grey.shade300)
-                  : AppColors.primary;
+          backgroundColor = isEmpty
+              ? (isHovering ? AppColors.accentLight : AppColors.primaryLight.withValues(alpha: 0.3))
+              : AppColors.white;
+          borderColor = isEmpty
+              ? (isHovering ? AppColors.primary : Colors.grey.shade300)
+              : AppColors.primary;
           itemBackgroundColor = AppColors.primary.withValues(alpha: 0.1);
-          itemTextColor = QuizColors.textPrimary;
+          itemTextColor = AppColors.textPrimary;
         }
 
         return AnimatedContainer(
-          duration: QuizAnimations.normal,
-          margin: const EdgeInsets.symmetric(
-            vertical: QuizSpacing.xs,
-            horizontal: QuizSpacing.md,
-          ),
-          padding: const EdgeInsets.all(QuizSpacing.md),
+          duration: const Duration(milliseconds: 200),
+          margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+          padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
             color: backgroundColor,
-            borderRadius: BorderRadius.circular(QuizBorderRadius.md),
+            borderRadius: BorderRadius.circular(10),
             border: Border.all(
               color: borderColor,
-              width: widget.hasAnswered && !isEmpty ? 3 : (isHovering ? 2 : 1),
+              width: widget.hasAnswered && !isEmpty ? 2.5 : (isHovering ? 2 : 1.5),
             ),
-            boxShadow:
-                isEmpty
-                    ? []
-                    : [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+            boxShadow: isEmpty
+                ? []
+                : [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
           ),
           child: Row(
             children: [
@@ -414,86 +371,95 @@ class _DragDropInterfaceState extends State<DragDropInterface> {
               Expanded(
                 flex: 2,
                 child: Container(
-                  padding: const EdgeInsets.all(QuizSpacing.sm),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                   decoration: BoxDecoration(
                     color: AppColors.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(QuizBorderRadius.sm),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     dropTarget,
-                    style: QuizTextStyles.optionText.copyWith(
+                    style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: AppColors.primary,
+                      fontSize: 14,
                     ),
                   ),
                 ),
               ),
-              const SizedBox(width: QuizSpacing.md),
-
-              // Arrow
+              const SizedBox(width: 12),
               Icon(
                 Icons.arrow_forward,
                 color: isEmpty ? Colors.grey.shade400 : AppColors.primary,
                 size: 20,
               ),
-              const SizedBox(width: QuizSpacing.md),
-
-              // Matched item or placeholder
+              const SizedBox(width: 12),
+              
+              // Drop area / matched item
               Expanded(
                 flex: 2,
-                child:
-                    isEmpty
-                        ? Text(
-                          'Drop here',
-                          style: QuizTextStyles.optionText.copyWith(
-                            color: QuizColors.textSecondary,
-                            fontStyle: FontStyle.italic,
-                          ),
-                        )
-                        : Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: QuizSpacing.sm,
-                            vertical: QuizSpacing.xs,
-                          ),
-                          decoration: BoxDecoration(
-                            color: itemBackgroundColor,
-                            borderRadius: BorderRadius.circular(
-                              QuizBorderRadius.sm,
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  matchedItem,
-                                  style: QuizTextStyles.optionText.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    color: itemTextColor,
-                                  ),
-                                ),
-                              ),
-                              if (widget.hasAnswered &&
-                                  isCorrectMatch != null) ...[
-                                const SizedBox(width: QuizSpacing.xs),
-                                Icon(
-                                  isCorrectMatch
-                                      ? Icons.check_circle
-                                      : Icons.cancel,
-                                  color: itemTextColor,
-                                  size: 20,
-                                ),
-                              ],
-                            ],
+                child: isEmpty
+                    ? Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: isHovering 
+                              ? AppColors.accentLight 
+                              : Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: isHovering 
+                                ? AppColors.primary 
+                                : Colors.grey.shade300,
+                            style: BorderStyle.solid,
                           ),
                         ),
+                        child: Text(
+                          'Drop here',
+                          style: TextStyle(
+                            color: isHovering 
+                                ? AppColors.primary 
+                                : AppColors.textSecondary,
+                            fontStyle: FontStyle.italic,
+                            fontSize: 14,
+                          ),
+                        ),
+                      )
+                    : Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: itemBackgroundColor,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                matchedItem!,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  color: itemTextColor,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                            if (widget.hasAnswered && isCorrectMatch != null) ...[
+                              const SizedBox(width: 8),
+                              Icon(
+                                isCorrectMatch ? Icons.check_circle : Icons.cancel,
+                                color: itemTextColor,
+                                size: 20,
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
               ),
-
-              // Remove button (only if item is placed and not answered)
-              if (!isEmpty && !widget.hasAnswered)
+              
+              // Remove button (only when not answered)
+              if (!isEmpty && !widget.hasAnswered && !_hasEverSubmitted)
                 IconButton(
                   icon: const Icon(Icons.close, size: 20),
                   onPressed: () => _handleItemRemoved(dropTarget),
-                  color: QuizColors.textSecondary,
+                  color: AppColors.textSecondary,
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
                 ),
@@ -505,85 +471,94 @@ class _DragDropInterfaceState extends State<DragDropInterface> {
   }
 
   Widget _buildDraggableItem(String item, bool isPlaced) {
-    if (widget.hasAnswered) {
-      // Show as static chip when answered
+    if (widget.hasAnswered || _hasEverSubmitted) {
       return _buildItemChip(item, isPlaced, isStatic: true);
     }
-
-    return Draggable<String>(
+    
+    return LongPressDraggable<String>(
       data: item,
+      delay: const Duration(milliseconds: 100),
+      onDragStarted: () {
+        debugPrint('📝 DRAG_DROP - Started dragging "$item"');
+      },
+      onDragEnd: (details) {
+        debugPrint('📝 DRAG_DROP - Ended dragging "$item", wasAccepted: ${details.wasAccepted}');
+      },
+      onDraggableCanceled: (velocity, offset) {
+        debugPrint('📝 DRAG_DROP - Drag cancelled for "$item"');
+      },
       feedback: Material(
-        elevation: 4,
-        borderRadius: BorderRadius.circular(QuizBorderRadius.md),
+        elevation: 6,
+        borderRadius: BorderRadius.circular(10),
         child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: QuizSpacing.md,
-            vertical: QuizSpacing.sm,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
             color: AppColors.accentBright,
-            borderRadius: BorderRadius.circular(QuizBorderRadius.md),
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.accentBright.withValues(alpha: 0.4),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: Text(
             item,
-            style: QuizTextStyles.optionText.copyWith(color: Colors.white),
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
           ),
         ),
       ),
-      // 🔥 FIX: Keep item visible but slightly transparent when dragging
       childWhenDragging: Opacity(
-        opacity: 0.5, // Changed from 0.3 to 0.5 for better visibility
-        child: _buildItemChip(item, isPlaced),
+        opacity: 0.4,
+        child: _buildItemChip(item, true),
       ),
-      // 🔥 FIX: Show item clearly when NOT dragging
-      child:
-          isPlaced
-              ? Opacity(
-                opacity: 0.4, // Greyed out when placed
-                child: _buildItemChip(item, true),
-              )
-              : _buildItemChip(item, false), // Full visibility when available
+      child: isPlaced
+          ? Opacity(opacity: 0.5, child: _buildItemChip(item, true))
+          : _buildItemChip(item, false),
     );
   }
 
   Widget _buildItemChip(String item, bool isPlaced, {bool isStatic = false}) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: QuizSpacing.md,
-        vertical: QuizSpacing.sm,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
         color: isPlaced ? Colors.grey.shade200 : AppColors.white,
-        borderRadius: BorderRadius.circular(QuizBorderRadius.md),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(
           color: isPlaced ? Colors.grey.shade400 : AppColors.primary,
-          width: 1,
+          width: 1.5,
         ),
-        boxShadow:
-            isPlaced
-                ? []
-                : [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+        boxShadow: isPlaced
+            ? []
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.08),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (!isStatic)
+          if (!isStatic && !isPlaced)
             Icon(
               Icons.drag_indicator,
-              color: isPlaced ? Colors.grey.shade400 : AppColors.primary,
-              size: 20,
+              color: AppColors.primary,
+              size: 18,
             ),
-          if (!isStatic) const SizedBox(width: QuizSpacing.sm),
+          if (!isStatic && !isPlaced) const SizedBox(width: 6),
           Text(
             item,
-            style: QuizTextStyles.optionText.copyWith(
-              color: isPlaced ? Colors.grey.shade600 : null,
+            style: TextStyle(
+              color: isPlaced ? Colors.grey.shade600 : AppColors.textPrimary,
+              fontWeight: FontWeight.w500,
+              fontSize: 14,
             ),
           ),
         ],

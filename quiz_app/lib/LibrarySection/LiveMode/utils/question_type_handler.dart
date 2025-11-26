@@ -130,10 +130,18 @@ class QuestionTypeHandler {
     switch (questionType) {
       case QuestionType.singleMcq:
         // Single choice questions - render all options as radio buttons
+        // Parse selectedAnswer as int (backend may send as string)
+        int? parsedSelectedAnswer;
+        if (selectedAnswer != null) {
+          parsedSelectedAnswer = selectedAnswer is int 
+              ? selectedAnswer 
+              : int.tryParse(selectedAnswer.toString());
+        }
+        
         return MultipleChoiceOptions(
           options: options,
           onSelect: (index) => onAnswerSelected(index),
-          selectedAnswer: selectedAnswer as int?,
+          selectedAnswer: parsedSelectedAnswer,
           correctAnswer: correctAnswer?.toString(),
           hasAnswered: hasAnswered,
           isCorrect: isCorrect,
@@ -160,9 +168,17 @@ class QuestionTypeHandler {
 
       case QuestionType.trueFalse:
         // True/False questions - render exactly two buttons
+        // Parse selectedAnswer and correctAnswer as int (backend may send as string)
+        int? parsedSelectedAnswer;
+        if (selectedAnswer != null) {
+          parsedSelectedAnswer = selectedAnswer is int 
+              ? selectedAnswer 
+              : int.tryParse(selectedAnswer.toString());
+        }
+        
         return TrueFalseOptions(
           onSelect: (index) => onAnswerSelected(index),
-          selectedAnswer: selectedAnswer as int?,
+          selectedAnswer: parsedSelectedAnswer,
           correctAnswer: int.tryParse(correctAnswer?.toString() ?? ''),
           hasAnswered: hasAnswered,
           isCorrect: isCorrect,

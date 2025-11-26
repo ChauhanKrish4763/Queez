@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quiz_app/utils/color.dart';
 import 'package:quiz_app/utils/quiz_design_system.dart';
 
 /// Widget that displays question text prominently above answer options
@@ -16,15 +17,16 @@ class QuestionTextWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(QuizSpacing.lg), // 24px padding
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(QuizBorderRadius.lg), // 16px rounded corners
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.grey.shade200, width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -59,9 +61,14 @@ class QuestionTextWidget extends StatelessWidget {
           // Display question text with proper styling and wrapping
           Text(
             questionText,
-            style: QuizTextStyles.questionText,
-            softWrap: true, // Ensure text wraps properly
-            overflow: TextOverflow.visible, // No truncation
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+              height: 1.4,
+              color: AppColors.textPrimary,
+            ),
+            softWrap: true,
+            overflow: TextOverflow.visible,
           ),
         ],
       ),
