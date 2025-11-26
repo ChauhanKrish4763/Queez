@@ -2,13 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quiz_app/LibrarySection/LiveMode/screens/live_multiplayer_results.dart';
 import 'package:quiz_app/LibrarySection/LiveMode/utils/question_type_handler.dart';
-import 'package:quiz_app/LibrarySection/LiveMode/widgets/podium_widget.dart';
 import 'package:quiz_app/LibrarySection/LiveMode/widgets/question_text_widget.dart';
 import 'package:quiz_app/LibrarySection/LiveMode/widgets/reconnection_overlay.dart';
 import 'package:quiz_app/providers/game_provider.dart';
 import 'package:quiz_app/providers/session_provider.dart';
 import 'package:quiz_app/utils/color.dart';
-import 'package:quiz_app/utils/quiz_design_system.dart';
 
 class LiveMultiplayerQuiz extends ConsumerStatefulWidget {
   const LiveMultiplayerQuiz({super.key});
@@ -143,588 +141,634 @@ class _LiveMultiplayerQuizState extends ConsumerState<LiveMultiplayerQuiz> {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: ReconnectionOverlay(
-        child: Stack(
-          children: [
-            SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Header: Logo and Points Badge
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // Logo
-                        Row(
-                          children: [
-                            Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                color: AppColors.primary,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: const Icon(
-                                Icons.quiz,
-                                color: Colors.white,
-                                size: 24,
-                              ),
+        child: SafeArea(
+          child: CustomScrollView(
+            slivers: [
+              // Compact header
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Logo
+                      Row(
+                        children: [
+                          Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              color: AppColors.primary,
+                              borderRadius: BorderRadius.circular(8),
                             ),
-                            const SizedBox(width: 12),
-                            const Text(
-                              'QUEEZ',
-                              style: TextStyle(
-                                color: AppColors.primary,
-                                fontSize: 24,
+                            child: const Icon(
+                              Icons.quiz,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          const Text(
+                            'QUEEZ',
+                            style: TextStyle(
+                              color: AppColors.primary,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1,
+                            ),
+                          ),
+                        ],
+                      ),
+                      // Points Badge
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFFFFC107), Color(0xFFFFB300)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFFFC107).withValues(alpha: 0.3),
+                              blurRadius: 6,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.emoji_events,
+                              color: Colors.white,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              '${gameState.currentScore}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
                                 fontWeight: FontWeight.bold,
-                                letterSpacing: 1.2,
                               ),
                             ),
                           ],
                         ),
-                        // Points Badge
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 10,
-                          ),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFFFFC107), Color(0xFFFFB300)],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            borderRadius: BorderRadius.circular(24),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFFFFC107).withValues(alpha: 0.4),
-                                blurRadius: 8,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                Icons.emoji_events,
-                                color: Colors.white,
-                                size: 20,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                '${gameState.currentScore}',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Progress Bar
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Q ${gameState.questionIndex + 1}/${gameState.totalQuestions}',
-                          style: const TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: LinearProgressIndicator(
-                            value: (gameState.questionIndex + 1) / gameState.totalQuestions,
-                            backgroundColor: Colors.grey[300],
-                            color: AppColors.primary,
-                            minHeight: 8,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Scrollable Content Area
-                    Expanded(
-                      child: SingleChildScrollView(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            // Question Text Widget
-                            QuestionTextWidget(
-                              questionText: currentQuestion['question'] ?? '',
-                              imageUrl: currentQuestion['imageUrl'],
-                            ),
-                            const SizedBox(height: 24),
-
-                            // Question UI based on question type
-                            QuestionTypeHandler.buildQuestionUI(
-                              question: currentQuestion,
-                              onAnswerSelected: (answer) {
-                                ref.read(gameProvider.notifier).submitAnswer(answer);
-                              },
-                              onNextQuestion: () {
-                                ref.read(gameProvider.notifier).requestNextQuestion();
-                              },
-                              hasAnswered: gameState.hasAnswered,
-                              selectedAnswer: gameState.selectedAnswer,
-                              isCorrect: gameState.isCorrect,
-                              correctAnswer: gameState.correctAnswer,
-                            ),
-                            const SizedBox(height: 16),
-                          ],
-                        ),
                       ),
-                    ),
-
-                    // Show Leaderboard Button - Always Visible
-                    if (!isHost)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 16),
-                        child: ElevatedButton(
-                          onPressed: () {
-                            _showLeaderboardBottomSheet(context, ref);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            backgroundColor: AppColors.primary,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            elevation: 4,
-                          ),
-                          child: const Text(
-                            'Show Leaderboard',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-
-                    // Status Message for Host
-                    if (isHost && gameState.hasAnswered && gameState.correctAnswer == null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: QuizSpacing.md),
-                        child: Center(
-                          child: Text(
-                            'Waiting for other players...',
-                            style: TextStyle(
-                              color: QuizColors.textSecondary,
-                              fontStyle: FontStyle.italic,
-                            ),
-                          ),
-                        ),
-                      ),
-
-                    // ✅ HOST CONTROLS - NEXT QUESTION BUTTON (NOT on last question)
-                    if (isHost &&
-                        gameState.hasAnswered &&
-                        gameState.rankings != null &&
-                        gameState.questionIndex + 1 < gameState.totalQuestions)
-                      Padding(
-                        padding: const EdgeInsets.only(top: QuizSpacing.lg),
-                        child: ElevatedButton(
-                          onPressed: () {
-                            // Send next_question message via WebSocket
-                            ref
-                                .read(webSocketServiceProvider)
-                                .sendMessage('next_question', {});
-                          },
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(
-                              vertical: QuizSpacing.md,
-                            ),
-                            backgroundColor:
-                                Theme.of(context).colorScheme.primary,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                QuizBorderRadius.md,
-                              ),
-                            ),
-                          ),
-                          child: const Text(
-                            'NEXT QUESTION',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-
-                    // HOST CONTROLS - END QUIZ BUTTON
-                    if (isHost)
-                      Padding(
-                        padding: const EdgeInsets.only(top: QuizSpacing.md),
-                        child: OutlinedButton(
-                          onPressed: () {
-                            showDialog(
-                              context: context,
-                              builder:
-                                  (context) => AlertDialog(
-                                    title: const Text('END QUIZ?'),
-                                    content: const Text(
-                                      'Are you sure you want to end the quiz early? All progress will be saved.',
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () => Navigator.pop(context),
-                                        child: const Text('CANCEL'),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.pop(
-                                            context,
-                                          ); // Close dialog
-                                          ref
-                                              .read(sessionProvider.notifier)
-                                              .endQuiz();
-                                        },
-                                        style: TextButton.styleFrom(
-                                          foregroundColor: QuizColors.incorrect,
-                                        ),
-                                        child: const Text('END NOW'),
-                                      ),
-                                    ],
-                                  ),
-                            );
-                          },
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(
-                              vertical: QuizSpacing.md,
-                            ),
-                            side: BorderSide(color: QuizColors.incorrect),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                QuizBorderRadius.md,
-                              ),
-                            ),
-                          ),
-                          child: Text(
-                            'END QUIZ',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: QuizColors.incorrect,
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
 
-            // Leaderboard Popup - DISABLED FOR NOW (keeping code for future use)
-            // if (gameState.showingLeaderboard &&
-            //     gameState.rankings != null &&
-            //     gameState.rankings!.isNotEmpty &&
-            //     gameState.questionIndex + 1 < gameState.totalQuestions)
-            //   LeaderboardPopup(
-            //     rankings: gameState.rankings!,
-            //     currentUserId: currentUserId ?? '',
-            //     displayDuration: 3,
-            //     onComplete: () {
-            //       debugPrint('🎮 QUIZ_SCREEN - Leaderboard popup completed');
-            //       // Hide leaderboard and request next question
-            //       ref.read(gameProvider.notifier).hideLeaderboard();
-            //       // Auto-request next question for participant
-            //       if (!isHost) {
-            //         debugPrint('👤 QUIZ_SCREEN - Participant requesting next question');
-            //         ref.read(gameProvider.notifier).requestNextQuestion();
-            //       } else {
-            //         debugPrint('👑 QUIZ_SCREEN - Host waiting for manual next question');
-            //       }
-            //     },
-            //   ),
-          ],
+              // Progress indicator
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Question ${gameState.questionIndex + 1} of ${gameState.totalQuestions}',
+                            style: TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          // Leaderboard button for participants
+                          if (!isHost)
+                            GestureDetector(
+                              onTap: () => _showLeaderboardBottomSheet(context, ref),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.leaderboard, size: 16, color: AppColors.primary),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'Ranks',
+                                      style: TextStyle(
+                                        color: AppColors.primary,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: LinearProgressIndicator(
+                          value: (gameState.questionIndex + 1) / gameState.totalQuestions,
+                          backgroundColor: Colors.grey[200],
+                          color: AppColors.primary,
+                          minHeight: 6,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Divider
+              SliverToBoxAdapter(
+                child: Container(
+                  margin: const EdgeInsets.symmetric(vertical: 8),
+                  height: 1,
+                  color: Colors.grey.shade200,
+                ),
+              ),
+
+              // Question content
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Question Text Widget
+                      QuestionTextWidget(
+                        questionText: currentQuestion['question'] ?? '',
+                        imageUrl: currentQuestion['imageUrl'],
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Question UI based on question type
+                      QuestionTypeHandler.buildQuestionUI(
+                        question: currentQuestion,
+                        onAnswerSelected: (answer) {
+                          debugPrint('🎮 QUIZ_SCREEN - Answer selected: $answer');
+                          ref.read(gameProvider.notifier).submitAnswer(answer);
+                        },
+                        onNextQuestion: () {
+                          debugPrint('🎮 QUIZ_SCREEN - Next question requested');
+                          ref.read(gameProvider.notifier).requestNextQuestion();
+                        },
+                        hasAnswered: gameState.hasAnswered,
+                        selectedAnswer: gameState.selectedAnswer,
+                        isCorrect: gameState.isCorrect,
+                        correctAnswer: gameState.correctAnswer,
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Host controls section
+              if (isHost)
+                SliverToBoxAdapter(
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(vertical: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Column(
+                      children: [
+                        // Divider before host controls
+                        Container(
+                          height: 1,
+                          color: Colors.grey.shade200,
+                        ),
+                        const SizedBox(height: 16),
+                        
+                        // Status message
+                        if (gameState.hasAnswered && gameState.correctAnswer == null)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: Text(
+                              'Waiting for other players...',
+                              style: TextStyle(
+                                color: AppColors.textSecondary,
+                                fontStyle: FontStyle.italic,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+
+                        // Next Question button (not on last question)
+                        if (gameState.hasAnswered &&
+                            gameState.rankings != null &&
+                            gameState.questionIndex + 1 < gameState.totalQuestions)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  ref.read(webSocketServiceProvider).sendMessage('next_question', {});
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                  backgroundColor: AppColors.primary,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'NEXT QUESTION',
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+
+                        // End Quiz button
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton(
+                            onPressed: () {
+                              showDialog(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  title: const Text('End Quiz?'),
+                                  content: const Text(
+                                    'Are you sure you want to end the quiz early? All progress will be saved.',
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(context),
+                                      child: const Text('CANCEL'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                        ref.read(sessionProvider.notifier).endQuiz();
+                                      },
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: const Color(0xFFE53935),
+                                      ),
+                                      child: const Text('END NOW'),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              side: const BorderSide(color: Color(0xFFE53935)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            child: const Text(
+                              'END QUIZ',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFFE53935),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                    ),
+                  ),
+                ),
+
+              // Bottom padding
+              const SliverToBoxAdapter(
+                child: SizedBox(height: 24),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
   void _showLeaderboardBottomSheet(BuildContext context, WidgetRef ref) {
-    final gameState = ref.read(gameProvider);
-    final currentUserId = ref.read(currentUserProvider);
-    final rankings = gameState.rankings ?? [];
+    // Request fresh leaderboard data from backend
+    ref.read(gameProvider.notifier).requestLeaderboard();
+    debugPrint('🏆 QUIZ_SCREEN - Requested leaderboard, showing bottom sheet');
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.75,
-        decoration: const BoxDecoration(
-          color: AppColors.background,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(24),
-            topRight: Radius.circular(24),
-          ),
-        ),
-        child: Column(
-          children: [
-            // Handle bar
-            Container(
-              margin: const EdgeInsets.only(top: 12),
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey[400],
-                borderRadius: BorderRadius.circular(2),
+      builder: (context) => Consumer(
+        builder: (context, ref, child) {
+          final gameState = ref.watch(gameProvider);
+          final currentUserId = ref.watch(currentUserProvider);
+          final rankings = gameState.rankings ?? [];
+          
+          return Container(
+            height: MediaQuery.of(context).size.height * 0.75,
+            decoration: const BoxDecoration(
+              color: AppColors.background,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
               ),
             ),
-            
-            // Header
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Leaderboard',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
-                    ),
+            child: Column(
+              children: [
+                // Handle bar
+                Container(
+                  margin: const EdgeInsets.only(top: 12),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[400],
+                    borderRadius: BorderRadius.circular(2),
                   ),
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close),
-                    color: AppColors.textSecondary,
-                  ),
-                ],
-              ),
-            ),
-
-            // Always show leaderboard - no waiting check
-            Builder(
-              builder: (context) {
-                debugPrint('🏆 LEADERBOARD - Rankings count: ${rankings.length}');
+                ),
                 
-                // Show message if no rankings yet
-                if (rankings.isEmpty) {
-                  return Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      children: [
-                        Icon(
-                          Icons.leaderboard,
-                          size: 48,
-                          color: AppColors.textSecondary,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'No rankings available yet',
+                // Header
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 8, 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.leaderboard, color: AppColors.primary, size: 24),
+                          const SizedBox(width: 8),
+                          const Text(
+                            'Live Leaderboard',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.close),
+                        color: AppColors.textSecondary,
+                        iconSize: 22,
+                      ),
+                    ],
+                  ),
+                ),
+                
+                // Column headers
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                  ),
+                  child: Row(
+                    children: [
+                      const SizedBox(width: 44), // Space for rank
+                      const Expanded(
+                        flex: 3,
+                        child: Text(
+                          'Player',
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
                             color: AppColors.textSecondary,
                           ),
                         ),
-                      ],
-                    ),
-                  );
-                }
-                
-                // Top 3 Podium
-                if (rankings.length >= 3) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: PodiumWidget(
-                      topThree: rankings.take(3).toList(),
-                      currentUserId: currentUserId ?? '',
-                    ),
-                  );
-                } else if (rankings.isNotEmpty) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: Column(
-                      children: rankings.map((entry) {
-                        final isCurrentUser = entry['user_id'] == currentUserId;
-                        return Card(
-                          elevation: isCurrentUser ? 4 : 2,
-                          color: isCurrentUser
-                              ? AppColors.primary.withValues(alpha: 0.1)
-                              : Colors.white,
-                          margin: const EdgeInsets.only(bottom: 8),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            side: isCurrentUser
-                                ? const BorderSide(color: AppColors.primary, width: 2)
-                                : BorderSide.none,
+                      ),
+                      const SizedBox(
+                        width: 70,
+                        child: Text(
+                          'Progress',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textSecondary,
                           ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: QuizColors.gold.withValues(alpha: 0.2),
-                                    border: Border.all(color: QuizColors.gold, width: 2),
-                                  ),
-                                  child: Icon(
-                                    Icons.emoji_events,
-                                    color: QuizColors.gold,
-                                    size: 24,
-                                  ),
-                                ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: Text(
-                                    entry['username'] ?? 'Unknown',
-                                    style: TextStyle(
-                                      color: AppColors.textPrimary,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 18,
-                                    ),
-                                  ),
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 8,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primary.withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(color: AppColors.primary),
-                                  ),
-                                  child: Text(
-                                    '${entry['score']}',
-                                    style: const TextStyle(
-                                      color: AppColors.primary,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  );
-                }
-                return const SizedBox.shrink();
-              },
-            ),
-
-            // Rest of the leaderboard
-            if (rankings.length > 3)
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: ListView.separated(
-                    padding: const EdgeInsets.only(top: 16, bottom: 16),
-                    itemCount: rankings.length - 3,
-                    separatorBuilder: (context, index) => const SizedBox(height: 8),
-                    itemBuilder: (context, index) {
-                      final actualIndex = index + 3;
-                      final entry = rankings[actualIndex];
-                      final isCurrentUser = entry['user_id'] == currentUserId;
-                      final rank = actualIndex + 1;
-
-                      return Card(
-                        elevation: isCurrentUser ? 4 : 2,
-                        color: isCurrentUser
-                            ? AppColors.primary.withValues(alpha: 0.1)
-                            : Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          side: isCurrentUser
-                              ? const BorderSide(color: AppColors.primary, width: 2)
-                              : BorderSide.none,
+                          textAlign: TextAlign.center,
                         ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Row(
+                      ),
+                      const SizedBox(
+                        width: 70,
+                        child: Text(
+                          'Points',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textSecondary,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Leaderboard content
+                Expanded(
+                  child: rankings.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              // Rank
-                              Container(
+                              const SizedBox(
                                 width: 32,
                                 height: 32,
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Colors.grey.withValues(alpha: 0.2),
-                                  border: Border.all(color: Colors.grey),
-                                ),
-                                child: Text(
-                                  '$rank',
-                                  style: const TextStyle(
-                                    color: AppColors.textSecondary,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                  ),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 3,
+                                  color: AppColors.primary,
                                 ),
                               ),
-                              const SizedBox(width: 12),
-
-                              // Username
-                              Expanded(
-                                child: Text(
-                                  entry['username'] ?? 'Unknown',
-                                  style: TextStyle(
-                                    color: AppColors.textPrimary,
-                                    fontWeight: isCurrentUser
-                                        ? FontWeight.bold
-                                        : FontWeight.normal,
-                                    fontSize: 16,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-
-                              // Score
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: AppColors.primary.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: AppColors.primary),
-                                ),
-                                child: Text(
-                                  '${entry['score']}',
-                                  style: const TextStyle(
-                                    color: AppColors.primary,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                  ),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Loading leaderboard...',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  color: AppColors.textSecondary,
                                 ),
                               ),
                             ],
                           ),
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          itemCount: rankings.length,
+                          itemBuilder: (context, index) {
+                            final entry = rankings[index];
+                            final isCurrentUser = entry['user_id'] == currentUserId;
+                            final rank = index + 1;
+                            final answeredCount = entry['answered_count'] ?? 0;
+                            final totalQuestions = entry['total_questions'] ?? gameState.totalQuestions;
+
+                            // Top 3 get medal styling
+                            Color? medalColor;
+                            if (rank == 1) {
+                              medalColor = const Color(0xFFFFD700); // Gold
+                            } else if (rank == 2) {
+                              medalColor = const Color(0xFFC0C0C0); // Silver
+                            } else if (rank == 3) {
+                              medalColor = const Color(0xFFCD7F32); // Bronze
+                            }
+
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 6),
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: isCurrentUser
+                                    ? AppColors.primary.withValues(alpha: 0.08)
+                                    : Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                                border: isCurrentUser
+                                    ? Border.all(color: AppColors.primary, width: 2)
+                                    : Border.all(color: Colors.grey.shade200),
+                              ),
+                              child: Row(
+                                children: [
+                                  // Rank badge with medal for top 3
+                                  Container(
+                                    width: 32,
+                                    height: 32,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: medalColor?.withValues(alpha: 0.2) ?? Colors.grey.shade100,
+                                      border: Border.all(
+                                        color: medalColor ?? Colors.grey.shade300,
+                                        width: medalColor != null ? 2 : 1,
+                                      ),
+                                    ),
+                                    child: Center(
+                                      child: medalColor != null
+                                          ? Icon(Icons.emoji_events, color: medalColor, size: 18)
+                                          : Text(
+                                              '$rank',
+                                              style: TextStyle(
+                                                color: AppColors.textSecondary,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 13,
+                                              ),
+                                            ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+
+                                  // Username
+                                  Expanded(
+                                    flex: 3,
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          entry['username'] ?? 'Unknown',
+                                          style: TextStyle(
+                                            color: AppColors.textPrimary,
+                                            fontWeight: isCurrentUser ? FontWeight.bold : FontWeight.w500,
+                                            fontSize: 14,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        if (isCurrentUser)
+                                          Text(
+                                            'You',
+                                            style: TextStyle(
+                                              color: AppColors.primary,
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+
+                                  // Question progress
+                                  SizedBox(
+                                    width: 70,
+                                    child: Column(
+                                      children: [
+                                        Text(
+                                          'Q$answeredCount/$totalQuestions',
+                                          style: TextStyle(
+                                            color: AppColors.textSecondary,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        ClipRRect(
+                                          borderRadius: BorderRadius.circular(3),
+                                          child: LinearProgressIndicator(
+                                            value: totalQuestions > 0 ? answeredCount / totalQuestions : 0,
+                                            backgroundColor: Colors.grey.shade200,
+                                            color: AppColors.primary,
+                                            minHeight: 4,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+
+                                  // Score
+                                  Container(
+                                    width: 70,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: medalColor?.withValues(alpha: 0.15) ?? AppColors.primary.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Text(
+                                      '${entry['score'] ?? 0}',
+                                      style: TextStyle(
+                                        color: medalColor ?? AppColors.primary,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
                         ),
-                      );
-                    },
+                ),
+                
+                // Refresh button
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        ref.read(gameProvider.notifier).requestLeaderboard();
+                      },
+                      icon: const Icon(Icons.refresh, size: 18),
+                      label: const Text('Refresh'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.primary,
+                        side: const BorderSide(color: AppColors.primary),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-              )
-            else
-              const SizedBox(height: 16),
-          ],
-        ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }

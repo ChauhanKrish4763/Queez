@@ -59,16 +59,14 @@ class GameNotifier extends Notifier<GameState> {
     debugPrint('➡️ GAME_PROVIDER - Requesting next question from backend');
     // Send request to backend for next question
     _wsService.sendMessage('request_next_question', {});
-    // Reset state for next question
-    state = state.copyWith(
-      hasAnswered: false,
-      selectedAnswer: null,
-      isCorrect: null,
-      correctAnswer: null,
-      pointsEarned: null,
-      showingLeaderboard: false,
-    );
-    debugPrint('✅ GAME_PROVIDER - State reset for next question');
+    // DON'T reset state here - let it reset when new question arrives
+    // This prevents the flash of old answers before new question loads
+    debugPrint('✅ GAME_PROVIDER - Request sent, waiting for new question');
+  }
+
+  void requestLeaderboard() {
+    debugPrint('🏆 GAME_PROVIDER - Requesting real-time leaderboard from backend');
+    _wsService.sendMessage('request_leaderboard', {});
   }
 
   void _handleMessage(Map<String, dynamic> message) {
@@ -121,12 +119,32 @@ class GameNotifier extends Notifier<GameState> {
         currentScore: newScore,
       );
       
-      // Auto-advance for single choice and true/false after 2 seconds
+      // Auto-advance for single choice, true/false, and multi-select after delay
+      // Single choice and true/false: 2 seconds
+      // Multi-select: 3 seconds (handled in widget, but also here as fallback)
       if (questionType == 'singleMcq' || questionType == 'trueFalse') {
-        debugPrint('⏱️ GAME_PROVIDER - Auto-advancing to next question in 2s');
+        debugPrint('⏱️ GAME_PROVIDER - Auto-advancing to next question in 2s (single/tf)');
         Future.delayed(const Duration(seconds: 2), () {
-          debugPrint('➡️ GAME_PROVIDER - Auto-requesting next question');
-          requestNextQuestion();
+          if (state.hasAnswered && state.correctAnswer != null) {
+            debugPrint('➡️ GAME_PROVIDER - Auto-requesting next question');
+            requestNextQuestion();
+          }
+        });
+      } else if (questionType == 'multiMcq') {
+        debugPrint('⏱️ GAME_PROVIDER - Auto-advancing to next question in 3s (multi-select)');
+        Future.delayed(const Duration(seconds: 3), () {
+          if (state.hasAnswered && state.correctAnswer != null) {
+            debugPrint('➡️ GAME_PROVIDER - Auto-requesting next question (multi-select)');
+            requestNextQuestion();
+          }
+        });
+      } else if (questionType == 'dragAndDrop') {
+        debugPrint('⏱️ GAME_PROVIDER - Auto-advancing to next question in 3s (drag-drop)');
+        Future.delayed(const Duration(seconds: 3), () {
+          if (state.hasAnswered && state.correctAnswer != null) {
+            debugPrint('➡️ GAME_PROVIDER - Auto-requesting next question (drag-drop)');
+            requestNextQuestion();
+          }
         });
       }
     } else if (type == 'answer_feedback') {
@@ -204,6 +222,23 @@ class GameNotifier extends Notifier<GameState> {
         );
         debugPrint('📊 GAME_PROVIDER - Final rankings: ${rankings.length} participants');
         state = state.copyWith(rankings: rankings);
+      }
+    } else if (type == 'leaderboard_response') {
+      // Real-time leaderboard response
+      debugPrint('🏆 GAME_PROVIDER - Leaderboard response received');
+      final leaderboard = payload['leaderboard'];
+      
+      if (leaderboard != null) {
+        final rankings = List<Map<String, dynamic>>.from(
+          leaderboard.map((item) => Map<String, dynamic>.from(item)),
+        );
+        debugPrint('📊 GAME_PROVIDER - ${rankings.length} participants in real-time leaderboard');
+        for (var i = 0; i < rankings.length && i < 3; i++) {
+          debugPrint('   ${i + 1}. ${rankings[i]['username']}: ${rankings[i]['score']} pts (Q${rankings[i]['answered_count']}/${rankings[i]['total_questions']})');
+        }
+        
+        state = state.copyWith(rankings: rankings);
+        debugPrint('✅ GAME_PROVIDER - Real-time rankings updated');
       }
     }
   }
