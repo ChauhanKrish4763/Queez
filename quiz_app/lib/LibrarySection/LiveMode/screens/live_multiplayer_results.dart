@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:quiz_app/LibrarySection/LiveMode/widgets/leaderboard_widget.dart';
-import 'package:quiz_app/LibrarySection/LiveMode/widgets/podium_widget.dart';
 import 'package:quiz_app/LibrarySection/LiveMode/widgets/reconnection_overlay.dart';
 import 'package:quiz_app/providers/game_provider.dart';
 import 'package:quiz_app/providers/session_provider.dart';
 import 'package:quiz_app/utils/color.dart';
-import 'package:quiz_app/utils/quiz_design_system.dart';
 
 class LiveMultiplayerResults extends ConsumerWidget {
   const LiveMultiplayerResults({super.key});
@@ -23,9 +20,7 @@ class LiveMultiplayerResults extends ConsumerWidget {
       return Scaffold(
         backgroundColor: AppColors.background,
         body: Center(
-          child: CircularProgressIndicator(
-            color: AppColors.primary,
-          ),
+          child: CircularProgressIndicator(color: AppColors.primary),
         ),
       );
     }
@@ -34,164 +29,333 @@ class LiveMultiplayerResults extends ConsumerWidget {
     final topThree = rankings.take(3).toList();
 
     // Find current user's rank
-    final currentUserRank = rankings.indexWhere(
-          (r) => r['user_id'] == currentUserId,
-        ) +
-        1;
-
-    // Congratulations message based on rank
-    String congratsMessage = '';
-    Color congratsColor = AppColors.textPrimary;
-
-    if (currentUserRank == 1) {
-      congratsMessage = '🎉 CHAMPION! You\'re #1! 🎉';
-      congratsColor = QuizColors.gold;
-    } else if (currentUserRank == 2) {
-      congratsMessage = '🥈 Amazing! You\'re 2nd Place! 🥈';
-      congratsColor = QuizColors.silver;
-    } else if (currentUserRank == 3) {
-      congratsMessage = '🥉 Great Job! You\'re 3rd Place! 🥉';
-      congratsColor = QuizColors.bronze;
-    } else if (currentUserRank > 0) {
-      congratsMessage = 'Well Done! You finished #$currentUserRank';
-      congratsColor = AppColors.primary;
-    }
+    final currentUserRank =
+        rankings.indexWhere((r) => r['user_id'] == currentUserId) + 1;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
       body: ReconnectionOverlay(
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(QuizSpacing.lg),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Header
-                Container(
-                  padding: const EdgeInsets.all(QuizSpacing.lg),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        AppColors.primary,
-                        AppColors.primary.withValues(alpha: 0.8),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                AppColors.surface, // #E8F5E9
+                AppColors.primaryLighter, // #CFF5D2
+              ],
+            ),
+          ),
+          child: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Completion Card
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.white,
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.08),
+                          blurRadius: 20,
+                          offset: const Offset(0, 4),
+                        ),
                       ],
                     ),
-                    borderRadius: BorderRadius.circular(QuizBorderRadius.lg),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.3),
-                        blurRadius: 15,
-                        offset: const Offset(0, 5),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      const Icon(
-                        Icons.emoji_events,
-                        color: QuizColors.gold,
-                        size: 64,
-                      ),
-                      const SizedBox(height: QuizSpacing.md),
-                      const Text(
-                        'QUIZ COMPLETED!',
-                        style: TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                    padding: const EdgeInsets.all(32),
+                    child: Column(
+                      children: [
+                        // Trophy Icon Circle
+                        Container(
+                          width: 64,
+                          height: 64,
+                          decoration: const BoxDecoration(
+                            color: AppColors.primary, // #5E8C61
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.emoji_events,
+                            color: AppColors.white,
+                            size: 32,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: QuizSpacing.xl),
+                        const SizedBox(height: 16),
 
-                // Congratulations Message (if in top 3)
-                if (currentUserRank > 0 && currentUserRank <= 3)
-                  TweenAnimationBuilder<double>(
-                    duration: const Duration(milliseconds: 800),
-                    tween: Tween(begin: 0.0, end: 1.0),
-                    curve: Curves.elasticOut,
-                    builder: (context, value, child) {
-                      return Transform.scale(
-                        scale: value,
-                        child: Container(
-                          padding: const EdgeInsets.all(QuizSpacing.lg),
-                          decoration: BoxDecoration(
-                            color: congratsColor.withValues(alpha: 0.1),
-                            borderRadius:
-                                BorderRadius.circular(QuizBorderRadius.lg),
-                            border: Border.all(
-                              color: congratsColor,
-                              width: 2,
+                        // Title
+                        const Text(
+                          'Quiz Completed!',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textPrimary, // #2E2E2E
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+
+                        // Subtitle with rank
+                        if (currentUserRank > 0)
+                          Text(
+                            'You finished #$currentUserRank',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.primary, // #5E8C61
                             ),
                           ),
-                          child: Text(
-                            congratsMessage,
+                        const SizedBox(height: 32),
+
+                        // Podium Section
+                        _buildPodium(topThree, currentUserId),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Leaderboard List (Ranks 4+)
+                  if (rankings.length > 3) ...[
+                    Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.white,
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.08),
+                            blurRadius: 20,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Other Players',
                             style: TextStyle(
-                              fontSize: 24,
+                              fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: congratsColor,
+                              color: AppColors.textPrimary,
                             ),
-                            textAlign: TextAlign.center,
                           ),
-                        ),
-                      );
+                          const SizedBox(height: 16),
+                          ...rankings.skip(3).map((user) {
+                            final rank = rankings.indexOf(user) + 1;
+                            final isCurrentUser =
+                                user['user_id'] == currentUserId;
+
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 8),
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: AppColors.surface, // #E8F5E9
+                                borderRadius: BorderRadius.circular(12),
+                                border:
+                                    isCurrentUser
+                                        ? Border.all(
+                                          color: AppColors.primary,
+                                          width: 2,
+                                        )
+                                        : null,
+                              ),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Row(
+                                    children: [
+                                      // Rank Badge
+                                      Container(
+                                        width: 32,
+                                        height: 32,
+                                        decoration: const BoxDecoration(
+                                          color:
+                                              AppColors
+                                                  .primaryLighter, // #CFF5D2
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Center(
+                                          child: Text(
+                                            '$rank',
+                                            style: const TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.bold,
+                                              color:
+                                                  AppColors.primary, // #5E8C61
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+
+                                      // Username
+                                      Text(
+                                        user['username'] ?? 'Unknown',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight:
+                                              isCurrentUser
+                                                  ? FontWeight.bold
+                                                  : FontWeight.w500,
+                                          color: AppColors.textPrimary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+
+                                  // Points
+                                  Text(
+                                    '${user['score']}',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.primary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+
+                  // Return Home Button
+                  ElevatedButton(
+                    onPressed: () {
+                      debugPrint('🏠 RESULTS - Navigating back to home');
+                      Navigator.of(context).popUntil((route) => route.isFirst);
                     },
-                  ),
-
-                if (currentUserRank > 0 && currentUserRank <= 3)
-                  const SizedBox(height: QuizSpacing.xl),
-
-                // Podium for Top 3
-                if (topThree.isNotEmpty)
-                  PodiumWidget(
-                    topThree: topThree,
-                    currentUserId: currentUserId ?? '',
-                  ),
-
-                const SizedBox(height: QuizSpacing.xl),
-
-                // Full Leaderboard
-                Container(
-                  constraints: const BoxConstraints(maxHeight: 400),
-                  child: LeaderboardWidget(
-                    rankings: rankings,
-                    currentUserId: currentUserId ?? '',
-                  ),
-                ),
-
-                const SizedBox(height: QuizSpacing.lg),
-
-                // Exit Button
-                ElevatedButton(
-                  onPressed: () {
-                    debugPrint('🏠 RESULTS - Navigating back to home');
-                    // Pop all routes and go back to dashboard
-                    Navigator.of(context).popUntil((route) => route.isFirst);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    padding:
-                        const EdgeInsets.symmetric(vertical: QuizSpacing.md),
-                    backgroundColor: AppColors.primary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(QuizBorderRadius.md),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: AppColors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      'RETURN TO HOME',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1,
+                      ),
                     ),
                   ),
-                  child: const Text(
-                    'RETURN TO HOME',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildPodium(
+    List<Map<String, dynamic>> topThree,
+    String? currentUserId,
+  ) {
+    if (topThree.isEmpty) return const SizedBox.shrink();
+
+    // Prepare podium data: [2nd, 1st, 3rd]
+    final List<Map<String, dynamic>?> podiumData = [
+      topThree.length > 1 ? topThree[1] : null, // 2nd place
+      topThree[0], // 1st place (always exists if topThree is not empty)
+      topThree.length > 2 ? topThree[2] : null, // 3rd place
+    ];
+
+    final heights = [80.0, 112.0, 64.0]; // Heights for 2nd, 1st, 3rd
+    final colors = [
+      AppColors.secondary, // #98A88C (sage green for 2nd)
+      AppColors.primary, // #5E8C61 (forest green for 1st)
+      AppColors.accentBright, // #6FCF97 (bright green for 3rd)
+    ];
+    final ranks = [2, 1, 3];
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: List.generate(3, (index) {
+        final data = podiumData[index];
+        if (data == null) {
+          return const SizedBox(width: 80);
+        }
+
+        final isCurrentUser = data['user_id'] == currentUserId;
+        final height = heights[index];
+        final color = colors[index];
+        final rank = ranks[index];
+        final width = index == 1 ? 80.0 : 64.0; // 1st place wider
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Podium Bar
+              Container(
+                width: width,
+                height: height,
+                decoration: BoxDecoration(
+                  color: color,
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(8),
+                  ),
+                ),
+                child: Center(
+                  child:
+                      rank == 1
+                          ? const Icon(
+                            Icons.emoji_events,
+                            color: AppColors.white,
+                            size: 32,
+                          )
+                          : Text(
+                            '$rank',
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.white,
+                            ),
+                          ),
+                ),
+              ),
+              const SizedBox(height: 8),
+
+              // Name
+              SizedBox(
+                width: width,
+                child: Text(
+                  data['username'] ?? 'Unknown',
+                  style: TextStyle(
+                    fontSize: rank == 1 ? 14 : 12,
+                    fontWeight:
+                        isCurrentUser ? FontWeight.bold : FontWeight.w500,
+                    color: AppColors.textPrimary,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+
+              // Points
+              Text(
+                '${data['score']}',
+                style: TextStyle(
+                  fontSize: rank == 1 ? 14 : 12,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.primary,
+                ),
+              ),
+            ],
+          ),
+        );
+      }),
     );
   }
 }
