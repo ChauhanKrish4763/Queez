@@ -108,7 +108,7 @@ class FlashcardCreationPageState extends State<FlashcardCreationPage> {
         widget.onSaveForStudySet!(flashcardSet);
 
         if (mounted) {
-          // Show success dialog
+          // Show success dialog and await its dismissal
           await showDialog(
             context: context,
             barrierDismissible: false,
@@ -138,10 +138,7 @@ class FlashcardCreationPageState extends State<FlashcardCreationPage> {
                   actions: [
                     TextButton(
                       onPressed: () {
-                        Navigator.pop(dialogContext); // Close dialog
-                        Navigator.pop(
-                          context,
-                        ); // Go back to study set dashboard
+                        Navigator.pop(dialogContext); // Close dialog only
                       },
                       child: Text(
                         'OK',
@@ -151,6 +148,21 @@ class FlashcardCreationPageState extends State<FlashcardCreationPage> {
                   ],
                 ),
           );
+          
+          // After dialog is closed, pop back to dashboard
+          // Stack: ... -> Dashboard -> FlashcardDetailsPage -> FlashcardCreationPage (current)
+          // We need to pop 2 times to get back to Dashboard
+          if (mounted) {
+            // Use a small delay to ensure dialog is fully dismissed
+            await Future.delayed(Duration(milliseconds: 100));
+            if (mounted && Navigator.of(context).canPop()) {
+              Navigator.of(context).pop(); // Pop FlashcardCreationPage
+            }
+            await Future.delayed(Duration(milliseconds: 100));
+            if (mounted && Navigator.of(context).canPop()) {
+              Navigator.of(context).pop(); // Pop FlashcardDetailsPage -> back to Dashboard
+            }
+          }
         }
         return;
       }

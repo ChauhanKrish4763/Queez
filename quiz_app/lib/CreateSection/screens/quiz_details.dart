@@ -246,22 +246,12 @@ class QuizDetailsState extends State<QuizDetails> {
                           coverImagePath: _coverImagePath,
                         );
 
-                        if (widget.quizItem == null) {
-                          // Navigate by route
-                          customNavigate(
-                            context,
-                            '/quiz_questions',
-                            AnimationType.slideLeft,
-                          );
-                        } else {
-                          // For editing existing quiz, preserve existing questions
-                          // and navigate with the quiz that now has creatorId set
-                          _privateNavigator(
-                            context,
-                            questions,
-                            AnimationType.slideLeft,
-                          );
-                        }
+                        // Always use _privateNavigator to pass study set mode flags
+                        _privateNavigator(
+                          context,
+                          questions,
+                          AnimationType.slideLeft,
+                        );
                       } else {
                         setState(() => _autoValidate = true);
                       }

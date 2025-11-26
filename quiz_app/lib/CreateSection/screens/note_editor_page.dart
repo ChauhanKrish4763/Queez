@@ -73,7 +73,7 @@ class _NoteEditorPageState extends State<NoteEditorPage> {
         widget.onSaveForStudySet!(note);
 
         if (mounted) {
-          // Show success dialog
+          // Show success dialog and await its dismissal
           await showDialog(
             context: context,
             barrierDismissible: false,
@@ -103,10 +103,7 @@ class _NoteEditorPageState extends State<NoteEditorPage> {
                   actions: [
                     TextButton(
                       onPressed: () {
-                        Navigator.pop(dialogContext); // Close dialog
-                        Navigator.pop(
-                          context,
-                        ); // Go back to study set dashboard
+                        Navigator.pop(dialogContext); // Close dialog only
                       },
                       child: Text(
                         'OK',
@@ -116,6 +113,21 @@ class _NoteEditorPageState extends State<NoteEditorPage> {
                   ],
                 ),
           );
+          
+          // After dialog is closed, pop back to dashboard
+          // Stack: ... -> Dashboard -> NoteDetailsPage -> NoteEditorPage (current)
+          // We need to pop 2 times to get back to Dashboard
+          if (mounted) {
+            // Use a small delay to ensure dialog is fully dismissed
+            await Future.delayed(Duration(milliseconds: 100));
+            if (mounted && Navigator.of(context).canPop()) {
+              Navigator.of(context).pop(); // Pop NoteEditorPage
+            }
+            await Future.delayed(Duration(milliseconds: 100));
+            if (mounted && Navigator.of(context).canPop()) {
+              Navigator.of(context).pop(); // Pop NoteDetailsPage -> back to Dashboard
+            }
+          }
         }
         return;
       }

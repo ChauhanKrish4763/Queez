@@ -217,7 +217,12 @@ class _StudySetDashboardState extends State<StudySetDashboard> {
         },
         transitionDuration: const Duration(milliseconds: 300),
       ),
-    );
+    ).then((_) {
+      // Reload items when returning to dashboard
+      setState(() {
+        _loadCachedItems();
+      });
+    });
   }
 
   void _navigateToFlashcardCreation() {
@@ -242,7 +247,12 @@ class _StudySetDashboardState extends State<StudySetDashboard> {
         },
         transitionDuration: const Duration(milliseconds: 300),
       ),
-    );
+    ).then((_) {
+      // Reload items when returning to dashboard
+      setState(() {
+        _loadCachedItems();
+      });
+    });
   }
 
   void _navigateToNoteCreation() {
@@ -265,7 +275,12 @@ class _StudySetDashboardState extends State<StudySetDashboard> {
         },
         transitionDuration: const Duration(milliseconds: 300),
       ),
-    );
+    ).then((_) {
+      // Reload items when returning to dashboard
+      setState(() {
+        _loadCachedItems();
+      });
+    });
   }
 
   Future<void> _saveStudySet() async {

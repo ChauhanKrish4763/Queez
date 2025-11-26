@@ -8,21 +8,25 @@ class StudySetService {
   static const String baseUrl = ApiConfig.baseUrl;
 
   static Map<String, String> get _headers => {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      };
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  };
 
   /// Save Study Set to MongoDB via Backend API
   static Future<String> saveStudySet(StudySet studySet) async {
     try {
+      debugPrint('========================================');
       debugPrint('Creating study set...');
-      debugPrint('Study set data: ${studySet.toJson()}');
+      final jsonData = studySet.toJson();
+      debugPrint('Study set JSON: ${jsonEncode(jsonData)}');
+      debugPrint('URL: $baseUrl/study-sets');
+      debugPrint('========================================');
 
       final response = await http
           .post(
             Uri.parse('$baseUrl/study-sets'),
             headers: _headers,
-            body: jsonEncode(studySet.toJson()),
+            body: jsonEncode(jsonData),
           )
           .timeout(
             Duration(seconds: 30),
@@ -37,16 +41,31 @@ class StudySetService {
       debugPrint('Response body: ${response.body}');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        final data = jsonDecode(response.body);
-        if (data['id'] == null) {
-          throw Exception('Server response missing study set ID');
+        try {
+          final data = jsonDecode(response.body);
+          if (data['id'] == null) {
+            throw Exception('Server response missing study set ID');
+          }
+          return data['id'].toString();
+        } catch (e) {
+          debugPrint('Error parsing response: $e');
+          debugPrint('Response was: ${response.body}');
+          rethrow;
         }
-        return data['id'].toString();
       } else {
-        final errorBody = jsonDecode(response.body);
-        throw Exception('Failed to create study set: ${errorBody['detail'] ?? 'Unknown error'}');
+        try {
+          final errorBody = jsonDecode(response.body);
+          throw Exception(
+            'Failed to create study set: ${errorBody['detail'] ?? 'Unknown error'}',
+          );
+        } catch (e) {
+          throw Exception(
+            'Failed to create study set: ${response.statusCode} - ${response.body}',
+          );
+        }
       }
     } catch (e) {
+      debugPrint('Exception in saveStudySet: $e');
       throw Exception('Failed to save study set: $e');
     }
   }
@@ -57,10 +76,7 @@ class StudySetService {
       debugPrint('Fetching study set with ID: $id');
 
       final response = await http
-          .get(
-            Uri.parse('$baseUrl/study-sets/$id'),
-            headers: _headers,
-          )
+          .get(Uri.parse('$baseUrl/study-sets/$id'), headers: _headers)
           .timeout(
             Duration(seconds: 30),
             onTimeout: () {
@@ -79,7 +95,9 @@ class StudySetService {
         return null;
       } else {
         final errorBody = jsonDecode(response.body);
-        throw Exception('Failed to fetch study set: ${errorBody['detail'] ?? 'Unknown error'}');
+        throw Exception(
+          'Failed to fetch study set: ${errorBody['detail'] ?? 'Unknown error'}',
+        );
       }
     } catch (e) {
       throw Exception('Failed to fetch study set: $e');
@@ -92,10 +110,7 @@ class StudySetService {
       debugPrint('Fetching study sets for user: $userId');
 
       final response = await http
-          .get(
-            Uri.parse('$baseUrl/study-sets/user/$userId'),
-            headers: _headers,
-          )
+          .get(Uri.parse('$baseUrl/study-sets/user/$userId'), headers: _headers)
           .timeout(
             Duration(seconds: 30),
             onTimeout: () {
@@ -112,7 +127,9 @@ class StudySetService {
         return data.map((json) => StudySet.fromJson(json)).toList();
       } else {
         final errorBody = jsonDecode(response.body);
-        throw Exception('Failed to fetch study sets: ${errorBody['detail'] ?? 'Unknown error'}');
+        throw Exception(
+          'Failed to fetch study sets: ${errorBody['detail'] ?? 'Unknown error'}',
+        );
       }
     } catch (e) {
       throw Exception('Failed to fetch study sets: $e');
@@ -125,10 +142,7 @@ class StudySetService {
       debugPrint('Deleting study set with ID: $id');
 
       final response = await http
-          .delete(
-            Uri.parse('$baseUrl/study-sets/$id'),
-            headers: _headers,
-          )
+          .delete(Uri.parse('$baseUrl/study-sets/$id'), headers: _headers)
           .timeout(
             Duration(seconds: 30),
             onTimeout: () {
@@ -142,7 +156,9 @@ class StudySetService {
 
       if (response.statusCode != 200 && response.statusCode != 204) {
         final errorBody = jsonDecode(response.body);
-        throw Exception('Failed to delete study set: ${errorBody['detail'] ?? 'Unknown error'}');
+        throw Exception(
+          'Failed to delete study set: ${errorBody['detail'] ?? 'Unknown error'}',
+        );
       }
     } catch (e) {
       throw Exception('Failed to delete study set: $e');
@@ -153,7 +169,7 @@ class StudySetService {
   static Future<void> updateStudySet(StudySet studySet) async {
     try {
       final updatedStudySet = studySet.copyWith(updatedAt: DateTime.now());
-      
+
       debugPrint('Updating study set with ID: ${updatedStudySet.id}');
       debugPrint('Updated data: ${updatedStudySet.toJson()}');
 
@@ -176,7 +192,9 @@ class StudySetService {
 
       if (response.statusCode != 200) {
         final errorBody = jsonDecode(response.body);
-        throw Exception('Failed to update study set: ${errorBody['detail'] ?? 'Unknown error'}');
+        throw Exception(
+          'Failed to update study set: ${errorBody['detail'] ?? 'Unknown error'}',
+        );
       }
     } catch (e) {
       throw Exception('Failed to update study set: $e');
