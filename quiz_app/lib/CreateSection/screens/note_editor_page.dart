@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
+import 'package:quiz_app/CreateSection/models/note.dart';
 import 'package:quiz_app/CreateSection/services/note_service.dart';
 import 'package:quiz_app/utils/color.dart';
 
@@ -10,6 +11,8 @@ class NoteEditorPage extends StatefulWidget {
   final String category;
   final String creatorId;
   final String? coverImagePath;
+  final bool isStudySetMode;
+  final Function(Note)? onSaveForStudySet;
 
   const NoteEditorPage({
     super.key,
@@ -18,6 +21,8 @@ class NoteEditorPage extends StatefulWidget {
     required this.category,
     required this.creatorId,
     this.coverImagePath,
+    this.isStudySetMode = false,
+    this.onSaveForStudySet,
   });
 
   @override
@@ -49,6 +54,71 @@ class _NoteEditorPageState extends State<NoteEditorPage> {
       // Get the document content as JSON
       final delta = _controller.document.toDelta();
       final jsonContent = jsonEncode(delta.toJson());
+
+      // If in study set mode, create note and add to cache
+      if (widget.isStudySetMode && widget.onSaveForStudySet != null) {
+        final noteId = DateTime.now().millisecondsSinceEpoch.toString();
+        final note = Note(
+          id: noteId,
+          title: widget.title,
+          description: widget.description,
+          category: widget.category,
+          content: jsonContent,
+          creatorId: widget.creatorId,
+          coverImagePath: widget.coverImagePath,
+          createdAt: DateTime.now().toIso8601String(),
+          updatedAt: DateTime.now().toIso8601String(),
+        );
+
+        widget.onSaveForStudySet!(note);
+
+        if (mounted) {
+          // Show success dialog
+          await showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder:
+                (dialogContext) => AlertDialog(
+                  backgroundColor: AppColors.surface,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  title: Row(
+                    children: [
+                      Icon(Icons.check_circle, color: Colors.green, size: 28),
+                      const SizedBox(width: 12),
+                      Text(
+                        'Note Added!',
+                        style: TextStyle(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  content: Text(
+                    'Note has been added to your study set.',
+                    style: TextStyle(color: AppColors.textSecondary),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(dialogContext); // Close dialog
+                        Navigator.pop(
+                          context,
+                        ); // Go back to study set dashboard
+                      },
+                      child: Text(
+                        'OK',
+                        style: TextStyle(color: AppColors.primary),
+                      ),
+                    ),
+                  ],
+                ),
+          );
+        }
+        return;
+      }
 
       await NoteService.createNote(
         title: widget.title,

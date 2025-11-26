@@ -60,10 +60,7 @@ class _FlashcardPlayScreenState extends State<FlashcardPlayScreen> {
       // Show error in snackbar instead of state
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString()),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
         );
         Navigator.of(context).pop();
       }

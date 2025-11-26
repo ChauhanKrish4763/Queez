@@ -70,12 +70,16 @@ class ItemCard extends StatelessWidget {
                           item.isQuiz
                               ? AppColors.primary.withValues(alpha: 0.15)
                               : item.isNote
-                                  ? AppColors.warning.withValues(alpha: 0.15)
-                                  : AppColors.accentBright.withValues(alpha: 0.15),
+                              ? AppColors.warning.withValues(alpha: 0.15)
+                              : AppColors.accentBright.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
-                      item.isQuiz ? 'QUIZ' : item.isNote ? 'NOTE' : 'FLASHCARD SET',
+                      item.isQuiz
+                          ? 'QUIZ'
+                          : item.isNote
+                          ? 'NOTE'
+                          : 'FLASHCARD SET',
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
@@ -83,8 +87,8 @@ class ItemCard extends StatelessWidget {
                             item.isQuiz
                                 ? AppColors.primary
                                 : item.isNote
-                                    ? AppColors.warning
-                                    : AppColors.accentBright,
+                                ? AppColors.warning
+                                : AppColors.accentBright,
                         letterSpacing: 0.5,
                       ),
                     ),
@@ -110,8 +114,8 @@ class ItemCard extends StatelessWidget {
                               item.isQuiz
                                   ? Icons.quiz_outlined
                                   : item.isNote
-                                      ? Icons.description_outlined
-                                      : Icons.style_outlined,
+                                  ? Icons.description_outlined
+                                  : Icons.style_outlined,
                               size: 18,
                               color: AppColors.primary,
                             ),
@@ -275,28 +279,31 @@ class ItemCard extends StatelessWidget {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => WaitScreen(
-                                    loadingMessage: 'Loading note',
-                                    onLoadComplete: () async {
-                                      // Preload note and store it
-                                      loadedNote = await NoteService.getNote(
-                                        item.id,
-                                        user.uid,
-                                      );
-                                    },
-                                    onNavigate: () {
-                                      Navigator.pushReplacement(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => NoteViewerPage(
-                                            noteId: item.id,
-                                            userId: user.uid,
-                                            preloadedNote: loadedNote,
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  ),
+                                  builder:
+                                      (context) => WaitScreen(
+                                        loadingMessage: 'Loading note',
+                                        onLoadComplete: () async {
+                                          // Preload note and store it
+                                          loadedNote =
+                                              await NoteService.getNote(
+                                                item.id,
+                                                user.uid,
+                                              );
+                                        },
+                                        onNavigate: () {
+                                          Navigator.pushReplacement(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder:
+                                                  (context) => NoteViewerPage(
+                                                    noteId: item.id,
+                                                    userId: user.uid,
+                                                    preloadedNote: loadedNote,
+                                                  ),
+                                            ),
+                                          );
+                                        },
+                                      ),
                                 ),
                               );
                             }
@@ -336,27 +343,32 @@ class ItemCard extends StatelessWidget {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => WaitScreen(
-                                    loadingMessage: 'Loading flashcards',
-                                    onLoadComplete: () async {
-                                      // Preload flashcard set and store it
-                                      loadedFlashcardSet = await FlashcardService.getFlashcardSet(
-                                        item.id,
-                                        user.uid,
-                                      );
-                                    },
-                                    onNavigate: () {
-                                      Navigator.pushReplacement(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => FlashcardPlayScreen(
-                                            flashcardSetId: item.id,
-                                            preloadedFlashcardSet: loadedFlashcardSet,
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  ),
+                                  builder:
+                                      (context) => WaitScreen(
+                                        loadingMessage: 'Loading flashcards',
+                                        onLoadComplete: () async {
+                                          // Preload flashcard set and store it
+                                          loadedFlashcardSet =
+                                              await FlashcardService.getFlashcardSet(
+                                                item.id,
+                                                user.uid,
+                                              );
+                                        },
+                                        onNavigate: () {
+                                          Navigator.pushReplacement(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder:
+                                                  (context) =>
+                                                      FlashcardPlayScreen(
+                                                        flashcardSetId: item.id,
+                                                        preloadedFlashcardSet:
+                                                            loadedFlashcardSet,
+                                                      ),
+                                            ),
+                                          );
+                                        },
+                                      ),
                                 ),
                               );
                             }
@@ -433,36 +445,41 @@ class ItemCard extends StatelessWidget {
                               height: 48,
                               child: ElevatedButton.icon(
                                 onPressed: () {
-                                  final user = FirebaseAuth.instance.currentUser;
+                                  final user =
+                                      FirebaseAuth.instance.currentUser;
                                   if (user != null) {
                                     var loadedQuestions;
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) => WaitScreen(
-                                          loadingMessage: 'Loading quiz',
-                                          onLoadComplete: () async {
-                                            // Preload quiz questions and store them
-                                            loadedQuestions = await QuizService.fetchQuestionsByQuizId(
-                                              item.id,
-                                              user.uid,
-                                            );
-                                          },
-                                          onNavigate: () {
-                                            Navigator.pushReplacement(
-                                              context,
-                                              customRoute(
-                                                QuizPlayScreen(
-                                                  quizItem: QuizLibraryItem.fromJson(
-                                                    item.toQuizLibraryItem(),
+                                        builder:
+                                            (context) => WaitScreen(
+                                              loadingMessage: 'Loading quiz',
+                                              onLoadComplete: () async {
+                                                // Preload quiz questions and store them
+                                                loadedQuestions =
+                                                    await QuizService.fetchQuestionsByQuizId(
+                                                      item.id,
+                                                      user.uid,
+                                                    );
+                                              },
+                                              onNavigate: () {
+                                                Navigator.pushReplacement(
+                                                  context,
+                                                  customRoute(
+                                                    QuizPlayScreen(
+                                                      quizItem:
+                                                          QuizLibraryItem.fromJson(
+                                                            item.toQuizLibraryItem(),
+                                                          ),
+                                                      preloadedQuestions:
+                                                          loadedQuestions,
+                                                    ),
+                                                    AnimationType.slideUp,
                                                   ),
-                                                  preloadedQuestions: loadedQuestions,
-                                                ),
-                                                AnimationType.slideUp,
-                                              ),
-                                            );
-                                          },
-                                        ),
+                                                );
+                                              },
+                                            ),
                                       ),
                                     );
                                   }
@@ -503,30 +520,34 @@ class ItemCard extends StatelessWidget {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => WaitScreen(
-                                    loadingMessage: 'Loading quiz',
-                                    onLoadComplete: () async {
-                                      // Preload quiz questions and store them
-                                      loadedQuestions = await QuizService.fetchQuestionsByQuizId(
-                                        item.id,
-                                        user.uid,
-                                      );
-                                    },
-                                    onNavigate: () {
-                                      Navigator.pushReplacement(
-                                        context,
-                                        customRoute(
-                                          QuizPlayScreen(
-                                            quizItem: QuizLibraryItem.fromJson(
-                                              item.toQuizLibraryItem(),
+                                  builder:
+                                      (context) => WaitScreen(
+                                        loadingMessage: 'Loading quiz',
+                                        onLoadComplete: () async {
+                                          // Preload quiz questions and store them
+                                          loadedQuestions =
+                                              await QuizService.fetchQuestionsByQuizId(
+                                                item.id,
+                                                user.uid,
+                                              );
+                                        },
+                                        onNavigate: () {
+                                          Navigator.pushReplacement(
+                                            context,
+                                            customRoute(
+                                              QuizPlayScreen(
+                                                quizItem:
+                                                    QuizLibraryItem.fromJson(
+                                                      item.toQuizLibraryItem(),
+                                                    ),
+                                                preloadedQuestions:
+                                                    loadedQuestions,
+                                              ),
+                                              AnimationType.slideUp,
                                             ),
-                                            preloadedQuestions: loadedQuestions,
-                                          ),
-                                          AnimationType.slideUp,
-                                        ),
-                                      );
-                                    },
-                                  ),
+                                          );
+                                        },
+                                      ),
                                 ),
                               );
                             }

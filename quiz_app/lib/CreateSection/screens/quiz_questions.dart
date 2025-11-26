@@ -1,19 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:quiz_app/CreateSection/models/quiz.dart';
 import 'package:quiz_app/CreateSection/services/quiz_cache_manager.dart';
 import 'package:quiz_app/CreateSection/services/quiz_service.dart';
 import 'package:quiz_app/CreateSection/widgets/quiz_saved_dialog.dart';
-import 'package:quiz_app/LibrarySection/screens/library_page.dart';
 import '../models/question.dart';
 import '../widgets/question_card/question_card.dart';
 import '../widgets/question_navigation.dart';
 import 'package:quiz_app/utils/color.dart';
-import 'package:quiz_app/utils/globals.dart';
 
 class QuizQuestions extends StatefulWidget {
   final List<Question>? questions;
+  final bool isStudySetMode;
+  final Function(Quiz)? onSaveForStudySet;
 
-  const QuizQuestions({super.key, this.questions});
+  const QuizQuestions({
+    super.key,
+    this.questions,
+    this.isStudySetMode = false,
+    this.onSaveForStudySet,
+  });
   @override
   State<QuizQuestions> createState() => _QuizQuestionsState();
 }
@@ -160,6 +166,60 @@ class _QuizQuestionsState extends State<QuizQuestions> {
         throw Exception('No quiz details found');
       }
 
+      // If in study set mode, add to study set cache and return
+      if (widget.isStudySetMode && widget.onSaveForStudySet != null) {
+        debugPrint('Study set mode: adding quiz to study set cache');
+        widget.onSaveForStudySet!(quiz);
+        QuizCacheManager.instance.clearCache();
+
+        if (mounted) {
+          // Show success dialog
+          await showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder:
+                (dialogContext) => AlertDialog(
+                  backgroundColor: AppColors.surface,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  title: Row(
+                    children: [
+                      Icon(Icons.check_circle, color: Colors.green, size: 28),
+                      const SizedBox(width: 12),
+                      Text(
+                        'Quiz Added!',
+                        style: TextStyle(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  content: Text(
+                    'Quiz has been added to your study set.',
+                    style: TextStyle(color: AppColors.textSecondary),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(dialogContext); // Close dialog
+                        Navigator.pop(
+                          context,
+                        ); // Go back to study set dashboard
+                      },
+                      child: Text(
+                        'OK',
+                        style: TextStyle(color: AppColors.primary),
+                      ),
+                    ),
+                  ],
+                ),
+          );
+        }
+        return;
+      }
+
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) {
         throw Exception('User not authenticated. Cannot save quiz.');
@@ -188,13 +248,8 @@ class _QuizQuestionsState extends State<QuizQuestions> {
             QuizCacheManager.instance.clearCache();
             debugPrint('Cache cleared');
             if (mounted) {
+              // Pop back to the Create page
               Navigator.of(context).popUntil((route) => route.isFirst);
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (bottomNavbarKey.currentState != null) {
-                  bottomNavbarKey.currentState!.setIndex(1);
-                }
-                LibraryPage.reloadItems();
-              });
             }
           },
         );

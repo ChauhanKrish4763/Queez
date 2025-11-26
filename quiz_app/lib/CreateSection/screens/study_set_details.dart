@@ -1,42 +1,40 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:quiz_app/CreateSection/models/note.dart';
-import 'package:quiz_app/CreateSection/screens/note_editor_page.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:quiz_app/CreateSection/screens/study_set_dashboard.dart';
+import 'package:quiz_app/CreateSection/services/study_set_cache_manager.dart';
 import 'package:quiz_app/CreateSection/widgets/custom_dropdown.dart';
 import 'package:quiz_app/CreateSection/widgets/custom_text_field.dart';
 import 'package:quiz_app/CreateSection/widgets/image_picker.dart';
 import 'package:quiz_app/CreateSection/widgets/primary_button.dart';
 import 'package:quiz_app/CreateSection/widgets/section_title.dart';
+import 'package:quiz_app/utils/animations/page_transition.dart';
 import 'package:quiz_app/utils/color.dart';
 
-class NoteDetailsPage extends StatefulWidget {
-  final bool isStudySetMode;
-  final Function(Note)? onSaveForStudySet;
-
-  const NoteDetailsPage({
-    super.key,
-    this.isStudySetMode = false,
-    this.onSaveForStudySet,
-  });
+class StudySetDetails extends StatefulWidget {
+  const StudySetDetails({super.key});
 
   @override
-  NoteDetailsPageState createState() => NoteDetailsPageState();
+  StudySetDetailsState createState() => StudySetDetailsState();
 }
 
-class NoteDetailsPageState extends State<NoteDetailsPage> {
+class StudySetDetailsState extends State<StudySetDetails> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
-  String? _selectedCategory;
+  String? _selectedTag;
+  String? _selectedLanguage;
   String? _coverImagePath;
   bool _autoValidate = false;
 
-  final List<String> _categories = [
+  final List<String> _tags = [
     'Language Learning',
     'Science and Technology',
     'Law',
     'Other',
   ];
+
+  final List<String> _languages = ['English', 'Spanish', 'French', 'Others'];
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +42,7 @@ class NoteDetailsPageState extends State<NoteDetailsPage> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text(
-          'Create Note',
+          'Create Study Set',
           style: TextStyle(
             color: AppColors.textPrimary,
             fontWeight: FontWeight.bold,
@@ -74,9 +72,9 @@ class NoteDetailsPageState extends State<NoteDetailsPage> {
                   ),
                   const SizedBox(height: 32),
 
-                  // Note Title Field
+                  // Study Set Title Field
                   SectionTitle(
-                    title: 'Note Title',
+                    title: 'Study Set Title',
                     child: CustomTextField(
                       controller: _titleController,
                       hintText: 'Enter the title',
@@ -91,13 +89,41 @@ class NoteDetailsPageState extends State<NoteDetailsPage> {
                   ),
                   const SizedBox(height: 20),
 
+                  // Language Dropdown
+                  SectionTitle(
+                    title: 'Language',
+                    child: CustomDropdown(
+                      value: _selectedLanguage,
+                      items: _languages,
+                      hintText: 'Select a language',
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please select a language';
+                        }
+                        return null;
+                      },
+                      autoValidate: _autoValidate,
+                      onChanged:
+                          (value) => setState(() => _selectedLanguage = value),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
                   // Cover Image Section
                   SectionTitle(
                     title: 'Cover Image',
                     child: ImagePickerWidget(
                       imagePath: _coverImagePath,
-                      onTap: () {
-                        // TODO: Implement image picker
+                      onTap: () async {
+                        final ImagePicker picker = ImagePicker();
+                        final XFile? image = await picker.pickImage(
+                          source: ImageSource.gallery,
+                        );
+                        if (image != null) {
+                          setState(() {
+                            _coverImagePath = image.path;
+                          });
+                        }
                       },
                     ),
                   ),
@@ -108,7 +134,7 @@ class NoteDetailsPageState extends State<NoteDetailsPage> {
                     title: 'Description',
                     child: CustomTextField(
                       controller: _descriptionController,
-                      hintText: 'Describe your note...',
+                      hintText: 'Describe your study set...',
                       maxLines: 4,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -125,8 +151,8 @@ class NoteDetailsPageState extends State<NoteDetailsPage> {
                   SectionTitle(
                     title: 'Category',
                     child: CustomDropdown(
-                      value: _selectedCategory,
-                      items: _categories,
+                      value: _selectedTag,
+                      items: _tags,
                       hintText: 'Select a category',
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -136,7 +162,7 @@ class NoteDetailsPageState extends State<NoteDetailsPage> {
                       },
                       autoValidate: _autoValidate,
                       onChanged:
-                          (value) => setState(() => _selectedCategory = value),
+                          (value) => setState(() => _selectedTag = value),
                     ),
                   ),
                   const SizedBox(height: 40),
@@ -156,18 +182,45 @@ class NoteDetailsPageState extends State<NoteDetailsPage> {
                           return;
                         }
 
+                        // Generate unique ID for study set
+                        final studySetId =
+                            DateTime.now().millisecondsSinceEpoch.toString();
+
+                        // Initialize study set in cache
+                        StudySetCacheManager.instance.initializeStudySet(
+                          id: studySetId,
+                          name: _titleController.text,
+                          description: _descriptionController.text,
+                          category: _selectedTag!,
+                          language: _selectedLanguage!,
+                          ownerId: userId,
+                          coverImagePath: _coverImagePath,
+                        );
+
+                        // Navigate to dashboard with the details
                         Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder:
-                                (context) => NoteEditorPage(
+                          PageRouteBuilder(
+                            pageBuilder: (
+                              context,
+                              animation,
+                              secondaryAnimation,
+                            ) {
+                              return PageTransition(
+                                animation: animation,
+                                animationType: AnimationType.slideLeft,
+                                child: StudySetDashboard(
                                   title: _titleController.text,
                                   description: _descriptionController.text,
-                                  category: _selectedCategory!,
-                                  creatorId: userId,
+                                  language: _selectedLanguage!,
+                                  category: _selectedTag!,
                                   coverImagePath: _coverImagePath,
-                                  isStudySetMode: widget.isStudySetMode,
-                                  onSaveForStudySet: widget.onSaveForStudySet,
+                                  studySetId: studySetId,
                                 ),
+                              );
+                            },
+                            transitionDuration: const Duration(
+                              milliseconds: 300,
+                            ),
                           ),
                         );
                       } else {

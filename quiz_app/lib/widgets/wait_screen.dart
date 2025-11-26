@@ -62,7 +62,7 @@ class _WaitScreenState extends State<WaitScreen> {
 
   Future<void> _loadAndNavigate() async {
     final startTime = DateTime.now();
-    
+
     try {
       // Execute the loading function
       await widget.onLoadComplete();
@@ -70,16 +70,16 @@ class _WaitScreenState extends State<WaitScreen> {
       // Handle errors if needed
       debugPrint('Error during loading: $e');
     }
-    
+
     // Calculate elapsed time
     final elapsed = DateTime.now().difference(startTime);
     final remainingTime = const Duration(seconds: 2) - elapsed;
-    
+
     // Wait for remaining time if less than 2 seconds have elapsed
     if (remainingTime.inMilliseconds > 0) {
       await Future.delayed(remainingTime);
     }
-    
+
     // Navigate to the target screen
     if (mounted) {
       widget.onNavigate();
@@ -108,7 +108,7 @@ class _WaitScreenState extends State<WaitScreen> {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 48),
-                
+
                 // Lottie loading animation
                 Lottie.asset(
                   'assets/animations/yay-jump.json',
@@ -116,7 +116,7 @@ class _WaitScreenState extends State<WaitScreen> {
                   height: 180,
                   repeat: true,
                 ),
-                
+
                 const SizedBox(height: 48),
                 AnimatedSwitcher(
                   duration: const Duration(milliseconds: 500),

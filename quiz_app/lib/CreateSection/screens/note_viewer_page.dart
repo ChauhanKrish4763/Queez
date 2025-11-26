@@ -29,7 +29,7 @@ class _NoteViewerPageState extends State<NoteViewerPage> {
   void initState() {
     super.initState();
     _controller = QuillController.basic();
-    
+
     // Use preloaded note if available, otherwise fetch
     if (widget.preloadedNote != null) {
       _initializeNote(widget.preloadedNote!);
@@ -79,10 +79,7 @@ class _NoteViewerPageState extends State<NoteViewerPage> {
       // Show error in snackbar instead of state
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString()),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
         );
         Navigator.of(context).pop();
       }

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:quiz_app/CreateSection/models/flashcard_set.dart';
 import 'package:quiz_app/CreateSection/services/flashcard_service.dart';
 import 'package:quiz_app/CreateSection/widgets/quiz_saved_dialog.dart';
-import 'package:quiz_app/LibrarySection/screens/library_page.dart';
-import 'package:quiz_app/utils/globals.dart';
 import 'package:quiz_app/utils/color.dart';
 import 'package:uuid/uuid.dart';
 
@@ -11,6 +10,8 @@ class FlashcardCreationPage extends StatefulWidget {
   final String description;
   final String category;
   final String creatorId;
+  final bool isStudySetMode;
+  final Function(FlashcardSet)? onSaveForStudySet;
 
   const FlashcardCreationPage({
     super.key,
@@ -18,6 +19,8 @@ class FlashcardCreationPage extends StatefulWidget {
     required this.description,
     required this.category,
     required this.creatorId,
+    this.isStudySetMode = false,
+    this.onSaveForStudySet,
   });
 
   @override
@@ -78,6 +81,80 @@ class FlashcardCreationPageState extends State<FlashcardCreationPage> {
     setState(() => _isSaving = true);
 
     try {
+      // If in study set mode, create flashcard set and add to cache
+      if (widget.isStudySetMode && widget.onSaveForStudySet != null) {
+        final flashcardSetId = const Uuid().v4();
+        final flashcards =
+            validCards
+                .map(
+                  (card) => Flashcard(
+                    id: card['id']!,
+                    front: card['front']!,
+                    back: card['back']!,
+                  ),
+                )
+                .toList();
+
+        final flashcardSet = FlashcardSet(
+          id: flashcardSetId,
+          title: widget.title,
+          description: widget.description,
+          category: widget.category,
+          creatorId: widget.creatorId,
+          cards: flashcards,
+          createdAt: DateTime.now().toIso8601String(),
+        );
+
+        widget.onSaveForStudySet!(flashcardSet);
+
+        if (mounted) {
+          // Show success dialog
+          await showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder:
+                (dialogContext) => AlertDialog(
+                  backgroundColor: AppColors.surface,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  title: Row(
+                    children: [
+                      Icon(Icons.check_circle, color: Colors.green, size: 28),
+                      const SizedBox(width: 12),
+                      Text(
+                        'Flashcard Set Added!',
+                        style: TextStyle(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  content: Text(
+                    'Flashcard set has been added to your study set.',
+                    style: TextStyle(color: AppColors.textSecondary),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(dialogContext); // Close dialog
+                        Navigator.pop(
+                          context,
+                        ); // Go back to study set dashboard
+                      },
+                      child: Text(
+                        'OK',
+                        style: TextStyle(color: AppColors.primary),
+                      ),
+                    ),
+                  ],
+                ),
+          );
+        }
+        return;
+      }
+
       final flashcardSetId = await FlashcardService.createFlashcardSet(
         title: widget.title,
         description: widget.description,
@@ -98,13 +175,8 @@ class FlashcardCreationPageState extends State<FlashcardCreationPage> {
           onDismiss: () {
             debugPrint('Success dialog dismissed');
             if (mounted) {
+              // Pop back to the Create page
               Navigator.of(context).popUntil((route) => route.isFirst);
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (bottomNavbarKey.currentState != null) {
-                  bottomNavbarKey.currentState!.setIndex(1);
-                }
-                LibraryPage.reloadItems();
-              });
             }
           },
         );

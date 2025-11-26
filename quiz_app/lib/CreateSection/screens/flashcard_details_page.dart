@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:quiz_app/CreateSection/models/flashcard_set.dart';
 import 'package:quiz_app/CreateSection/screens/flashcard_creation_page.dart';
 import 'package:quiz_app/CreateSection/widgets/custom_dropdown.dart';
 import 'package:quiz_app/CreateSection/widgets/custom_text_field.dart';
@@ -9,7 +10,14 @@ import 'package:quiz_app/CreateSection/widgets/section_title.dart';
 import 'package:quiz_app/utils/color.dart';
 
 class FlashcardDetailsPage extends StatefulWidget {
-  const FlashcardDetailsPage({super.key});
+  final bool isStudySetMode;
+  final Function(FlashcardSet)? onSaveForStudySet;
+
+  const FlashcardDetailsPage({
+    super.key,
+    this.isStudySetMode = false,
+    this.onSaveForStudySet,
+  });
 
   @override
   FlashcardDetailsPageState createState() => FlashcardDetailsPageState();
@@ -156,6 +164,8 @@ class FlashcardDetailsPageState extends State<FlashcardDetailsPage> {
                                   description: _descriptionController.text,
                                   category: _selectedCategory!,
                                   creatorId: userId,
+                                  isStudySetMode: widget.isStudySetMode,
+                                  onSaveForStudySet: widget.onSaveForStudySet,
                                 ),
                           ),
                         );

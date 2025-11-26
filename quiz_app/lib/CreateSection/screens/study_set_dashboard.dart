@@ -1,0 +1,802 @@
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
+import 'package:quiz_app/utils/color.dart';
+import 'package:quiz_app/CreateSection/models/study_set.dart';
+import 'package:quiz_app/CreateSection/models/quiz.dart';
+import 'package:quiz_app/CreateSection/models/flashcard_set.dart';
+import 'package:quiz_app/CreateSection/models/note.dart';
+import 'package:quiz_app/CreateSection/services/study_set_cache_manager.dart';
+import 'package:quiz_app/CreateSection/services/study_set_service.dart';
+import 'package:quiz_app/CreateSection/screens/quiz_details.dart';
+import 'package:quiz_app/CreateSection/screens/flashcard_details_page.dart';
+import 'package:quiz_app/CreateSection/screens/note_details_page.dart';
+import 'package:quiz_app/utils/animations/page_transition.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+class StudySetDashboard extends StatefulWidget {
+  final String studySetId;
+  final String title;
+  final String description;
+  final String language;
+  final String category;
+  final String? coverImagePath;
+
+  const StudySetDashboard({
+    super.key,
+    required this.studySetId,
+    required this.title,
+    required this.description,
+    required this.language,
+    required this.category,
+    this.coverImagePath,
+  });
+
+  @override
+  State<StudySetDashboard> createState() => _StudySetDashboardState();
+}
+
+class _StudySetDashboardState extends State<StudySetDashboard> {
+  List<Quiz> quizzes = [];
+  List<FlashcardSet> flashcardSets = [];
+  List<Note> notes = [];
+  bool _isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCachedItems();
+  }
+
+  void _loadCachedItems() {
+    final cachedStudySet = StudySetCacheManager.instance.getCurrentStudySet();
+    if (cachedStudySet != null) {
+      setState(() {
+        quizzes = cachedStudySet.quizzes;
+        flashcardSets = cachedStudySet.flashcardSets;
+        notes = cachedStudySet.notes;
+      });
+    }
+  }
+
+  void _showAddItemSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surface,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder:
+          (context) => DraggableScrollableSheet(
+            initialChildSize: 0.6,
+            minChildSize: 0.4,
+            maxChildSize: 0.9,
+            expand: false,
+            builder:
+                (context, scrollController) => SingleChildScrollView(
+                  controller: scrollController,
+                  child: Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: AppColors.textSecondary.withOpacity(0.3),
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        Text(
+                          'Add Item to Study Set',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        _buildAddItemOption(
+                          icon: Icons.quiz_outlined,
+                          title: 'Quiz',
+                          description: 'Create multiple choice questions',
+                          onTap: () {
+                            Navigator.pop(context);
+                            _navigateToQuizCreation();
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        _buildAddItemOption(
+                          icon: Icons.style_outlined,
+                          title: 'Flashcard',
+                          description: 'Create flashcard sets for memorization',
+                          onTap: () {
+                            Navigator.pop(context);
+                            _navigateToFlashcardCreation();
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        _buildAddItemOption(
+                          icon: Icons.note_outlined,
+                          title: 'Note',
+                          description: 'Write detailed notes and explanations',
+                          onTap: () {
+                            Navigator.pop(context);
+                            _navigateToNoteCreation();
+                          },
+                        ),
+                        const SizedBox(height: 24),
+                      ],
+                    ),
+                  ),
+                ),
+          ),
+    );
+  }
+
+  Widget _buildAddItemOption({
+    required IconData icon,
+    required String title,
+    required String description,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          border: Border.all(color: AppColors.primaryLight.withOpacity(0.3)),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: AppColors.primary, size: 28),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    description,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios,
+              color: AppColors.textSecondary,
+              size: 16,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _navigateToQuizCreation() {
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) {
+          return PageTransition(
+            animation: animation,
+            animationType: AnimationType.slideLeft,
+            child: QuizDetails(
+              isStudySetMode: true,
+              onSaveForStudySet: (Quiz quiz) {
+                StudySetCacheManager.instance.addQuizToStudySet(quiz);
+                setState(() {
+                  _loadCachedItems();
+                });
+              },
+            ),
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 300),
+      ),
+    );
+  }
+
+  void _navigateToFlashcardCreation() {
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) {
+          return PageTransition(
+            animation: animation,
+            animationType: AnimationType.slideLeft,
+            child: FlashcardDetailsPage(
+              isStudySetMode: true,
+              onSaveForStudySet: (FlashcardSet flashcardSet) {
+                StudySetCacheManager.instance.addFlashcardSetToStudySet(
+                  flashcardSet,
+                );
+                setState(() {
+                  _loadCachedItems();
+                });
+              },
+            ),
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 300),
+      ),
+    );
+  }
+
+  void _navigateToNoteCreation() {
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) {
+          return PageTransition(
+            animation: animation,
+            animationType: AnimationType.slideLeft,
+            child: NoteDetailsPage(
+              isStudySetMode: true,
+              onSaveForStudySet: (Note note) {
+                StudySetCacheManager.instance.addNoteToStudySet(note);
+                setState(() {
+                  _loadCachedItems();
+                });
+              },
+            ),
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 300),
+      ),
+    );
+  }
+
+  Future<void> _saveStudySet() async {
+    if (_isSaving) return;
+
+    final totalItems = quizzes.length + flashcardSets.length + notes.length;
+    if (totalItems == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please add at least one item to the study set'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isSaving = true);
+
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) throw Exception('User not authenticated');
+
+      final cachedStudySet = StudySetCacheManager.instance.getCurrentStudySet();
+      if (cachedStudySet == null)
+        throw Exception('Study set not found in cache');
+
+      // Save to MongoDB via backend API
+      final studySetId = await StudySetService.saveStudySet(cachedStudySet);
+      StudySetCacheManager.instance.clearCache();
+
+      if (!mounted) return;
+
+      // Show success dialog and navigate to library
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder:
+            (context) => AlertDialog(
+              backgroundColor: AppColors.surface,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              title: Row(
+                children: [
+                  Icon(Icons.check_circle, color: Colors.green, size: 28),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Success!',
+                    style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              content: Text(
+                'Your study set has been saved successfully.',
+                style: TextStyle(color: AppColors.textSecondary),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context); // Close dialog
+                    Navigator.pop(context); // Go back to create page
+                    // Navigate to library section (index 1 in bottom navigation)
+                    // The library will fetch study sets via GET request
+                    Navigator.of(context).pushNamedAndRemoveUntil(
+                      '/home',
+                      (route) => false,
+                      arguments: 1, // Index for library tab
+                    );
+                  },
+                  child: Text(
+                    'View in Library',
+                    style: TextStyle(color: AppColors.primary),
+                  ),
+                ),
+              ],
+            ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error saving study set: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: Text(
+          widget.title,
+          style: const TextStyle(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: AppColors.background,
+        foregroundColor: AppColors.textPrimary,
+        elevation: 0,
+        actions: [
+          if (quizzes.isNotEmpty ||
+              flashcardSets.isNotEmpty ||
+              notes.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: TextButton.icon(
+                onPressed: _isSaving ? null : _saveStudySet,
+                icon:
+                    _isSaving
+                        ? SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppColors.primary,
+                          ),
+                        )
+                        : Icon(Icons.save, color: AppColors.primary),
+                label: Text(
+                  _isSaving ? 'Saving...' : 'Save',
+                  style: TextStyle(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Cover Image (if available)
+              if (widget.coverImagePath != null)
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.file(
+                    File(widget.coverImagePath!),
+                    height: 200,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              if (widget.coverImagePath != null) const SizedBox(height: 20),
+
+              // Modern Info Section (No Background Box)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildModernInfoRow('Description', widget.description),
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildModernInfoRow('Category', widget.category),
+                      ),
+                      const SizedBox(width: 20),
+                      Expanded(
+                        child: _buildModernInfoRow('Language', widget.language),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 40),
+
+              // Add Button (No background box)
+              Center(
+                child: InkWell(
+                  onTap: _showAddItemSheet,
+                  borderRadius: BorderRadius.circular(50),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: AppColors.primary, width: 2),
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.add, color: AppColors.primary, size: 24),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Add Item',
+                          style: TextStyle(
+                            color: AppColors.primary,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 40),
+
+              // Display Added Items or Empty State
+              if (quizzes.isEmpty && flashcardSets.isEmpty && notes.isEmpty)
+                // Empty State with Lottie Animation
+                Center(
+                  child: Column(
+                    children: [
+                      Lottie.asset(
+                        'assets/animations/empty_box.json',
+                        width: 250,
+                        height: 250,
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            width: 200,
+                            height: 200,
+                            decoration: BoxDecoration(
+                              color: AppColors.surface,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.inventory_2_outlined,
+                              size: 100,
+                              color: AppColors.primaryLight,
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        'No items in this study set',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textSecondary,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        'Tap the + button to add items',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: AppColors.textSecondary.withOpacity(0.7),
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                )
+              else
+                // Display Added Items
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (quizzes.isNotEmpty) ...[
+                      _buildSectionHeader('Quizzes', quizzes.length),
+                      const SizedBox(height: 12),
+                      ...quizzes.map((quiz) => _buildQuizCard(quiz)),
+                      const SizedBox(height: 24),
+                    ],
+                    if (flashcardSets.isNotEmpty) ...[
+                      _buildSectionHeader('Flashcards', flashcardSets.length),
+                      const SizedBox(height: 12),
+                      ...flashcardSets.map((set) => _buildFlashcardCard(set)),
+                      const SizedBox(height: 24),
+                    ],
+                    if (notes.isNotEmpty) ...[
+                      _buildSectionHeader('Notes', notes.length),
+                      const SizedBox(height: 12),
+                      ...notes.map((note) => _buildNoteCard(note)),
+                    ],
+                  ],
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildModernInfoRow(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label.toUpperCase(),
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textSecondary.withOpacity(0.6),
+            letterSpacing: 1.2,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textPrimary,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSectionHeader(String title, int count) {
+    return Row(
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(
+            color: AppColors.primary.withOpacity(0.15),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text(
+            '$count',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: AppColors.primary,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildQuizCard(Quiz quiz) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.primaryLight.withOpacity(0.2)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(Icons.quiz, color: AppColors.primary, size: 24),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  quiz.title,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${quiz.questions.length} questions',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            icon: Icon(Icons.delete_outline, color: Colors.red.shade400),
+            onPressed: () => _removeQuiz(quiz.id ?? ''),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFlashcardCard(FlashcardSet set) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.primaryLight.withOpacity(0.2)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(Icons.style, color: AppColors.primary, size: 24),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  set.title,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${set.cards.length} cards',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            icon: Icon(Icons.delete_outline, color: Colors.red.shade400),
+            onPressed: () => _removeFlashcardSet(set.id ?? ''),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNoteCard(Note note) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.primaryLight.withOpacity(0.2)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(Icons.note, color: AppColors.primary, size: 24),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  note.title,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  note.category,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            icon: Icon(Icons.delete_outline, color: Colors.red.shade400),
+            onPressed: () => _removeNote(note.id ?? ''),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _removeQuiz(String quizId) {
+    setState(() {
+      quizzes.removeWhere((q) => q.id == quizId);
+      StudySetCacheManager.instance.removeQuizFromStudySet(quizId);
+    });
+  }
+
+  void _removeFlashcardSet(String setId) {
+    setState(() {
+      flashcardSets.removeWhere((s) => s.id == setId);
+      StudySetCacheManager.instance.removeFlashcardSetFromStudySet(setId);
+    });
+  }
+
+  void _removeNote(String noteId) {
+    setState(() {
+      notes.removeWhere((n) => n.id == noteId);
+      StudySetCacheManager.instance.removeNoteFromStudySet(noteId);
+    });
+  }
+}

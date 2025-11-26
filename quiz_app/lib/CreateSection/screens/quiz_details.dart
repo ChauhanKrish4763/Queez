@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:quiz_app/CreateSection/models/question.dart';
+import 'package:quiz_app/CreateSection/models/quiz.dart';
 import 'package:quiz_app/CreateSection/screens/quiz_questions.dart';
 import 'package:quiz_app/CreateSection/services/quiz_cache_manager.dart';
 import 'package:quiz_app/CreateSection/services/quiz_service.dart';
@@ -16,8 +17,15 @@ import 'package:quiz_app/utils/color.dart';
 
 class QuizDetails extends StatefulWidget {
   final QuizLibraryItem? quizItem;
+  final bool isStudySetMode;
+  final Function(Quiz)? onSaveForStudySet;
 
-  const QuizDetails({super.key, this.quizItem});
+  const QuizDetails({
+    super.key,
+    this.quizItem,
+    this.isStudySetMode = false,
+    this.onSaveForStudySet,
+  });
 
   @override
   QuizDetailsState createState() => QuizDetailsState();
@@ -292,7 +300,11 @@ class QuizDetailsState extends State<QuizDetails> {
           return PageTransition(
             animation: animation,
             animationType: animationType,
-            child: QuizQuestions(questions: questions),
+            child: QuizQuestions(
+              questions: questions,
+              isStudySetMode: widget.isStudySetMode,
+              onSaveForStudySet: widget.onSaveForStudySet,
+            ),
           );
         },
         transitionDuration: const Duration(milliseconds: 300),

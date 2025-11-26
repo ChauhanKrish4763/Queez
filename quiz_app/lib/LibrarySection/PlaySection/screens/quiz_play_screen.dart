@@ -37,7 +37,7 @@ class _QuizPlayScreenState extends State<QuizPlayScreen>
   @override
   void initState() {
     super.initState();
-    
+
     _progressController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 300),
@@ -57,9 +57,10 @@ class _QuizPlayScreenState extends State<QuizPlayScreen>
         curve: Curves.easeInOutCubic,
       ),
     );
-    
+
     // Use preloaded questions if available, otherwise fetch
-    if (widget.preloadedQuestions != null && widget.preloadedQuestions!.isNotEmpty) {
+    if (widget.preloadedQuestions != null &&
+        widget.preloadedQuestions!.isNotEmpty) {
       _quizAttempt = QuizAttempt(questions: widget.preloadedQuestions!);
       _progressController.animateTo(1 / widget.preloadedQuestions!.length);
       _cardAnimationController.forward();
