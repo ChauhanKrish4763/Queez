@@ -1,9 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:quiz_app/CreateSection/models/question.dart';
 import 'package:quiz_app/CreateSection/models/quiz.dart';
 import 'package:quiz_app/CreateSection/screens/quiz_questions.dart';
+import 'package:quiz_app/CreateSection/services/image_picker_service.dart';
 import 'package:quiz_app/CreateSection/services/quiz_cache_manager.dart';
 import 'package:quiz_app/CreateSection/services/quiz_service.dart';
 import 'package:quiz_app/CreateSection/widgets/custom_dropdown.dart';
@@ -170,14 +170,22 @@ class QuizDetailsState extends State<QuizDetails> {
                     child: ImagePickerWidget(
                       imagePath: _coverImagePath,
                       onTap: () async {
-                        final ImagePicker picker = ImagePicker();
-                        final XFile? image = await picker.pickImage(
-                          source: ImageSource.gallery,
-                        );
-                        if (image != null) {
-                          setState(() {
-                            _coverImagePath = image.path;
-                          });
+                        try {
+                          final imagePath =
+                              await ImagePickerService().pickImageFromGallery();
+                          if (imagePath != null) {
+                            setState(() {
+                              _coverImagePath = imagePath;
+                            });
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Error picking image: $e'),
+                              ),
+                            );
+                          }
                         }
                       },
                     ),

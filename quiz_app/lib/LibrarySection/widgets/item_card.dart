@@ -340,7 +340,7 @@ class ItemCard extends StatelessWidget {
                           onPressed: () {
                             final user = FirebaseAuth.instance.currentUser;
                             if (user != null) {
-                              var loadedFlashcardSet;
+                              dynamic loadedFlashcardSet;
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -449,7 +449,7 @@ class ItemCard extends StatelessWidget {
                                   final user =
                                       FirebaseAuth.instance.currentUser;
                                   if (user != null) {
-                                    var loadedQuestions;
+                                    dynamic loadedQuestions;
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
@@ -517,7 +517,7 @@ class ItemCard extends StatelessWidget {
                           onPressed: () {
                             final user = FirebaseAuth.instance.currentUser;
                             if (user != null) {
-                              var loadedQuestions;
+                              dynamic loadedQuestions;
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(

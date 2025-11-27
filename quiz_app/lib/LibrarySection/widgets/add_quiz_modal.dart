@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:quiz_app/CreateSection/services/quiz_service.dart';
 import 'package:quiz_app/CreateSection/widgets/quiz_saved_dialog.dart';
 import 'package:quiz_app/LibrarySection/LiveMode/screens/live_multiplayer_dashboard.dart';
@@ -187,6 +188,10 @@ class _AddQuizModalContentState extends State<AddQuizModalContent> {
                 controller: _quizCodeController,
                 enabled: !_isLoading,
                 textCapitalization: TextCapitalization.characters,
+                maxLength: 6,
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9]')),
+                ],
                 onChanged: (value) {
                   // Capitalize the text as user types
                   final capitalizedValue = value.toUpperCase();

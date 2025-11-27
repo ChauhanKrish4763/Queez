@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:quiz_app/CreateSection/models/flashcard_set.dart';
 import 'package:quiz_app/CreateSection/screens/flashcard_creation_page.dart';
+import 'package:quiz_app/CreateSection/services/image_picker_service.dart';
 import 'package:quiz_app/CreateSection/widgets/custom_dropdown.dart';
 import 'package:quiz_app/CreateSection/widgets/custom_text_field.dart';
 import 'package:quiz_app/CreateSection/widgets/image_picker.dart';
@@ -98,9 +99,7 @@ class FlashcardDetailsPageState extends State<FlashcardDetailsPage> {
                     title: 'Cover Image',
                     child: ImagePickerWidget(
                       imagePath: _coverImagePath,
-                      onTap: () {
-                        // TODO: Implement image picker
-                      },
+                      onTap: _pickImage,
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -185,6 +184,23 @@ class FlashcardDetailsPageState extends State<FlashcardDetailsPage> {
         ),
       ),
     );
+  }
+
+  Future<void> _pickImage() async {
+    try {
+      final imagePath = await ImagePickerService().pickImageFromGallery();
+      if (imagePath != null) {
+        setState(() {
+          _coverImagePath = imagePath;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error picking image: $e')),
+        );
+      }
+    }
   }
 
   @override

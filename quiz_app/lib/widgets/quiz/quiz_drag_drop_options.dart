@@ -233,55 +233,7 @@ class _QuizDragDropOptionsState extends State<QuizDragDropOptions> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Instructions
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(Icons.info_outline, color: AppColors.primary, size: 20),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      'Tap an item, then tap a target to match',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Or hold and drag items to their matching pairs',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: AppColors.primary.withValues(alpha: 0.7),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 24),
-
         // Available Drag Items
-        Text(
-          'Available items:',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        const SizedBox(height: 16),
         if (_availableDragItems.isNotEmpty) ...[
           Wrap(
             spacing: 12,
@@ -290,6 +242,7 @@ class _QuizDragDropOptionsState extends State<QuizDragDropOptions> {
               return _buildDraggableItem(item);
             }).toList(),
           ),
+          const SizedBox(height: 24),
         ] else ...[
           Container(
             padding: const EdgeInsets.all(16),
@@ -316,20 +269,10 @@ class _QuizDragDropOptionsState extends State<QuizDragDropOptions> {
               ],
             ),
           ),
+          const SizedBox(height: 24),
         ],
 
-        const SizedBox(height: 32),
-
         // Drop Targets
-        Text(
-          'Match the pairs:',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        const SizedBox(height: 16),
 
         ...widget.dropTargets.map((target) {
           return Padding(
@@ -406,11 +349,7 @@ class _QuizDragDropOptionsState extends State<QuizDragDropOptions> {
               borderColor = Colors.grey.shade300;
             }
           } else {
-            backgroundColor = placedItem != null
-                ? AppColors.white
-                : isHovering
-                    ? AppColors.accentLight
-                    : AppColors.primaryLight;
+            backgroundColor = AppColors.white;
             borderColor = placedItem != null
                 ? AppColors.primary
                 : isHovering
@@ -583,21 +522,14 @@ class _QuizDragDropOptionsState extends State<QuizDragDropOptions> {
                   ),
                 ],
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.drag_indicator, color: AppColors.white, size: 18),
-                  const SizedBox(width: 8),
-                  Text(
-                    item,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.white,
-                      decoration: TextDecoration.none,
-                    ),
-                  ),
-                ],
+              child: Text(
+                item,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.white,
+                  decoration: TextDecoration.none,
+                ),
               ),
             ),
           ),
@@ -629,24 +561,13 @@ class _QuizDragDropOptionsState extends State<QuizDragDropOptions> {
           ),
         ],
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            isSelected ? Icons.check_circle : Icons.drag_indicator,
-            color: AppColors.primary,
-            size: 18,
-          ),
-          const SizedBox(width: 8),
-          Text(
-            item,
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              color: isSelected ? AppColors.primary : AppColors.textPrimary,
-            ),
-          ),
-        ],
+      child: Text(
+        item,
+        style: TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w600,
+          color: isSelected ? AppColors.primary : AppColors.textPrimary,
+        ),
       ),
     );
   }
