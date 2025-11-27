@@ -94,14 +94,16 @@ class SessionNotifier extends Notifier<SessionState?> {
     }
   }
 
-  void startQuiz() {
+  void startQuiz({int? perQuestionTimeLimit}) {
     debugPrint('🚀 HOST - Sending start_quiz message');
     if (!_wsService.isConnected) {
       debugPrint('⚠️ HOST - WebSocket not connected! Cannot start quiz.');
       _errorController.add('Not connected to session. Please refresh.');
       return;
     }
-    _wsService.sendMessage('start_quiz');
+    _wsService.sendMessage('start_quiz', {
+      'per_question_time_limit': perQuestionTimeLimit ?? 30,
+    });
   }
 
   void endQuiz() {
@@ -179,9 +181,14 @@ class SessionNotifier extends Notifier<SessionState?> {
       }
     } else if (type == 'quiz_started') {
       debugPrint('🚀 FLUTTER - Quiz started');
+      final overallTimeLimit = payload['overall_time_limit'] as int? ?? 0;
+      final perQuestionTimeLimit = payload['per_question_time_limit'] as int? ?? 30;
+      debugPrint('⏱️ FLUTTER - Time settings: overall=${overallTimeLimit}s, perQuestion=${perQuestionTimeLimit}s');
+      
       if (state != null) {
         state = state!.copyWith(status: 'active');
       }
+      // Time settings will be handled by game_provider when it receives the first question
     } else if (type == 'quiz_completed' || type == 'quiz_ended') {
       debugPrint('🏁 FLUTTER - Quiz completed');
       if (state != null) {

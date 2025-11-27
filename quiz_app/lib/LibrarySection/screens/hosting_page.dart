@@ -46,6 +46,9 @@ class _HostingPageState extends ConsumerState<HostingPage> {
   Timer? participantUpdateTimer;
   final GlobalKey _qrKey = GlobalKey();
   bool _isStartingQuiz = false;
+  
+  // Time settings for live multiplayer
+  int _perQuestionTimeLimit = 30; // Default 30 seconds per question
 
   @override
   void initState() {
@@ -245,9 +248,12 @@ class _HostingPageState extends ConsumerState<HostingPage> {
 
     try {
       debugPrint('🎯 HOST - Starting quiz via WebSocket...');
+      debugPrint('⏱️ HOST - Time settings: perQuestion=${_perQuestionTimeLimit}s');
       
-      // Use WebSocket to start quiz (this broadcasts to all participants)
-      ref.read(sessionProvider.notifier).startQuiz();
+      // Use WebSocket to start quiz with time settings
+      ref.read(sessionProvider.notifier).startQuiz(
+        perQuestionTimeLimit: _perQuestionTimeLimit,
+      );
 
       debugPrint('✅ HOST - Start quiz message sent via WebSocket, waiting for confirmation...');
       
@@ -560,6 +566,12 @@ class _HostingPageState extends ConsumerState<HostingPage> {
 
               const SizedBox(height: QuizSpacing.xl),
 
+              // Time Settings Section (only for live_multiplayer)
+              if (widget.mode == 'live_multiplayer') ...[
+                _buildTimeSettingsSection(),
+                const SizedBox(height: QuizSpacing.xl),
+              ],
+
               // Participants Section (only for live_multiplayer)
               if (widget.mode == 'live_multiplayer') ...[
                 _buildParticipantsSection(),
@@ -669,6 +681,111 @@ class _HostingPageState extends ConsumerState<HostingPage> {
       ],
     );
   }
+
+  Widget _buildTimeSettingsSection() {
+    return Container(
+      padding: const EdgeInsets.all(QuizSpacing.lg),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(QuizBorderRadius.lg),
+        border: Border.all(color: AppColors.primaryLighter),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.timer,
+                  color: AppColors.primary,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                'TIME PER QUESTION',
+                style: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
+                  letterSpacing: 1,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: QuizSpacing.lg),
+          
+          // Per Question Time Limit
+          _buildTimeSetting(
+            value: _perQuestionTimeLimit,
+            options: const [10, 15, 20, 30, 45, 60, 90, 120],
+            onChanged: (value) {
+              setState(() {
+                _perQuestionTimeLimit = value;
+              });
+            },
+            formatValue: (v) => '${v}s',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTimeSetting({
+    required int value,
+    required List<int> options,
+    required Function(int) onChanged,
+    required String Function(int) formatValue,
+  }) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: options.map((option) {
+          final isSelected = value == option;
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: GestureDetector(
+              onTap: () => onChanged(option),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? AppColors.primary
+                      : AppColors.background,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: isSelected
+                        ? AppColors.primary
+                        : AppColors.primaryLighter,
+                    width: isSelected ? 2 : 1,
+                  ),
+                ),
+                child: Text(
+                  formatValue(option),
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                    color: isSelected
+                        ? AppColors.white
+                        : AppColors.textPrimary,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+
 
   Widget _buildParticipantsSection() {
     return Column(

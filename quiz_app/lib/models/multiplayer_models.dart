@@ -44,23 +44,29 @@ abstract class GameState with _$GameState {
     @JsonKey(name: 'question_index') @Default(0) int questionIndex,
     @JsonKey(name: 'total_questions') @Default(0) int totalQuestions,
     @JsonKey(name: 'time_remaining') @Default(30) int timeRemaining,
+    @JsonKey(name: 'time_limit') @Default(30) int timeLimit, // Per-question time limit
     @JsonKey(name: 'has_answered') @Default(false) bool hasAnswered,
     @JsonKey(name: 'is_correct') bool? isCorrect,
     @JsonKey(name: 'points_earned') int? pointsEarned,
+    @JsonKey(name: 'time_bonus') int? timeBonus, // Time-based bonus points
+    @JsonKey(name: 'multiplier') double? multiplier, // Speed multiplier (1.0 - 2.0)
     @JsonKey(name: 'correct_answer') dynamic correctAnswer,
     List<Map<String, dynamic>>? rankings,
-    // NEW: Answer feedback properties
+    // Answer feedback properties
     @JsonKey(name: 'last_answer_correct') bool? lastAnswerCorrect,
     @JsonKey(name: 'selected_answer') dynamic selectedAnswer,
     @JsonKey(name: 'answer_distribution') Map<dynamic, int>? answerDistribution,
-    // NEW: Animation state properties
+    // Animation state properties
     @JsonKey(name: 'showing_feedback') @Default(false) bool showingFeedback,
     @JsonKey(name: 'showing_correct_answer') @Default(false) bool showingCorrectAnswer,
     @JsonKey(name: 'showing_leaderboard') @Default(false) bool showingLeaderboard,
     @JsonKey(name: 'feedback_countdown') @Default(0) int feedbackCountdown,
-    // NEW: Role and score properties
+    // Role and score properties
     @JsonKey(name: 'is_host') @Default(false) bool isHost,
     @JsonKey(name: 'current_score') @Default(0) int currentScore,
+    // Partial credit properties
+    @JsonKey(name: 'is_partial') @Default(false) bool isPartial,
+    @JsonKey(name: 'partial_credit') double? partialCredit,
   }) = _GameState;
 
   factory GameState.fromJson(Map<String, dynamic> json) => _$GameStateFromJson(json);
