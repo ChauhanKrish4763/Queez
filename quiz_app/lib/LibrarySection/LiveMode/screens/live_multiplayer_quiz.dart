@@ -18,17 +18,33 @@ class LiveMultiplayerQuiz extends ConsumerStatefulWidget {
 }
 
 class _LiveMultiplayerQuizState extends ConsumerState<LiveMultiplayerQuiz> {
+  bool _hasNavigatedToResults = false;
+
+  void _navigateToResults() {
+    if (_hasNavigatedToResults) {
+      debugPrint('🏁 QUIZ_SCREEN - Already navigated to results, skipping');
+      return;
+    }
+    
+    _hasNavigatedToResults = true;
+    debugPrint('🏁 QUIZ_SCREEN - Navigating to results');
+    
+    if (mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const LiveMultiplayerResults(),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     ref.listen(sessionProvider, (previous, next) {
       if (next != null && next.status == 'completed') {
-        debugPrint('🏁 QUIZ_SCREEN - Session completed, navigating to results');
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const LiveMultiplayerResults(),
-          ),
-        );
+        debugPrint('🏁 QUIZ_SCREEN - Session completed');
+        _navigateToResults();
       }
     });
 
@@ -42,16 +58,9 @@ class _LiveMultiplayerQuizState extends ConsumerState<LiveMultiplayerQuiz> {
           next.currentQuestion == null &&
           next.rankings != null &&
           next.rankings!.isNotEmpty) {
-        debugPrint('🏁 QUIZ_SCREEN - Quiz completed, navigating to results');
+        debugPrint('🏁 QUIZ_SCREEN - Quiz completed message received');
         Future.delayed(const Duration(milliseconds: 500), () {
-          if (context.mounted) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const LiveMultiplayerResults(),
-              ),
-            );
-          }
+          _navigateToResults();
         });
       }
 
@@ -72,26 +81,9 @@ class _LiveMultiplayerQuizState extends ConsumerState<LiveMultiplayerQuiz> {
           '🏁 QUIZ_SCREEN - Details: index=${next.questionIndex}, total=${next.totalQuestions}, calc=${next.questionIndex + 1}',
         );
         Future.delayed(const Duration(milliseconds: 2000), () {
-          if (context.mounted) {
-            debugPrint('🏁 QUIZ_SCREEN - NOW NAVIGATING TO RESULTS!');
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const LiveMultiplayerResults(),
-              ),
-            );
-          } else {
-            debugPrint('❌ QUIZ_SCREEN - Context not mounted, cannot navigate');
-          }
+          debugPrint('🏁 QUIZ_SCREEN - NOW NAVIGATING TO RESULTS!');
+          _navigateToResults();
         });
-      } else {
-        if (next.hasAnswered &&
-            next.rankings != null &&
-            next.rankings!.isNotEmpty) {
-          debugPrint(
-            '❌ LAST_Q_CHECK - Not last question yet or showing leaderboard',
-          );
-        }
       }
     });
 

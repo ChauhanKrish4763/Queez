@@ -243,33 +243,6 @@ class _QuizDragDropOptionsState extends State<QuizDragDropOptions> {
             }).toList(),
           ),
           const SizedBox(height: 24),
-        ] else ...[
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.success.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: AppColors.success.withValues(alpha: 0.3),
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.check_circle, color: AppColors.success, size: 20),
-                const SizedBox(width: 8),
-                Text(
-                  'All items placed!',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: AppColors.success,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
         ],
 
         // Drop Targets
