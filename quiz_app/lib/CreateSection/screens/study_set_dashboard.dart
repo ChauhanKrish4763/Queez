@@ -12,6 +12,7 @@ import 'package:quiz_app/CreateSection/screens/quiz_details.dart';
 import 'package:quiz_app/CreateSection/screens/flashcard_details_page.dart';
 import 'package:quiz_app/CreateSection/screens/note_details_page.dart';
 import 'package:quiz_app/utils/animations/page_transition.dart';
+import 'package:quiz_app/widgets/core/app_dialog.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class StudySetDashboard extends StatefulWidget {
@@ -304,8 +305,9 @@ class _StudySetDashboardState extends State<StudySetDashboard> {
       if (user == null) throw Exception('User not authenticated');
 
       final cachedStudySet = StudySetCacheManager.instance.getCurrentStudySet();
-      if (cachedStudySet == null)
+      if (cachedStudySet == null) {
         throw Exception('Study set not found in cache');
+      }
 
       // Save to MongoDB via backend API
       final studySetId = await StudySetService.saveStudySet(cachedStudySet);
@@ -314,52 +316,23 @@ class _StudySetDashboardState extends State<StudySetDashboard> {
       if (!mounted) return;
 
       // Show success dialog and navigate to library
-      showDialog(
+      AppDialog.show(
         context: context,
-        barrierDismissible: false,
-        builder:
-            (context) => AlertDialog(
-              backgroundColor: AppColors.surface,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              title: Row(
-                children: [
-                  Icon(Icons.check_circle, color: Colors.green, size: 28),
-                  const SizedBox(width: 12),
-                  Text(
-                    'Success!',
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-              content: Text(
-                'Your study set has been saved successfully.',
-                style: TextStyle(color: AppColors.textSecondary),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context); // Close dialog
-                    Navigator.pop(context); // Go back to create page
-                    // Navigate to library section (index 1 in bottom navigation)
-                    // The library will fetch study sets via GET request
-                    Navigator.of(context).pushNamedAndRemoveUntil(
-                      '/home',
-                      (route) => false,
-                      arguments: 1, // Index for library tab
-                    );
-                  },
-                  child: Text(
-                    'View in Library',
-                    style: TextStyle(color: AppColors.primary),
-                  ),
-                ),
-              ],
-            ),
+        title: 'Success!',
+        content: 'Your study set has been saved successfully.',
+        primaryActionText: 'View in Library',
+        primaryActionCallback: () {
+          Navigator.pop(context); // Close dialog
+          Navigator.pop(context); // Go back to create page
+          // Navigate to library section (index 1 in bottom navigation)
+          // The library will fetch study sets via GET request
+          Navigator.of(context).pushNamedAndRemoveUntil(
+            '/home',
+            (route) => false,
+            arguments: 1, // Index for library tab
+          );
+        },
+        dismissible: false,
       );
     } catch (e) {
       if (!mounted) return;
@@ -386,9 +359,11 @@ class _StudySetDashboardState extends State<StudySetDashboard> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.white,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
+        shadowColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
         actions: [
           if (quizzes.isNotEmpty ||
               flashcardSets.isNotEmpty ||

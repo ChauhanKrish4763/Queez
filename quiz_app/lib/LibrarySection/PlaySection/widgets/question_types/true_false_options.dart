@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:quiz_app/CreateSection/models/question.dart';
-import 'package:quiz_app/LibrarySection/PlaySection/widgets/option_card.dart';
+import 'package:quiz_app/widgets/quiz/quiz_widgets.dart';
 
+/// True/False options widget for single player mode.
+/// Uses the shared QuizTrueFalseOptions component.
 class TrueFalseOptions extends StatelessWidget {
   final Question question;
   final int? userAnswer;
@@ -14,31 +16,13 @@ class TrueFalseOptions extends StatelessWidget {
     required this.onAnswerSelected,
   });
 
-  OptionState _getOptionState(int index) {
-    if (userAnswer != null) {
-      // Answered
-      bool isCorrect = index == question.correctAnswerIndex;
-      if (isCorrect) return OptionState.correct;
-      if (userAnswer == index && !isCorrect) return OptionState.incorrect;
-    }
-    if (userAnswer == index) return OptionState.selected;
-    return OptionState.neutral;
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(question.options.length, (index) {
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: OptionCard(
-            text: question.options[index],
-            state: _getOptionState(index),
-            onTap: () => onAnswerSelected(index),
-          ),
-        );
-      }),
+    return QuizTrueFalseOptions(
+      userAnswer: userAnswer,
+      correctAnswer: userAnswer != null ? question.correctAnswerIndex : null,
+      onAnswerSelected: onAnswerSelected,
+      hasAnswered: userAnswer != null,
     );
   }
 }

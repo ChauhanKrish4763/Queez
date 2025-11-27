@@ -6,6 +6,8 @@ import 'package:quiz_app/LibrarySection/LiveMode/screens/live_multiplayer_dashbo
 import 'package:quiz_app/LibrarySection/screens/library_page.dart';
 import 'package:quiz_app/utils/animations/page_transition.dart';
 import 'package:quiz_app/utils/color.dart';
+import 'package:quiz_app/utils/quiz_design_system.dart';
+import 'package:quiz_app/widgets/core/core_widgets.dart';
 
 void showAddQuizModal(
   BuildContext context,
@@ -15,6 +17,7 @@ void showAddQuizModal(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
+    barrierColor: AppColors.primary.withValues(alpha: 0.3),
     builder: (context) => AddQuizModalContent(onQuizAdded: onQuizAdded),
   );
 }
@@ -138,12 +141,12 @@ class _AddQuizModalContentState extends State<AddQuizModalContent> {
         decoration: const BoxDecoration(
           color: AppColors.white,
           borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(24),
-            topRight: Radius.circular(24),
+            topLeft: Radius.circular(QuizBorderRadius.xl),
+            topRight: Radius.circular(QuizBorderRadius.xl),
           ),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(QuizSpacing.lg),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -155,11 +158,11 @@ class _AddQuizModalContentState extends State<AddQuizModalContent> {
                   height: 4,
                   decoration: BoxDecoration(
                     color: AppColors.textSecondary.withValues(alpha: 0.3),
-                    borderRadius: BorderRadius.circular(2),
+                    borderRadius: BorderRadius.circular(QuizBorderRadius.sm),
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: QuizSpacing.lg),
 
               // Title
               const Text(
@@ -170,19 +173,36 @@ class _AddQuizModalContentState extends State<AddQuizModalContent> {
                   color: AppColors.textPrimary,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: QuizSpacing.sm),
 
               // Description
               Text(
                 'Add a quiz made by other users',
                 style: TextStyle(fontSize: 15, color: AppColors.textSecondary),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: QuizSpacing.lg),
 
               // Text field
               TextField(
                 controller: _quizCodeController,
                 enabled: !_isLoading,
+                textCapitalization: TextCapitalization.characters,
+                onChanged: (value) {
+                  // Capitalize the text as user types
+                  final capitalizedValue = value.toUpperCase();
+                  if (value != capitalizedValue) {
+                    _quizCodeController.value = _quizCodeController.value.copyWith(
+                      text: capitalizedValue,
+                      selection: TextSelection.collapsed(offset: capitalizedValue.length),
+                    );
+                  }
+                  
+                  if (_errorMessage != null) {
+                    setState(() {
+                      _errorMessage = null;
+                    });
+                  }
+                },
                 decoration: InputDecoration(
                   hintText: 'Enter quiz code',
                   hintStyle: TextStyle(
@@ -192,19 +212,19 @@ class _AddQuizModalContentState extends State<AddQuizModalContent> {
                   filled: true,
                   fillColor: AppColors.surface,
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(QuizBorderRadius.md),
                     borderSide: BorderSide.none,
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(QuizBorderRadius.md),
                     borderSide: const BorderSide(
                       color: AppColors.primary,
                       width: 2,
                     ),
                   ),
                   contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 16,
+                    horizontal: QuizSpacing.md,
+                    vertical: QuizSpacing.md,
                   ),
                   errorText: _errorMessage,
                   errorStyle: const TextStyle(
@@ -217,54 +237,17 @@ class _AddQuizModalContentState extends State<AddQuizModalContent> {
                   fontWeight: FontWeight.w600,
                   color: AppColors.textPrimary,
                 ),
-                onChanged: (value) {
-                  if (_errorMessage != null) {
-                    setState(() {
-                      _errorMessage = null;
-                    });
-                  }
-                },
                 onSubmitted: (_) => _handleAddQuiz(),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: QuizSpacing.lg),
 
               // Add button
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _handleAddQuiz,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: AppColors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    disabledBackgroundColor: AppColors.primary.withValues(
-                      alpha: 0.6,
-                    ),
-                  ),
-                  child:
-                      _isLoading
-                          ? const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                AppColors.white,
-                              ),
-                              strokeWidth: 2.5,
-                            ),
-                          )
-                          : const Text(
-                            'Add Quiz',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                ),
+              AppButton.primary(
+                text: 'Add Quiz',
+                onPressed: _handleAddQuiz,
+                isLoading: _isLoading,
+                fullWidth: true,
+                size: AppButtonSize.large,
               ),
             ],
           ),

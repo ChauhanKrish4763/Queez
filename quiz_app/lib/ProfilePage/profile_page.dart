@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:quiz_app/models/user_model.dart';
+import 'package:quiz_app/ProfilePage/edit_profile_page.dart';
 import 'package:quiz_app/utils/animations/page_transition.dart';
 import 'package:quiz_app/utils/color.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -49,6 +50,22 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
+  Future<void> _editProfile() async {
+    if (_userModel == null) return;
+
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditProfilePage(userModel: _userModel!),
+      ),
+    );
+
+    // Reload user data if profile was updated
+    if (result == true) {
+      _loadUserData();
+    }
+  }
+
   void _signOut() async {
     try {
       // Clear SharedPreferences first
@@ -74,220 +91,286 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   @override
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: const Text(
-          'Profile',
-          style: TextStyle(
-            color: AppColors.textPrimary,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        centerTitle: true,
-      ),
       body:
           _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : SingleChildScrollView(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    if (_userModel == null)
-                      const Center(
-                        child: Text(
-                          'User data not found',
-                          style: TextStyle(color: AppColors.textPrimary),
-                        ),
-                      )
-                    else ...[
-                      _buildProfileHeader(),
-                      const SizedBox(height: 24),
-                      _buildProfileDetails(),
+              ? const Center(
+                child: CircularProgressIndicator(color: AppColors.primary),
+              )
+              : SafeArea(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    children: [
+                      // Header with Profile text and Edit button
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Profile',
+                            style: TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: AppColors.background,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: IconButton(
+                              onPressed: _editProfile,
+                              icon: const Icon(
+                                Icons.edit_outlined,
+                                color: AppColors.primary,
+                                size: 22,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 32),
+
+                      if (_userModel == null)
+                        const Center(
+                          child: Text(
+                            'User data not found',
+                            style: TextStyle(color: AppColors.textPrimary),
+                          ),
+                        )
+                      else ...[
+                        _buildProfileCard(),
+                        const SizedBox(height: 16),
+                        _buildInfoCards(),
+                        const SizedBox(height: 16),
+                        if (_userModel!.interests.isNotEmpty)
+                          _buildInterestsCard(),
+                        const SizedBox(height: 24),
+                        _buildSignOutButton(),
+                      ],
                     ],
-                    const SizedBox(height: 32),
-                    _buildSignOutButton(),
-                  ],
+                  ),
                 ),
               ),
     );
   }
 
-  Widget _buildProfileHeader() {
-    return Column(
-      children: [
-        Container(
-          width: 120,
-          height: 120,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: AppColors.primary.withValues(alpha: 0.2),
-            border: Border.all(color: AppColors.primary, width: 2),
-          ),
-          child: Center(
-            child: Text(
-              _getInitials(_userModel!.name),
-              style: TextStyle(
-                fontSize: 48,
-                fontWeight: FontWeight.bold,
-                color: AppColors.primary,
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
-        Text(
-          _userModel!.name,
-          style: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          _userModel!.role,
-          style: const TextStyle(fontSize: 16, color: AppColors.textSecondary),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildProfileDetails() {
+  Widget _buildProfileCard() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: AppColors.secondary.withValues(alpha: 0.1),
-            spreadRadius: 1,
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: AppColors.secondary.withValues(alpha: 0.08),
+            spreadRadius: 0,
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Column(
         children: [
-          _buildDetailItem(
-            Icons.person_outline,
-            'Age',
-            _userModel!.age.toString(),
+          Container(
+            width: 96,
+            height: 96,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: [AppColors.primaryLight, AppColors.primaryLighter],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            child: Center(
+              child: Text(
+                _getInitials(_userModel!.name),
+                style: const TextStyle(
+                  fontSize: 36,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.primary,
+                ),
+              ),
+            ),
           ),
-          const Divider(height: 24),
-          _buildDetailItem(
-            Icons.calendar_today_outlined,
-            'Date of Birth',
-            _userModel!.dateOfBirth,
+          const SizedBox(height: 16),
+          Text(
+            _userModel!.name,
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
           ),
-          const Divider(height: 24),
-          _buildDetailItem(
-            Icons.subject_outlined,
-            'Subject Area',
-            _userModel!.subjectArea,
+          const SizedBox(height: 4),
+          Text(
+            _userModel!.role,
+            style: const TextStyle(
+              fontSize: 15,
+              color: AppColors.textSecondary,
+            ),
           ),
-          const Divider(height: 24),
-          _buildDetailItem(
-            Icons.trending_up_outlined,
-            'Experience Level',
-            _userModel!.experienceLevel,
-          ),
-          if (_userModel!.interests.isNotEmpty) ...[
-            const Divider(height: 24),
-            _buildInterestsSection(),
-          ],
         ],
       ),
     );
   }
 
-  Widget _buildDetailItem(IconData icon, String label, String value) {
-    return Row(
+  Widget _buildInfoCards() {
+    return Column(
       children: [
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(icon, color: AppColors.primary),
+        _buildInfoCard(
+          icon: Icons.person_outline,
+          label: 'Age',
+          value: _userModel!.age.toString(),
         ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-            ],
-          ),
+        const SizedBox(height: 12),
+        _buildInfoCard(
+          icon: Icons.calendar_today_outlined,
+          label: 'Date of Birth',
+          value: _userModel!.dateOfBirth,
+        ),
+        const SizedBox(height: 12),
+        _buildInfoCard(
+          icon: Icons.book_outlined,
+          label: 'Subject Area',
+          value: _userModel!.subjectArea,
+        ),
+        const SizedBox(height: 12),
+        _buildInfoCard(
+          icon: Icons.trending_up_outlined,
+          label: 'Experience Level',
+          value: _userModel!.experienceLevel,
         ),
       ],
     );
   }
 
-  Widget _buildInterestsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(
-                Icons.interests_outlined,
-                color: AppColors.primary,
-              ),
+  Widget _buildInfoCard({
+    required IconData icon,
+    required String label,
+    required String value,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.secondary.withValues(alpha: 0.08),
+            spreadRadius: 0,
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(12),
             ),
-            const SizedBox(width: 16),
-            const Text(
-              'Interests',
-              style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children:
-              _userModel!.interests.map((interest) {
-                return Chip(
-                  backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-                  label: Text(
-                    interest,
-                    style: const TextStyle(color: AppColors.primary),
+            child: Icon(icon, color: AppColors.primary, size: 22),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: AppColors.textSecondary,
                   ),
-                );
-              }).toList(),
-        ),
-      ],
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInterestsCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.secondary.withValues(alpha: 0.08),
+            spreadRadius: 0,
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.favorite_outline, color: AppColors.primary, size: 20),
+              const SizedBox(width: 8),
+              const Text(
+                'Interests',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children:
+                _userModel!.interests.map((interest) {
+                  return Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: Text(
+                      interest,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  );
+                }).toList(),
+          ),
+        ],
+      ),
     );
   }
 
@@ -297,23 +380,22 @@ class _ProfilePageState extends State<ProfilePage> {
       height: 56,
       decoration: BoxDecoration(
         color: Colors.red.shade50,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
       ),
-      child: ElevatedButton(
-        onPressed: _signOut,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          shadowColor: Colors.transparent,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-        child: Text(
-          'Sign Out',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: Colors.red.shade700,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: _signOut,
+          borderRadius: BorderRadius.circular(16),
+          child: Center(
+            child: Text(
+              'Sign Out',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.red.shade700,
+              ),
+            ),
           ),
         ),
       ),

@@ -3,6 +3,7 @@ import 'package:quiz_app/CreateSection/models/flashcard_set.dart';
 import 'package:quiz_app/CreateSection/services/flashcard_service.dart';
 import 'package:quiz_app/CreateSection/widgets/quiz_saved_dialog.dart';
 import 'package:quiz_app/utils/color.dart';
+import 'package:quiz_app/widgets/core/app_dialog.dart';
 import 'package:uuid/uuid.dart';
 
 class FlashcardCreationPage extends StatefulWidget {
@@ -109,44 +110,15 @@ class FlashcardCreationPageState extends State<FlashcardCreationPage> {
 
         if (mounted) {
           // Show success dialog and await its dismissal
-          await showDialog(
+          await AppDialog.show(
             context: context,
-            barrierDismissible: false,
-            builder:
-                (dialogContext) => AlertDialog(
-                  backgroundColor: AppColors.surface,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  title: Row(
-                    children: [
-                      Icon(Icons.check_circle, color: Colors.green, size: 28),
-                      const SizedBox(width: 12),
-                      Text(
-                        'Flashcard Set Added!',
-                        style: TextStyle(
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                  content: Text(
-                    'Flashcard set has been added to your study set.',
-                    style: TextStyle(color: AppColors.textSecondary),
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pop(dialogContext); // Close dialog only
-                      },
-                      child: Text(
-                        'OK',
-                        style: TextStyle(color: AppColors.primary),
-                      ),
-                    ),
-                  ],
-                ),
+            title: 'Flashcard Set Added!',
+            content: 'Flashcard set has been added to your study set.',
+            primaryActionText: 'OK',
+            primaryActionCallback: () {
+              Navigator.pop(context); // Close dialog only
+            },
+            dismissible: false,
           );
           
           // After dialog is closed, pop back to dashboard
@@ -197,25 +169,12 @@ class FlashcardCreationPageState extends State<FlashcardCreationPage> {
     } catch (e, stackTrace) {
       debugPrint('Error in _saveFlashcardSet: $e\n$stackTrace');
       if (mounted) {
-        await showDialog(
+        await AppDialog.show(
           context: context,
-          builder:
-              (dialogContext) => AlertDialog(
-                title: Row(
-                  children: [
-                    Icon(Icons.error, color: Colors.red),
-                    SizedBox(width: 8),
-                    Text('Error'),
-                  ],
-                ),
-                content: Text('Failed to save flashcard set: $e'),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(dialogContext).pop(),
-                    child: Text('OK'),
-                  ),
-                ],
-              ),
+          title: 'Error',
+          content: 'Failed to save flashcard set: $e',
+          primaryActionText: 'OK',
+          primaryActionCallback: () => Navigator.of(context).pop(),
         );
       }
     } finally {
@@ -238,8 +197,10 @@ class FlashcardCreationPageState extends State<FlashcardCreationPage> {
             color: AppColors.textPrimary,
           ),
         ),
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.white,
         elevation: 0,
+        shadowColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
         iconTheme: IconThemeData(color: AppColors.textPrimary),
         actions: [
           Padding(

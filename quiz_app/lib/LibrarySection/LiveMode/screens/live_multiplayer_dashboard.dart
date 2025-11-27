@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -34,12 +35,33 @@ class _LiveMultiplayerDashboardState
       final userId =
           user?.uid ?? 'user_${DateTime.now().millisecondsSinceEpoch}';
 
-      // ✅ FIXED: Properly extract username with fallbacks
-      final username =
-          user?.displayName?.trim().isNotEmpty == true
-              ? user!.displayName!
-              : (user?.email?.split('@')[0] ??
-                  'Player_${userId.substring(userId.length - 4)}');
+      // ✅ FIXED: Fetch username from Firestore (same as profile page)
+      String username = 'Player_${userId.substring(userId.length - 4)}';
+      
+      if (user != null) {
+        try {
+          final userDoc = await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .get();
+          
+          if (userDoc.exists) {
+            final userData = userDoc.data();
+            username = userData?['name'] ?? username;
+          } else {
+            // Fallback to displayName or email if Firestore doc doesn't exist
+            username = user.displayName?.trim().isNotEmpty == true
+                ? user.displayName!
+                : (user.email?.split('@')[0] ?? username);
+          }
+        } catch (e) {
+          debugPrint('Error fetching user data from Firestore: $e');
+          // Fallback to displayName or email
+          username = user.displayName?.trim().isNotEmpty == true
+              ? user.displayName!
+              : (user.email?.split('@')[0] ?? username);
+        }
+      }
 
       // Wait for join to complete and session state to be received
       await ref
@@ -105,6 +127,8 @@ class _LiveMultiplayerDashboardState
       appBar: AppBar(
         backgroundColor: AppColors.white,
         elevation: 0,
+        shadowColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () => Navigator.pop(context),

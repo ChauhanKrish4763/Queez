@@ -120,27 +120,26 @@ class GameNotifier extends Notifier<GameState> {
       );
       
       // Auto-advance for single choice, true/false, and multi-select after delay
-      // Single choice and true/false: 2 seconds
-      // Multi-select: 3 seconds (handled in widget, but also here as fallback)
+      // Reduced delays for faster gameplay (matching single player's 800ms)
       if (questionType == 'singleMcq' || questionType == 'trueFalse') {
-        debugPrint('⏱️ GAME_PROVIDER - Auto-advancing to next question in 2s (single/tf)');
-        Future.delayed(const Duration(seconds: 2), () {
+        debugPrint('⏱️ GAME_PROVIDER - Auto-advancing to next question in 800ms (single/tf)');
+        Future.delayed(const Duration(milliseconds: 800), () {
           if (state.hasAnswered && state.correctAnswer != null) {
             debugPrint('➡️ GAME_PROVIDER - Auto-requesting next question');
             requestNextQuestion();
           }
         });
       } else if (questionType == 'multiMcq') {
-        debugPrint('⏱️ GAME_PROVIDER - Auto-advancing to next question in 3s (multi-select)');
-        Future.delayed(const Duration(seconds: 3), () {
+        debugPrint('⏱️ GAME_PROVIDER - Auto-advancing to next question in 800ms (multi-select)');
+        Future.delayed(const Duration(milliseconds: 800), () {
           if (state.hasAnswered && state.correctAnswer != null) {
             debugPrint('➡️ GAME_PROVIDER - Auto-requesting next question (multi-select)');
             requestNextQuestion();
           }
         });
       } else if (questionType == 'dragAndDrop') {
-        debugPrint('⏱️ GAME_PROVIDER - Auto-advancing to next question in 3s (drag-drop)');
-        Future.delayed(const Duration(seconds: 3), () {
+        debugPrint('⏱️ GAME_PROVIDER - Auto-advancing to next question in 800ms (drag-drop)');
+        Future.delayed(const Duration(milliseconds: 800), () {
           if (state.hasAnswered && state.correctAnswer != null) {
             debugPrint('➡️ GAME_PROVIDER - Auto-requesting next question (drag-drop)');
             requestNextQuestion();

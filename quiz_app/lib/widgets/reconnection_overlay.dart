@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quiz_app/providers/session_provider.dart';
 import 'package:quiz_app/services/websocket_service.dart';
+import 'package:quiz_app/widgets/core/app_dialog.dart';
 
 class ReconnectionOverlay extends ConsumerWidget {
   final Widget child;
@@ -150,19 +151,12 @@ class _ErrorListenerState extends ConsumerState<ErrorListener> {
   }
 
   void _showErrorDialog(String message) {
-    showDialog(
+    AppDialog.show(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            title: const Text('ERROR'),
-            content: Text(message),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('OK'),
-              ),
-            ],
-          ),
+      title: 'ERROR',
+      content: message,
+      primaryActionText: 'OK',
+      primaryActionCallback: () => Navigator.pop(context),
     );
   }
 

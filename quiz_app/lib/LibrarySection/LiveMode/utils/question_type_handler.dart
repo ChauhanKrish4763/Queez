@@ -196,6 +196,12 @@ class QuestionTypeHandler {
             ? Map<String, String>.from(question['correctMatches'])
             : null;
         
+        debugPrint('🎯 QuestionTypeHandler - DragAndDrop question data:');
+        debugPrint('   dragItems: $dragItems');
+        debugPrint('   dropTargets: $dropTargets');
+        debugPrint('   hasAnswered: $hasAnswered');
+        debugPrint('   correctMatches: $correctMatches');
+        
         return DragDropInterface(
           dragItems: dragItems,
           dropTargets: dropTargets,

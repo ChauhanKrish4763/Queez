@@ -24,6 +24,10 @@ class LearningToolsPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+        backgroundColor: AppColors.white,
+        elevation: 0,
+        shadowColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
@@ -37,8 +41,6 @@ class LearningToolsPage extends StatelessWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: AppColors.background,
-        elevation: 0,
         iconTheme: const IconThemeData(color: AppColors.iconActive),
       ),
       body: SafeArea(

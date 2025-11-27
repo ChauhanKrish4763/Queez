@@ -9,6 +9,7 @@ import 'package:quiz_app/LibrarySection/screens/mode_selection_sheet.dart';
 import 'package:quiz_app/LibrarySection/widgets/quiz_library_item.dart';
 import 'package:quiz_app/utils/animations/page_transition.dart';
 import 'package:quiz_app/utils/color.dart';
+import 'package:quiz_app/utils/quiz_design_system.dart';
 import 'package:quiz_app/widgets/wait_screen.dart';
 import 'package:quiz_app/CreateSection/services/flashcard_service.dart';
 import 'package:quiz_app/CreateSection/services/quiz_service.dart';
@@ -23,7 +24,7 @@ class ItemCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Soft red color for icon background
-    final Color softRed = Colors.red.shade50;
+    final Color softRed = AppColors.error.withValues(alpha: 0.1);
 
     // Check if this item was shared in a restrictive mode (only for quizzes)
     final isRestrictiveMode =
@@ -41,7 +42,7 @@ class ItemCard extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(QuizBorderRadius.lg),
           boxShadow: [
             BoxShadow(
               color: AppColors.primary.withValues(alpha: 0.08),
@@ -55,15 +56,15 @@ class ItemCard extends StatelessWidget {
           children: [
             // Top Row: Type label + Question count (left) and createdAt + Trash icon (right)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: QuizSpacing.md, vertical: QuizSpacing.md),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Type label
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
+                      horizontal: QuizSpacing.sm,
+                      vertical: QuizSpacing.xs,
                     ),
                     decoration: BoxDecoration(
                       color:
@@ -72,7 +73,7 @@ class ItemCard extends StatelessWidget {
                               : item.isNote
                               ? AppColors.warning.withValues(alpha: 0.15)
                               : AppColors.accentBright.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: BorderRadius.circular(QuizBorderRadius.sm),
                     ),
                     child: Text(
                       item.isQuiz
@@ -101,12 +102,12 @@ class ItemCard extends StatelessWidget {
                       // Question/Card count tag
                       Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
+                          horizontal: QuizSpacing.md,
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
                           color: AppColors.primary.withValues(alpha: 0.07),
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(QuizBorderRadius.lg),
                         ),
                         child: Row(
                           children: [
@@ -148,7 +149,7 @@ class ItemCard extends StatelessWidget {
                           // Trash icon
                           InkWell(
                             onTap: onDelete,
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(QuizBorderRadius.circular),
                             child: Container(
                               width: 36,
                               height: 36,
@@ -162,7 +163,7 @@ class ItemCard extends StatelessWidget {
                               ),
                               child: const Icon(
                                 Icons.delete_outline,
-                                color: Colors.red,
+                                color: AppColors.error,
                                 size: 20,
                               ),
                             ),
@@ -177,9 +178,9 @@ class ItemCard extends StatelessWidget {
             // Cover Image
             Container(
               height: 160,
-              margin: const EdgeInsets.symmetric(horizontal: 20),
+              margin: const EdgeInsets.symmetric(horizontal: QuizSpacing.lg),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(QuizBorderRadius.lg),
                 child:
                     item.coverImagePath != null
                         ? Image.network(
@@ -208,7 +209,7 @@ class ItemCard extends StatelessWidget {
             ),
             // Title
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+              padding: const EdgeInsets.fromLTRB(QuizSpacing.lg, QuizSpacing.md, QuizSpacing.lg, 0),
               child: Text(
                 item.title,
                 style: const TextStyle(
@@ -224,7 +225,7 @@ class ItemCard extends StatelessWidget {
             if (item.originalOwnerUsername != null &&
                 item.originalOwnerUsername!.isNotEmpty)
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                padding: const EdgeInsets.fromLTRB(QuizSpacing.lg, QuizSpacing.sm, QuizSpacing.lg, 0),
                 child: Row(
                   children: [
                     Icon(
@@ -250,7 +251,7 @@ class ItemCard extends StatelessWidget {
               ),
             // Description
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+              padding: const EdgeInsets.fromLTRB(QuizSpacing.lg, QuizSpacing.sm, QuizSpacing.lg, QuizSpacing.lg),
               child: Text(
                 item.description,
                 style: const TextStyle(
@@ -264,7 +265,7 @@ class ItemCard extends StatelessWidget {
             ),
             // Buttons - Different layout for Quiz vs Flashcard vs Note
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+              padding: const EdgeInsets.fromLTRB(QuizSpacing.lg, 0, QuizSpacing.lg, QuizSpacing.lg),
               child:
                   item.isNote
                       ? // Notes: Only View button (full width)
@@ -325,7 +326,7 @@ class ItemCard extends StatelessWidget {
                             foregroundColor: AppColors.white,
                             elevation: 0,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(QuizBorderRadius.md),
                             ),
                           ),
                         ),
@@ -432,7 +433,7 @@ class ItemCard extends StatelessWidget {
                                   foregroundColor: AppColors.white,
                                   elevation: 0,
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(QuizBorderRadius.md),
                                   ),
                                 ),
                               ),

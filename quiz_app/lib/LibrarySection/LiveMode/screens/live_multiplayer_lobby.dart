@@ -8,7 +8,6 @@ import 'package:quiz_app/utils/color.dart';
 
 import 'live_host_view.dart';
 
-
 class LiveMultiplayerLobby extends ConsumerStatefulWidget {
   final String sessionCode;
   final bool isHost;
@@ -35,7 +34,8 @@ class _LiveMultiplayerLobbyState extends ConsumerState<LiveMultiplayerLobby> {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => LiveHostView(sessionCode: widget.sessionCode),
+              builder:
+                  (context) => LiveHostView(sessionCode: widget.sessionCode),
             ),
           );
         } else {
@@ -74,7 +74,9 @@ class _LiveMultiplayerLobbyState extends ConsumerState<LiveMultiplayerLobby> {
           Navigator.pop(context);
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Connection timeout. Check your internet and try again.'),
+              content: Text(
+                'Connection timeout. Check your internet and try again.',
+              ),
               backgroundColor: Colors.red,
               duration: Duration(seconds: 4),
             ),
@@ -87,6 +89,8 @@ class _LiveMultiplayerLobbyState extends ConsumerState<LiveMultiplayerLobby> {
         appBar: AppBar(
           backgroundColor: AppColors.white,
           elevation: 0,
+          shadowColor: Colors.transparent,
+          surfaceTintColor: Colors.transparent,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
             onPressed: () => Navigator.pop(context),
@@ -132,6 +136,8 @@ class _LiveMultiplayerLobbyState extends ConsumerState<LiveMultiplayerLobby> {
       appBar: AppBar(
         backgroundColor: AppColors.white,
         elevation: 0,
+        shadowColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () => Navigator.pop(context),
@@ -255,83 +261,89 @@ class _LiveMultiplayerLobbyState extends ConsumerState<LiveMultiplayerLobby> {
 
                 // Participants List
                 Expanded(
-                  child: sessionState.participants.isEmpty
-                      ? Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.person_add_outlined,
-                                size: 64,
-                                color: AppColors.textSecondary.withValues(alpha: 0.5),
-                              ),
-                              const SizedBox(height: 16),
-                              const Text(
-                                'Waiting for players to join...',
-                                style: TextStyle(
-                                  color: AppColors.textSecondary,
-                                  fontSize: 16,
+                  child:
+                      sessionState.participants.isEmpty
+                          ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.person_add_outlined,
+                                  size: 64,
+                                  color: AppColors.textSecondary.withValues(
+                                    alpha: 0.5,
+                                  ),
                                 ),
-                              ),
-                            ],
+                                const SizedBox(height: 16),
+                                const Text(
+                                  'Waiting for players to join...',
+                                  style: TextStyle(
+                                    color: AppColors.textSecondary,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                          : ListView.builder(
+                            itemCount: sessionState.participants.length,
+                            itemBuilder: (context, index) {
+                              final participant =
+                                  sessionState.participants[index];
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: AppColors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: AppColors.primary.withValues(
+                                        alpha: 0.08,
+                                      ),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  children: [
+                                    CircleAvatar(
+                                      backgroundColor: AppColors.primary,
+                                      radius: 20,
+                                      child: Text(
+                                        participant.username[0].toUpperCase(),
+                                        style: const TextStyle(
+                                          color: AppColors.white,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Text(
+                                        participant.username,
+                                        style: const TextStyle(
+                                          color: AppColors.textPrimary,
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 16,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    Container(
+                                      width: 8,
+                                      height: 8,
+                                      decoration: const BoxDecoration(
+                                        color: AppColors.success,
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
                           ),
-                        )
-                      : ListView.builder(
-                          itemCount: sessionState.participants.length,
-                          itemBuilder: (context, index) {
-                            final participant = sessionState.participants[index];
-                            return Container(
-                              margin: const EdgeInsets.only(bottom: 12),
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: AppColors.white,
-                                borderRadius: BorderRadius.circular(12),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: AppColors.primary.withValues(alpha: 0.08),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: Row(
-                                children: [
-                                  CircleAvatar(
-                                    backgroundColor: AppColors.primary,
-                                    radius: 20,
-                                    child: Text(
-                                      participant.username[0].toUpperCase(),
-                                      style: const TextStyle(
-                                        color: AppColors.white,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: Text(
-                                      participant.username,
-                                      style: const TextStyle(
-                                        color: AppColors.textPrimary,
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 16,
-                                      ),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                  Container(
-                                    width: 8,
-                                    height: 8,
-                                    decoration: const BoxDecoration(
-                                      color: AppColors.success,
-                                      shape: BoxShape.circle,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
                 ),
 
                 const SizedBox(height: 24),
@@ -339,11 +351,12 @@ class _LiveMultiplayerLobbyState extends ConsumerState<LiveMultiplayerLobby> {
                 // Action Button
                 if (widget.isHost)
                   ElevatedButton(
-                    onPressed: sessionState.participants.isNotEmpty
-                        ? () {
-                            ref.read(sessionProvider.notifier).startQuiz();
-                          }
-                        : null,
+                    onPressed:
+                        sessionState.participants.isNotEmpty
+                            ? () {
+                              ref.read(sessionProvider.notifier).startQuiz();
+                            }
+                            : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
                       foregroundColor: AppColors.white,

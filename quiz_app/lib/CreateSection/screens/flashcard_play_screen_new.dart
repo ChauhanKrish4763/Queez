@@ -1,9 +1,12 @@
 import 'dart:math';
-import 'package:flutter/material.dart';
+
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_card_swiper/flutter_card_swiper.dart';
+
 import '../../CreateSection/models/flashcard_set.dart';
 import '../../CreateSection/services/flashcard_service.dart';
+import '../../utils/color.dart';
 
 class FlashcardPlayScreen extends StatefulWidget {
   final String flashcardSetId;
@@ -71,7 +74,13 @@ class _FlashcardPlayScreenState extends State<FlashcardPlayScreen> {
   Widget build(BuildContext context) {
     if (_flashcardSet == null || _flashcardSet!.cards.isEmpty) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Flashcards')),
+        appBar: AppBar(
+          title: const Text('Flashcards'),
+          backgroundColor: AppColors.white,
+          elevation: 0,
+          shadowColor: Colors.transparent,
+          surfaceTintColor: Colors.transparent,
+        ),
         body: const Center(child: Text('No flashcards in this set')),
       );
     }
@@ -79,6 +88,10 @@ class _FlashcardPlayScreenState extends State<FlashcardPlayScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
+        backgroundColor: const Color(0xFFF5F5F5),
+        elevation: 0,
+        shadowColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -96,8 +109,6 @@ class _FlashcardPlayScreenState extends State<FlashcardPlayScreen> {
             ),
           ],
         ),
-        backgroundColor: const Color(0xFFF5F5F5),
-        elevation: 0,
         actions: [
           IconButton(
             icon: const Icon(Icons.shuffle),

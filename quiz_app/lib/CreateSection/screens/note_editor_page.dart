@@ -4,6 +4,7 @@ import 'package:flutter_quill/flutter_quill.dart';
 import 'package:quiz_app/CreateSection/models/note.dart';
 import 'package:quiz_app/CreateSection/services/note_service.dart';
 import 'package:quiz_app/utils/color.dart';
+import 'package:quiz_app/widgets/core/app_dialog.dart';
 
 class NoteEditorPage extends StatefulWidget {
   final String title;
@@ -74,44 +75,15 @@ class _NoteEditorPageState extends State<NoteEditorPage> {
 
         if (mounted) {
           // Show success dialog and await its dismissal
-          await showDialog(
+          await AppDialog.show(
             context: context,
-            barrierDismissible: false,
-            builder:
-                (dialogContext) => AlertDialog(
-                  backgroundColor: AppColors.surface,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  title: Row(
-                    children: [
-                      Icon(Icons.check_circle, color: Colors.green, size: 28),
-                      const SizedBox(width: 12),
-                      Text(
-                        'Note Added!',
-                        style: TextStyle(
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                  content: Text(
-                    'Note has been added to your study set.',
-                    style: TextStyle(color: AppColors.textSecondary),
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pop(dialogContext); // Close dialog only
-                      },
-                      child: Text(
-                        'OK',
-                        style: TextStyle(color: AppColors.primary),
-                      ),
-                    ),
-                  ],
-                ),
+            title: 'Note Added!',
+            content: 'Note has been added to your study set.',
+            primaryActionText: 'OK',
+            primaryActionCallback: () {
+              Navigator.pop(context); // Close dialog only
+            },
+            dismissible: false,
           );
           
           // After dialog is closed, pop back to dashboard
@@ -178,9 +150,11 @@ class _NoteEditorPageState extends State<NoteEditorPage> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.white,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
+        shadowColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
         actions: [
           if (_isSaving)
             const Center(

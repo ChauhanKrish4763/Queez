@@ -186,8 +186,12 @@ class HostLeaderboardPanel extends StatelessWidget {
         final participant = allParticipants[index];
         final userId = participant.userId;
         final username = participant.username;
+        
+        // Each participant tracks their own answers independently
         final answersCount = participant.answers.length;
-        final currentQuestion = answersCount + 1;
+        // If they've answered N questions, they're currently on question N+1
+        // But cap it at totalQuestions (they can't be beyond the last question)
+        final currentQuestion = (answersCount + 1).clamp(1, totalQuestions);
 
         // Get score from rankings, default to 0
         final score = rankingMap[userId]?['score'] ?? 0;
@@ -242,12 +246,36 @@ class HostLeaderboardPanel extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      'Q$currentQuestion/$totalQuestions',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: AppColors.textSecondary,
-                      ),
+                    Row(
+                      children: [
+                        Icon(
+                          answersCount >= totalQuestions
+                              ? Icons.check_circle
+                              : Icons.pending,
+                          size: 14,
+                          color:
+                              answersCount >= totalQuestions
+                                  ? AppColors.success
+                                  : AppColors.textSecondary,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          answersCount >= totalQuestions
+                              ? 'Completed'
+                              : 'Q$currentQuestion/$totalQuestions',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color:
+                                answersCount >= totalQuestions
+                                    ? AppColors.success
+                                    : AppColors.textSecondary,
+                            fontWeight:
+                                answersCount >= totalQuestions
+                                    ? FontWeight.w600
+                                    : FontWeight.normal,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),

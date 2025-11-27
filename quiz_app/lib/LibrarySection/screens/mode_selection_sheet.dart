@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:quiz_app/utils/color.dart';
+import 'package:quiz_app/utils/quiz_design_system.dart';
 import 'package:quiz_app/LibrarySection/screens/hosting_page.dart';
 import 'package:quiz_app/utils/animations/page_transition.dart';
 
@@ -20,10 +21,10 @@ class ModeSelectionSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(QuizSpacing.lg),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(QuizBorderRadius.xl)),
       ),
       child: SafeArea(
         child: SingleChildScrollView(
@@ -38,11 +39,11 @@ class ModeSelectionSheet extends StatelessWidget {
                   height: 4,
                   decoration: BoxDecoration(
                     color: AppColors.textSecondary.withValues(alpha: 0.3),
-                    borderRadius: BorderRadius.circular(2),
+                    borderRadius: BorderRadius.circular(QuizBorderRadius.sm),
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: QuizSpacing.lg),
 
               Text(
                 'Select Quiz Mode',
@@ -53,13 +54,13 @@ class ModeSelectionSheet extends StatelessWidget {
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: QuizSpacing.sm),
               Text(
                 'Choose how participants will take this quiz',
                 style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: QuizSpacing.lg),
 
               // Share Mode
               _buildModeCard(
@@ -71,7 +72,7 @@ class ModeSelectionSheet extends StatelessWidget {
                 color: AppColors.primary,
                 mode: 'share',
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: QuizSpacing.md),
 
               // Live Multiplayer Mode
               _buildModeCard(
@@ -83,7 +84,7 @@ class ModeSelectionSheet extends StatelessWidget {
                 color: AppColors.secondary,
                 mode: 'live_multiplayer',
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: QuizSpacing.md),
 
               // Self-Paced Mode
               _buildModeCard(
@@ -95,7 +96,7 @@ class ModeSelectionSheet extends StatelessWidget {
                 color: AppColors.accentBright,
                 mode: 'self_paced',
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: QuizSpacing.md),
 
               // Timed Individual Mode
               _buildModeCard(
@@ -104,10 +105,10 @@ class ModeSelectionSheet extends StatelessWidget {
                 title: 'Timed Individual',
                 description:
                     'Challenge yourself to complete the quiz within a time limit',
-                color: Colors.orange,
+                color: AppColors.warning,
                 mode: 'timed_individual',
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: QuizSpacing.md),
 
               // Cancel button
               TextButton(
@@ -117,7 +118,7 @@ class ModeSelectionSheet extends StatelessWidget {
                   style: TextStyle(color: AppColors.textSecondary),
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: QuizSpacing.sm),
             ],
           ),
         ),
@@ -151,25 +152,25 @@ class ModeSelectionSheet extends StatelessWidget {
           ),
         );
       },
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(QuizBorderRadius.md),
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(QuizSpacing.md),
         decoration: BoxDecoration(
           border: Border.all(color: color.withValues(alpha: 0.3), width: 2),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(QuizBorderRadius.md),
           color: color.withValues(alpha: 0.05),
         ),
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(QuizSpacing.md),
               decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(QuizBorderRadius.sm),
               ),
               child: Icon(icon, color: color, size: 28),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: QuizSpacing.md),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -182,7 +183,7 @@ class ModeSelectionSheet extends StatelessWidget {
                       color: AppColors.textPrimary,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: QuizSpacing.xs),
                   Text(
                     description,
                     style: TextStyle(
@@ -213,6 +214,7 @@ void showModeSelection({
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
+    barrierColor: AppColors.primary.withValues(alpha: 0.3),
     builder:
         (context) => ModeSelectionSheet(
           quizId: quizId,

@@ -5,6 +5,7 @@ import 'package:quiz_app/utils/color.dart';
 import 'package:quiz_app/utils/globals.dart';
 import 'package:quiz_app/widgets/appbar/appbar.dart';
 import 'package:quiz_app/widgets/navbar/bottom_navbar.dart';
+import 'package:quiz_app/widgets/core/app_dialog.dart';
 
 class Dashboard extends ConsumerStatefulWidget {
   const Dashboard({super.key});
@@ -29,7 +30,7 @@ class _DashboardState extends ConsumerState<Dashboard> {
       canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
-        
+
         // Try to pop from the current nested navigator first
         final navbarState = bottomNavbarKey.currentState;
         if (navbarState != null && navbarState.canPopCurrentNavigator()) {
@@ -37,24 +38,16 @@ class _DashboardState extends ConsumerState<Dashboard> {
         } else {
           // If no nested route to pop, exit the app
           if (context.mounted) {
-            final shouldExit = await showDialog<bool>(
+            final shouldExit = await AppDialog.show<bool>(
               context: context,
-              builder: (context) => AlertDialog(
-                title: const Text('Exit App'),
-                content: const Text('Do you want to exit the app?'),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(false),
-                    child: const Text('Cancel'),
-                  ),
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(true),
-                    child: const Text('Exit'),
-                  ),
-                ],
-              ),
+              title: 'Exit App',
+              content: 'Do you want to exit the app?',
+              primaryActionText: 'Exit',
+              primaryActionCallback: () => Navigator.of(context).pop(true),
+              secondaryActionText: 'Cancel',
+              secondaryActionCallback: () => Navigator.of(context).pop(false),
             );
-            
+
             if (shouldExit == true && context.mounted) {
               Navigator.of(context).pop();
             }

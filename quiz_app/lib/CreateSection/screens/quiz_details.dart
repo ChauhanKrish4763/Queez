@@ -99,9 +99,11 @@ class QuizDetailsState extends State<QuizDetails> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.white,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
+        shadowColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
       ),
       body: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
