@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:quiz_app/utils/color.dart';
-import 'package:quiz_app/CreateSection/models/study_set.dart';
 import 'package:quiz_app/CreateSection/models/quiz.dart';
 import 'package:quiz_app/CreateSection/models/flashcard_set.dart';
 import 'package:quiz_app/CreateSection/models/note.dart';
@@ -310,7 +309,7 @@ class _StudySetDashboardState extends State<StudySetDashboard> {
       }
 
       // Save to MongoDB via backend API
-      final studySetId = await StudySetService.saveStudySet(cachedStudySet);
+      await StudySetService.saveStudySet(cachedStudySet);
       StudySetCacheManager.instance.clearCache();
 
       if (!mounted) return;
