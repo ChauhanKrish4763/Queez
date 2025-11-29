@@ -5,7 +5,6 @@ import 'package:quiz_app/CreateSection/models/note.dart';
 import 'package:quiz_app/CreateSection/services/note_service.dart';
 import 'package:quiz_app/CreateSection/widgets/quiz_saved_dialog.dart';
 import 'package:quiz_app/utils/color.dart';
-import 'package:quiz_app/widgets/core/app_dialog.dart';
 
 class NoteEditorPage extends StatefulWidget {
   final String title;
@@ -75,7 +74,6 @@ class _NoteEditorPageState extends State<NoteEditorPage> {
         widget.onSaveForStudySet!(note);
 
         if (mounted) {
-<<<<<<< HEAD
           // Show success dialog with custom QuizSavedDialog
           await QuizSavedDialog.show(
             context,
@@ -91,18 +89,6 @@ class _NoteEditorPageState extends State<NoteEditorPage> {
                 });
               }
             },
-=======
-          // Show success dialog and await its dismissal
-          await AppDialog.show(
-            context: context,
-            title: 'Note Added!',
-            content: 'Note has been added to your study set.',
-            primaryActionText: 'OK',
-            primaryActionCallback: () {
-              Navigator.pop(context); // Close dialog only
-            },
-            dismissible: false,
->>>>>>> 268d31b3678898505e9e1dc612b046dca0f8f812
           );
         }
         return;

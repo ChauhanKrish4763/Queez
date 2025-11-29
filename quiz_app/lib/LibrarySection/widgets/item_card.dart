@@ -7,7 +7,6 @@ import 'package:quiz_app/CreateSection/screens/note_viewer_page.dart';
 import 'package:quiz_app/CreateSection/services/flashcard_service.dart';
 import 'package:quiz_app/CreateSection/services/note_service.dart';
 import 'package:quiz_app/CreateSection/services/quiz_service.dart';
-import 'package:quiz_app/CreateSection/screens/study_set_viewer.dart';
 import 'package:quiz_app/LibrarySection/PlaySection/screens/quiz_play_screen.dart';
 import 'package:quiz_app/LibrarySection/models/library_item.dart';
 import 'package:quiz_app/LibrarySection/screens/mode_selection_sheet.dart';
@@ -16,10 +15,6 @@ import 'package:quiz_app/utils/animations/page_transition.dart';
 import 'package:quiz_app/utils/color.dart';
 import 'package:quiz_app/utils/quiz_design_system.dart';
 import 'package:quiz_app/widgets/wait_screen.dart';
-import 'package:quiz_app/CreateSection/services/flashcard_service.dart';
-import 'package:quiz_app/CreateSection/services/quiz_service.dart';
-import 'package:quiz_app/CreateSection/services/note_service.dart';
-import 'package:quiz_app/CreateSection/services/study_set_service.dart';
 
 class ItemCard extends StatelessWidget {
   final LibraryItem item;

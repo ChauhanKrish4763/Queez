@@ -109,7 +109,6 @@ class FlashcardCreationPageState extends State<FlashcardCreationPage> {
         widget.onSaveForStudySet!(flashcardSet);
 
         if (mounted) {
-<<<<<<< HEAD
           // Show success dialog with custom QuizSavedDialog
           await QuizSavedDialog.show(
             context,
@@ -125,18 +124,6 @@ class FlashcardCreationPageState extends State<FlashcardCreationPage> {
                 });
               }
             },
-=======
-          // Show success dialog and await its dismissal
-          await AppDialog.show(
-            context: context,
-            title: 'Flashcard Set Added!',
-            content: 'Flashcard set has been added to your study set.',
-            primaryActionText: 'OK',
-            primaryActionCallback: () {
-              Navigator.pop(context); // Close dialog only
-            },
-            dismissible: false,
->>>>>>> 268d31b3678898505e9e1dc612b046dca0f8f812
           );
         }
         return;

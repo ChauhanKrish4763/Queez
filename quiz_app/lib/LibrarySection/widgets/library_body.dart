@@ -204,10 +204,7 @@ Widget buildLibraryBody({
               style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
             ),
             const SizedBox(height: QuizSpacing.lg),
-            AppButton.primary(
-              text: 'Try Again',
-              onPressed: onRetry,
-            ),
+            AppButton.primary(text: 'Try Again', onPressed: onRetry),
           ],
         ),
       ),
@@ -293,7 +290,7 @@ class _AnimatedItemListState extends State<_AnimatedItemList> {
               item: item,
               onDelete: () async {
                 // Show confirmation dialog
-                final confirmed = await AppDialog.show<bool>(
+                final confirmed = await showDialog<bool>(
                   context: context,
                   builder:
                       (context) => AlertDialog(
@@ -364,7 +361,13 @@ class _AnimatedItemListState extends State<_AnimatedItemList> {
                   } catch (e) {
                     // Show error message
                     if (!mounted) return;
-                    AppSnackBar.showError(context, 'Failed to delete: $e');
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Failed to delete: $e'),
+                        backgroundColor: Colors.red,
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
                   }
                 }
               },
