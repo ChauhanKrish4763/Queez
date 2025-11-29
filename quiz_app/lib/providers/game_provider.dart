@@ -13,6 +13,7 @@ final gameProvider = NotifierProvider<GameNotifier, GameState>(
 class GameNotifier extends Notifier<GameState> {
   late final WebSocketService _wsService;
   Timer? _timer;
+  DateTime? _questionStartTime; // Track when question was received for scoring
 
   @override
   GameState build() {
@@ -27,6 +28,32 @@ class GameNotifier extends Notifier<GameState> {
 
     return const GameState();
   }
+  
+  void setTimeSettings(int perQuestionTimeLimit) {
+    debugPrint('⏱️ GAME_PROVIDER - Setting time: perQuestion=${perQuestionTimeLimit}s');
+    state = state.copyWith(
+      timeLimit: perQuestionTimeLimit,
+    );
+  }
+  
+  void _onQuestionTimeout() {
+    debugPrint('⏰ GAME_PROVIDER - Question time expired!');
+    
+    if (state.hasAnswered) {
+      debugPrint('⏰ GAME_PROVIDER - Already answered, skipping timeout handling');
+      return;
+    }
+    
+    // Auto-submit with no answer (will be marked wrong)
+    debugPrint('⏰ GAME_PROVIDER - Auto-submitting due to timeout');
+    _wsService.sendMessage('submit_answer', {
+      'answer': null, // No answer - timeout
+      'timestamp': state.timeLimit.toDouble(), // Full time elapsed
+      'timeout': true,
+    });
+    
+    state = state.copyWith(hasAnswered: true);
+  }
 
   void submitAnswer(dynamic answer) {
     if (state.hasAnswered) {
@@ -34,10 +61,18 @@ class GameNotifier extends Notifier<GameState> {
       return;
     }
 
+    // Calculate elapsed time since question was shown
+    double elapsedSeconds = 0;
+    if (_questionStartTime != null) {
+      elapsedSeconds = DateTime.now().difference(_questionStartTime!).inMilliseconds / 1000.0;
+    }
+
     debugPrint('📤 GAME_PROVIDER - Submitting answer: $answer');
+    debugPrint('⏱️ GAME_PROVIDER - Elapsed time: ${elapsedSeconds.toStringAsFixed(2)}s');
+    
     _wsService.sendMessage('submit_answer', {
       'answer': answer,
-      'timestamp': DateTime.now().millisecondsSinceEpoch / 1000,
+      'timestamp': elapsedSeconds, // Send elapsed time, not absolute timestamp
     });
 
     // Only mark as answered, don't set selectedAnswer yet (wait for backend response)
@@ -74,39 +109,58 @@ class GameNotifier extends Notifier<GameState> {
     final payload = message['payload'];
 
     if (type == 'question') {
-      // New question received
+      // New question received - start tracking time for scoring
       debugPrint('📚 GAME_PROVIDER - Processing question message');
       debugPrint('📦 GAME_PROVIDER - Question payload: $payload');
-      _startTimer(payload['time_remaining'] ?? 30);
+      
+      // Get per-question time limit
+      final questionTimeLimit = payload['time_limit'] ?? payload['time_remaining'] ?? state.timeLimit;
+      
+      _questionStartTime = DateTime.now(); // Start timing for score calculation
+      
+      _startTimer(payload['time_remaining'] ?? questionTimeLimit);
       state = state.copyWith(
         currentQuestion: payload['question'],
         questionIndex: payload['index'],
         totalQuestions: payload['total'],
-        timeRemaining: payload['time_remaining'] ?? 30,
+        timeRemaining: payload['time_remaining'] ?? questionTimeLimit,
+        timeLimit: questionTimeLimit,
         hasAnswered: false,
         selectedAnswer: null,
         isCorrect: null,
         correctAnswer: null,
         pointsEarned: null,
+        timeBonus: null,
+        multiplier: null,
         rankings: null,
         showingLeaderboard: false,
       );
       debugPrint(
         '✅ GAME_PROVIDER - State updated, currentQuestion is now: ${state.currentQuestion != null ? "SET" : "NULL"}',
       );
+      debugPrint('⏱️ GAME_PROVIDER - Time limit for this question: ${questionTimeLimit}s');
     } else if (type == 'answer_result') {
       // Handle answer result - update state with user's answer and correctness
       final isCorrect = payload['is_correct'] as bool? ?? false;
       final points = payload['points'] as int? ?? 0;
+      final timeBonus = payload['time_bonus'] as int? ?? 0;
+      final multiplier = (payload['multiplier'] as num?)?.toDouble() ?? 1.0;
       final correctAnswer = payload['correct_answer'];
       final newScore = payload['new_total_score'] as int? ?? state.currentScore;
       final questionType = payload['question_type'] as String?;
+      final isPartial = payload['is_partial'] as bool? ?? false;
+      final partialCredit = (payload['partial_credit'] as num?)?.toDouble();
       
       // Get the user's submitted answer from the payload if available
       final userAnswer = payload['user_answer'];
 
-      debugPrint('✅ GAME_PROVIDER - Answer result: ${isCorrect ? "CORRECT" : "INCORRECT"}');
-      debugPrint('💰 GAME_PROVIDER - Points earned: $points, New score: $newScore');
+      if (isPartial && partialCredit != null) {
+        debugPrint('⚠️ GAME_PROVIDER - Partial credit: ${partialCredit.toStringAsFixed(1)}%');
+      } else {
+        debugPrint('✅ GAME_PROVIDER - Answer result: ${isCorrect ? "CORRECT" : "INCORRECT"}');
+      }
+      debugPrint('💰 GAME_PROVIDER - Points earned: $points (base: 1000, time bonus: $timeBonus, multiplier: ${multiplier}x)');
+      debugPrint('🏆 GAME_PROVIDER - New total score: $newScore');
       debugPrint('🎯 GAME_PROVIDER - Correct answer was: $correctAnswer');
       debugPrint('👤 GAME_PROVIDER - User answer was: $userAnswer');
       debugPrint('📝 GAME_PROVIDER - Question type: $questionType');
@@ -116,31 +170,34 @@ class GameNotifier extends Notifier<GameState> {
         correctAnswer: correctAnswer,
         selectedAnswer: userAnswer,
         pointsEarned: points,
+        timeBonus: timeBonus,
+        multiplier: multiplier,
         currentScore: newScore,
+        isPartial: isPartial,
+        partialCredit: partialCredit,
       );
       
       // Auto-advance for single choice, true/false, and multi-select after delay
-      // Single choice and true/false: 2 seconds
-      // Multi-select: 3 seconds (handled in widget, but also here as fallback)
+      // Reduced delays for faster gameplay (matching single player's 800ms)
       if (questionType == 'singleMcq' || questionType == 'trueFalse') {
-        debugPrint('⏱️ GAME_PROVIDER - Auto-advancing to next question in 2s (single/tf)');
-        Future.delayed(const Duration(seconds: 2), () {
+        debugPrint('⏱️ GAME_PROVIDER - Auto-advancing to next question in 800ms (single/tf)');
+        Future.delayed(const Duration(milliseconds: 800), () {
           if (state.hasAnswered && state.correctAnswer != null) {
             debugPrint('➡️ GAME_PROVIDER - Auto-requesting next question');
             requestNextQuestion();
           }
         });
       } else if (questionType == 'multiMcq') {
-        debugPrint('⏱️ GAME_PROVIDER - Auto-advancing to next question in 3s (multi-select)');
-        Future.delayed(const Duration(seconds: 3), () {
+        debugPrint('⏱️ GAME_PROVIDER - Auto-advancing to next question in 800ms (multi-select)');
+        Future.delayed(const Duration(milliseconds: 800), () {
           if (state.hasAnswered && state.correctAnswer != null) {
             debugPrint('➡️ GAME_PROVIDER - Auto-requesting next question (multi-select)');
             requestNextQuestion();
           }
         });
       } else if (questionType == 'dragAndDrop') {
-        debugPrint('⏱️ GAME_PROVIDER - Auto-advancing to next question in 3s (drag-drop)');
-        Future.delayed(const Duration(seconds: 3), () {
+        debugPrint('⏱️ GAME_PROVIDER - Auto-advancing to next question in 800ms (drag-drop)');
+        Future.delayed(const Duration(milliseconds: 800), () {
           if (state.hasAnswered && state.correctAnswer != null) {
             debugPrint('➡️ GAME_PROVIDER - Auto-requesting next question (drag-drop)');
             requestNextQuestion();
@@ -210,6 +267,12 @@ class GameNotifier extends Notifier<GameState> {
               : null;
 
       state = state.copyWith(correctAnswer: correctAnswer, rankings: rankings);
+    } else if (type == 'quiz_started') {
+      // Quiz started - set time settings
+      final perQuestionTimeLimit = payload['per_question_time_limit'] as int? ?? 30;
+      debugPrint('🚀 GAME_PROVIDER - Quiz started with time settings: perQuestion=${perQuestionTimeLimit}s');
+      
+      setTimeSettings(perQuestionTimeLimit);
     } else if (type == 'quiz_completed' || type == 'quiz_ended') {
       // Quiz finished
       debugPrint('🏁 GAME_PROVIDER - Quiz completed!');
@@ -251,6 +314,8 @@ class GameNotifier extends Notifier<GameState> {
         state = state.copyWith(timeRemaining: state.timeRemaining - 1);
       } else {
         _stopTimer();
+        // Time's up - auto-submit
+        _onQuestionTimeout();
       }
     });
   }

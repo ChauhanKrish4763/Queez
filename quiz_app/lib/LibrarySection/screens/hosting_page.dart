@@ -1,16 +1,19 @@
 import 'dart:async';
 import 'dart:ui' as ui;
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:quiz_app/LibrarySection/LiveMode/screens/live_multiplayer_lobby.dart';
+import 'package:quiz_app/LibrarySection/LiveMode/screens/live_host_view.dart';
 import 'package:quiz_app/LibrarySection/services/session_service.dart';
 import 'package:quiz_app/providers/session_provider.dart';
 import 'package:quiz_app/utils/color.dart';
+import 'package:quiz_app/utils/quiz_design_system.dart';
+import 'package:quiz_app/widgets/core/core_widgets.dart';
 import 'package:share_plus/share_plus.dart';
 
 class HostingPage extends ConsumerStatefulWidget {
@@ -42,6 +45,10 @@ class _HostingPageState extends ConsumerState<HostingPage> {
   Timer? countdownTimer;
   Timer? participantUpdateTimer;
   final GlobalKey _qrKey = GlobalKey();
+  bool _isStartingQuiz = false;
+  
+  // Time settings for live multiplayer
+  int _perQuestionTimeLimit = 30; // Default 30 seconds per question
 
   @override
   void initState() {
@@ -124,10 +131,34 @@ class _HostingPageState extends ConsumerState<HostingPage> {
 
     try {
       final user = FirebaseAuth.instance.currentUser;
-      final username =
-          user?.displayName?.trim().isNotEmpty == true
-              ? user!.displayName!
-              : (user?.email?.split('@')[0] ?? 'Host');
+      
+      // ✅ FIXED: Fetch username from Firestore (same as profile page)
+      String username = 'Host';
+      
+      if (user != null) {
+        try {
+          final userDoc = await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .get();
+          
+          if (userDoc.exists) {
+            final userData = userDoc.data();
+            username = userData?['name'] ?? username;
+          } else {
+            // Fallback to displayName or email if Firestore doc doesn't exist
+            username = user.displayName?.trim().isNotEmpty == true
+                ? user.displayName!
+                : (user.email?.split('@')[0] ?? username);
+          }
+        } catch (e) {
+          debugPrint('Error fetching user data from Firestore: $e');
+          // Fallback to displayName or email
+          username = user.displayName?.trim().isNotEmpty == true
+              ? user.displayName!
+              : (user.email?.split('@')[0] ?? username);
+        }
+      }
 
       debugPrint(
         '🎯 HOST - Attempting to join session $sessionCode as $username',
@@ -204,65 +235,38 @@ class _HostingPageState extends ConsumerState<HostingPage> {
   void _copyToClipboard() {
     if (sessionCode != null) {
       Clipboard.setData(ClipboardData(text: sessionCode!));
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Session code copied!'),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          backgroundColor: AppColors.primary,
-          duration: const Duration(seconds: 2),
-        ),
-      );
+      AppSnackBar.showSuccess(context, 'Session code copied!');
     }
   }
 
   Future<void> _startQuiz() async {
-    if (sessionCode == null) return;
+    if (sessionCode == null || _isStartingQuiz) return;
 
-    // For testing: Allow starting with 1 participant (host only)
-    // if (participantCount < 2) {
-    //   ScaffoldMessenger.of(context).showSnackBar(
-    //     const SnackBar(
-    //       content: Text('At least 2 participants required to start the quiz'),
-    //       backgroundColor: AppColors.error,
-    //       duration: Duration(seconds: 3),
-    //     ),
-    //   );
-    //   return;
-    // }
+    setState(() {
+      _isStartingQuiz = true;
+    });
 
     try {
-      // Call backend API to start the session
-      await SessionService.startSession(
-        sessionCode: sessionCode!,
-        hostId: widget.hostId,
+      debugPrint('🎯 HOST - Starting quiz via WebSocket...');
+      debugPrint('⏱️ HOST - Time settings: perQuestion=${_perQuestionTimeLimit}s');
+      
+      // Use WebSocket to start quiz with time settings
+      ref.read(sessionProvider.notifier).startQuiz(
+        perQuestionTimeLimit: _perQuestionTimeLimit,
       );
 
-      // Navigate to lobby - the WebSocket will receive quiz_started and navigate to quiz
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder:
-                (context) => LiveMultiplayerLobby(
-                  sessionCode: sessionCode!,
-                  isHost: true,
-                ),
-          ),
-        );
-      }
+      debugPrint('✅ HOST - Start quiz message sent via WebSocket, waiting for confirmation...');
+      
+      // Don't navigate immediately - wait for WebSocket to confirm status == 'active'
+      // The ref.listen above will handle navigation when backend sends quiz_started
     } catch (e) {
+      setState(() {
+        _isStartingQuiz = false;
+      });
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Failed to start quiz: ${e.toString().replaceAll('Exception: ', '')}',
-            ),
-            backgroundColor: AppColors.error,
-            duration: const Duration(seconds: 3),
-          ),
+        AppSnackBar.showError(
+          context,
+          'Failed to start quiz: ${e.toString().replaceAll('Exception: ', '')}',
         );
       }
     }
@@ -290,23 +294,22 @@ class _HostingPageState extends ConsumerState<HostingPage> {
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error sharing: ${e.toString()}')));
+      AppSnackBar.showError(context, 'Error sharing: ${e.toString()}');
     }
   }
 
   void _showEnlargedQR() {
     showDialog(
       context: context,
+      barrierColor: AppColors.primary.withValues(alpha: 0.3),
       builder:
           (context) => Dialog(
             backgroundColor: Colors.transparent,
             child: Container(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(QuizSpacing.lg),
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
+                color: AppColors.white,
+                borderRadius: BorderRadius.circular(QuizBorderRadius.xl),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -319,20 +322,20 @@ class _HostingPageState extends ConsumerState<HostingPage> {
                       color: AppColors.primary,
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: QuizSpacing.lg),
                   RepaintBoundary(
                     key: _qrKey,
                     child: Container(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(QuizSpacing.md),
                       decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
+                        color: AppColors.white,
+                        borderRadius: BorderRadius.circular(QuizBorderRadius.lg),
                       ),
                       child: QrImageView(
                         data: sessionCode ?? '',
                         version: QrVersions.auto,
                         size: 280,
-                        backgroundColor: Colors.white,
+                        backgroundColor: AppColors.white,
                         eyeStyle: const QrEyeStyle(
                           eyeShape: QrEyeShape.square,
                           color: AppColors.primary,
@@ -344,41 +347,19 @@ class _HostingPageState extends ConsumerState<HostingPage> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: QuizSpacing.lg),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      ElevatedButton.icon(
+                      AppButton.primary(
+                        text: 'Share',
+                        icon: Icons.share,
                         onPressed: _shareQRCode,
-                        icon: const Icon(Icons.share, color: Colors.white),
-                        label: const Text('Share'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 12,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
                       ),
-                      OutlinedButton.icon(
+                      AppButton.outlined(
+                        text: 'Close',
+                        icon: Icons.close,
                         onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.close),
-                        label: const Text('Close'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.primary,
-                          side: const BorderSide(color: AppColors.primary),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 12,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
                       ),
                     ],
                   ),
@@ -402,6 +383,17 @@ class _HostingPageState extends ConsumerState<HostingPage> {
       if (next != null && widget.mode == 'live_multiplayer') {
         debugPrint('🔔 HOST - sessionProvider updated in HostingPage');
         _updateParticipantsFromWebSocket();
+        
+        // ✅ Navigate to LiveHostView when quiz becomes active
+        if (next.status == 'active' && _isStartingQuiz) {
+          debugPrint('🎯 HOST - Quiz is now active, navigating to LiveHostView');
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => LiveHostView(sessionCode: sessionCode!),
+            ),
+          );
+        }
       }
     });
 
@@ -422,11 +414,11 @@ class _HostingPageState extends ConsumerState<HostingPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                CircularProgressIndicator(color: Colors.white),
-                SizedBox(height: 16),
+                CircularProgressIndicator(color: AppColors.white),
+                SizedBox(height: QuizSpacing.md),
                 Text(
                   'Creating Session...',
-                  style: TextStyle(color: Colors.white, fontSize: 18),
+                  style: TextStyle(color: AppColors.white, fontSize: 18),
                 ),
               ],
             ),
@@ -437,24 +429,30 @@ class _HostingPageState extends ConsumerState<HostingPage> {
 
     if (errorMessage != null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Error')),
+        appBar: AppBar(
+          title: const Text('Error'),
+          backgroundColor: AppColors.white,
+          elevation: 0,
+          shadowColor: Colors.transparent,
+          surfaceTintColor: Colors.transparent,
+        ),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(24.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.error_outline, size: 64, color: Colors.red),
-                const SizedBox(height: 16),
+                const Icon(Icons.error_outline, size: 64, color: AppColors.error),
+                const SizedBox(height: QuizSpacing.md),
                 Text(
                   errorMessage!,
                   textAlign: TextAlign.center,
                   style: const TextStyle(fontSize: 16),
                 ),
-                const SizedBox(height: 24),
-                ElevatedButton(
+                const SizedBox(height: QuizSpacing.lg),
+                AppButton.primary(
+                  text: 'Go Back',
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Go Back'),
                 ),
               ],
             ),
@@ -465,28 +463,34 @@ class _HostingPageState extends ConsumerState<HostingPage> {
 
     if (isSessionExpired) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Session Expired')),
+        appBar: AppBar(
+          title: const Text('Session Expired'),
+          backgroundColor: AppColors.white,
+          elevation: 0,
+          shadowColor: Colors.transparent,
+          surfaceTintColor: Colors.transparent,
+        ),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(24.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.timer_off, size: 64, color: Colors.orange),
-                const SizedBox(height: 16),
+                const Icon(Icons.timer_off, size: 64, color: AppColors.warning),
+                const SizedBox(height: QuizSpacing.md),
                 const Text(
                   'Session has expired',
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: QuizSpacing.sm),
                 const Text(
                   'Please create a new session',
-                  style: TextStyle(fontSize: 16, color: Colors.grey),
+                  style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
                 ),
-                const SizedBox(height: 24),
-                ElevatedButton(
+                const SizedBox(height: QuizSpacing.lg),
+                AppButton.primary(
+                  text: 'Go Back',
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Go Back'),
                 ),
               ],
             ),
@@ -497,21 +501,22 @@ class _HostingPageState extends ConsumerState<HostingPage> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppColors.white,
         elevation: 0,
+        shadowColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
           icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
         ),
         actions: [
           Container(
-            margin: const EdgeInsets.only(right: 16),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            margin: const EdgeInsets.only(right: QuizSpacing.md),
+            padding: const EdgeInsets.symmetric(horizontal: QuizSpacing.md, vertical: 6),
             decoration: BoxDecoration(
               color: AppColors.white,
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(QuizBorderRadius.circular),
               border: Border.all(color: AppColors.primaryLighter),
             ),
             child: Row(
@@ -534,11 +539,11 @@ class _HostingPageState extends ConsumerState<HostingPage> {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20.0),
+          padding: const EdgeInsets.all(QuizSpacing.lg),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 24),
+              const SizedBox(height: QuizSpacing.lg),
               Text(
                 widget.quizTitle,
                 textAlign: TextAlign.center,
@@ -548,23 +553,29 @@ class _HostingPageState extends ConsumerState<HostingPage> {
                   color: AppColors.textPrimary,
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: QuizSpacing.xs),
               Text(
                 'Invite players and start the quiz',
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: QuizSpacing.xl),
 
               // Session Code & QR Code Cards
               _buildInfoCards(),
 
-              const SizedBox(height: 32),
+              const SizedBox(height: QuizSpacing.xl),
+
+              // Time Settings Section (only for live_multiplayer)
+              if (widget.mode == 'live_multiplayer') ...[
+                _buildTimeSettingsSection(),
+                const SizedBox(height: QuizSpacing.xl),
+              ],
 
               // Participants Section (only for live_multiplayer)
               if (widget.mode == 'live_multiplayer') ...[
                 _buildParticipantsSection(),
-                const SizedBox(height: 32),
+                const SizedBox(height: QuizSpacing.xl),
               ],
             ],
           ),
@@ -578,10 +589,10 @@ class _HostingPageState extends ConsumerState<HostingPage> {
       children: [
         // Session Code Card
         Container(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(QuizSpacing.lg),
           decoration: BoxDecoration(
             color: AppColors.white,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(QuizBorderRadius.lg),
             border: Border.all(color: AppColors.primaryLighter),
           ),
           child: Column(
@@ -619,16 +630,16 @@ class _HostingPageState extends ConsumerState<HostingPage> {
             ],
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: QuizSpacing.md),
         // QR Code Card
         InkWell(
           onTap: _showEnlargedQR,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(QuizBorderRadius.lg),
           child: Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(QuizSpacing.lg),
             decoration: BoxDecoration(
               color: AppColors.white,
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(QuizBorderRadius.lg),
               border: Border.all(color: AppColors.primaryLighter),
             ),
             child: Row(
@@ -671,6 +682,111 @@ class _HostingPageState extends ConsumerState<HostingPage> {
     );
   }
 
+  Widget _buildTimeSettingsSection() {
+    return Container(
+      padding: const EdgeInsets.all(QuizSpacing.lg),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(QuizBorderRadius.lg),
+        border: Border.all(color: AppColors.primaryLighter),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.timer,
+                  color: AppColors.primary,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                'TIME PER QUESTION',
+                style: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
+                  letterSpacing: 1,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: QuizSpacing.lg),
+          
+          // Per Question Time Limit
+          _buildTimeSetting(
+            value: _perQuestionTimeLimit,
+            options: const [10, 15, 20, 30, 45, 60, 90, 120],
+            onChanged: (value) {
+              setState(() {
+                _perQuestionTimeLimit = value;
+              });
+            },
+            formatValue: (v) => '${v}s',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTimeSetting({
+    required int value,
+    required List<int> options,
+    required Function(int) onChanged,
+    required String Function(int) formatValue,
+  }) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: options.map((option) {
+          final isSelected = value == option;
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: GestureDetector(
+              onTap: () => onChanged(option),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? AppColors.primary
+                      : AppColors.background,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: isSelected
+                        ? AppColors.primary
+                        : AppColors.primaryLighter,
+                    width: isSelected ? 2 : 1,
+                  ),
+                ),
+                child: Text(
+                  formatValue(option),
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                    color: isSelected
+                        ? AppColors.white
+                        : AppColors.textPrimary,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+
+
   Widget _buildParticipantsSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -703,114 +819,102 @@ class _HostingPageState extends ConsumerState<HostingPage> {
             ),
           ],
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: QuizSpacing.md),
         if (participants.isEmpty)
           Container(
-            padding: const EdgeInsets.symmetric(vertical: 48),
+            padding: const EdgeInsets.symmetric(vertical: QuizSpacing.xxl),
             decoration: BoxDecoration(
               color: AppColors.white,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(QuizBorderRadius.lg),
               border: Border.all(color: AppColors.primaryLighter),
             ),
             child: Center(
               child: Column(
                 children: [
-                  Icon(Icons.people_outline, size: 48, color: Colors.grey[400]),
-                  const SizedBox(height: 12),
+                  Icon(Icons.people_outline, size: 48, color: AppColors.iconInactive),
+                  const SizedBox(height: QuizSpacing.md),
                   Text(
                     'Waiting for participants...',
-                    style: TextStyle(color: Colors.grey[600], fontSize: 16),
+                    style: TextStyle(color: AppColors.textSecondary, fontSize: 16),
                   ),
                 ],
               ),
             ),
           )
         else
-          GridView.builder(
+          ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 4,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: 0.8,
-            ),
             itemCount: participants.length,
             itemBuilder: (context, index) {
               final participant = participants[index];
               final username = participant['username'] ?? 'Anonymous';
               final firstLetter =
                   username.isNotEmpty ? username[0].toUpperCase() : '?';
-              final colors = [
-                Colors.blue,
-                Colors.green,
-                Colors.orange,
-                Colors.purple,
-                Colors.red,
-                Colors.teal,
-                Colors.indigo,
-                Colors.cyan,
-              ];
-              final avatarColor = colors[index % colors.length];
 
-              return Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircleAvatar(
-                    radius: 28,
-                    backgroundColor: avatarColor.withValues(alpha: 0.2),
-                    child: Text(
-                      firstLetter,
-                      style: TextStyle(
-                        color: avatarColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 24,
+              return Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.08),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      backgroundColor: AppColors.primary,
+                      radius: 20,
+                      child: Text(
+                        firstLetter,
+                        style: const TextStyle(
+                          color: AppColors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    username,
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.textSecondary,
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Text(
+                        username,
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                  ),
-                ],
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: AppColors.success,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ],
+                ),
               );
             },
           ),
         // START QUIZ Button (for host to start the quiz for all participants)
         if (participantCount >= 1) ...[
-          const SizedBox(height: 24),
-          ElevatedButton.icon(
-            onPressed: participantCount >= 1 ? _startQuiz : null,
-            icon: const Icon(Icons.play_arrow, size: 24),
-            label: const Text(
-              'START QUIZ',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 1.2,
-              ),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor:
-                  participantCount >= 1
-                      ? AppColors.success
-                      : AppColors.iconInactive,
-              foregroundColor: AppColors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
-              elevation: participantCount >= 1 ? 4 : 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              minimumSize: const Size(double.infinity, 64),
-            ),
+          const SizedBox(height: QuizSpacing.lg),
+          AppButton(
+            text: 'START QUIZ',
+            onPressed: (participantCount >= 1 && !_isStartingQuiz) ? _startQuiz : null,
+            icon: Icons.play_arrow,
+            style: AppButtonStyle.success,
+            size: AppButtonSize.medium,
+            fullWidth: true,
+            isLoading: _isStartingQuiz,
           ),
           if (participantCount < 1)
             Padding(

@@ -7,6 +7,8 @@ import 'package:quiz_app/CreateSection/services/study_set_service.dart';
 import 'package:quiz_app/LibrarySection/models/library_item.dart';
 import 'package:quiz_app/LibrarySection/widgets/item_card.dart';
 import 'package:quiz_app/utils/color.dart';
+import 'package:quiz_app/utils/quiz_design_system.dart';
+import 'package:quiz_app/widgets/core/core_widgets.dart';
 
 Widget buildSearchSection({
   required String searchQuery,
@@ -18,7 +20,7 @@ Widget buildSearchSection({
   required String? typeFilter,
 }) {
   return Container(
-    margin: const EdgeInsets.all(20),
+    margin: const EdgeInsets.all(QuizSpacing.lg),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -67,11 +69,11 @@ Widget buildSearchSection({
             ),
           ],
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: QuizSpacing.lg),
         Container(
           decoration: BoxDecoration(
             color: AppColors.white,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(QuizBorderRadius.lg),
             boxShadow: [
               BoxShadow(
                 color: AppColors.primary.withValues(alpha: 0.08),
@@ -195,20 +197,16 @@ Widget buildLibraryBody({
                 color: AppColors.textPrimary,
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: QuizSpacing.md),
             Text(
               errorMessage,
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
             ),
-            const SizedBox(height: 24),
-            ElevatedButton(
+            const SizedBox(height: QuizSpacing.lg),
+            AppButton.primary(
+              text: 'Try Again',
               onPressed: onRetry,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: AppColors.white,
-              ),
-              child: const Text('Try Again'),
             ),
           ],
         ),
@@ -232,7 +230,7 @@ Widget buildLibraryBody({
   }
 
   return SliverPadding(
-    padding: const EdgeInsets.all(20),
+    padding: const EdgeInsets.all(QuizSpacing.lg),
     sliver: SliverToBoxAdapter(child: _AnimatedItemList(items: filteredItems)),
   );
 }
@@ -271,7 +269,7 @@ class _AnimatedItemListState extends State<_AnimatedItemList> {
     _listKey.currentState?.removeItem(
       index,
       (context, animation) => _buildItemCard(removedItem, animation, index),
-      duration: const Duration(milliseconds: 400),
+      duration: QuizAnimations.slow,
     );
   }
 
@@ -290,12 +288,12 @@ class _AnimatedItemListState extends State<_AnimatedItemList> {
             end: Offset.zero,
           ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOut)),
           child: Container(
-            margin: const EdgeInsets.only(bottom: 16),
+            margin: const EdgeInsets.only(bottom: QuizSpacing.md),
             child: ItemCard(
               item: item,
               onDelete: () async {
                 // Show confirmation dialog
-                final confirmed = await showDialog<bool>(
+                final confirmed = await AppDialog.show<bool>(
                   context: context,
                   builder:
                       (context) => AlertDialog(
@@ -366,13 +364,7 @@ class _AnimatedItemListState extends State<_AnimatedItemList> {
                   } catch (e) {
                     // Show error message
                     if (!mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Failed to delete: $e'),
-                        backgroundColor: Colors.red,
-                        duration: const Duration(seconds: 3),
-                      ),
-                    );
+                    AppSnackBar.showError(context, 'Failed to delete: $e');
                   }
                 }
               },

@@ -98,9 +98,11 @@ class _NoteViewerPageState extends State<NoteViewerPage> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.white,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
+        shadowColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
       ),
       body: Container(
         color: Colors.white,

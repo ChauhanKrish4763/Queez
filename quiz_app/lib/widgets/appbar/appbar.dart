@@ -7,8 +7,10 @@ class Appbar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.white,
       elevation: 0,
+      shadowColor: Colors.transparent,
+      surfaceTintColor: Colors.transparent,
       centerTitle: false,
       automaticallyImplyLeading: false,
       titleSpacing: 0, // Prevents default extra spacing

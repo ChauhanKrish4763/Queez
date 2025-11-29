@@ -3,6 +3,7 @@ import 'package:quiz_app/CreateSection/models/flashcard_set.dart';
 import 'package:quiz_app/CreateSection/services/flashcard_service.dart';
 import 'package:quiz_app/CreateSection/widgets/quiz_saved_dialog.dart';
 import 'package:quiz_app/utils/color.dart';
+import 'package:quiz_app/widgets/core/app_dialog.dart';
 import 'package:uuid/uuid.dart';
 
 class FlashcardCreationPage extends StatefulWidget {
@@ -108,6 +109,7 @@ class FlashcardCreationPageState extends State<FlashcardCreationPage> {
         widget.onSaveForStudySet!(flashcardSet);
 
         if (mounted) {
+<<<<<<< HEAD
           // Show success dialog with custom QuizSavedDialog
           await QuizSavedDialog.show(
             context,
@@ -123,6 +125,18 @@ class FlashcardCreationPageState extends State<FlashcardCreationPage> {
                 });
               }
             },
+=======
+          // Show success dialog and await its dismissal
+          await AppDialog.show(
+            context: context,
+            title: 'Flashcard Set Added!',
+            content: 'Flashcard set has been added to your study set.',
+            primaryActionText: 'OK',
+            primaryActionCallback: () {
+              Navigator.pop(context); // Close dialog only
+            },
+            dismissible: false,
+>>>>>>> 268d31b3678898505e9e1dc612b046dca0f8f812
           );
         }
         return;
@@ -158,25 +172,12 @@ class FlashcardCreationPageState extends State<FlashcardCreationPage> {
     } catch (e, stackTrace) {
       debugPrint('Error in _saveFlashcardSet: $e\n$stackTrace');
       if (mounted) {
-        await showDialog(
+        await AppDialog.show(
           context: context,
-          builder:
-              (dialogContext) => AlertDialog(
-                title: Row(
-                  children: [
-                    Icon(Icons.error, color: Colors.red),
-                    SizedBox(width: 8),
-                    Text('Error'),
-                  ],
-                ),
-                content: Text('Failed to save flashcard set: $e'),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(dialogContext).pop(),
-                    child: Text('OK'),
-                  ),
-                ],
-              ),
+          title: 'Error',
+          content: 'Failed to save flashcard set: $e',
+          primaryActionText: 'OK',
+          primaryActionCallback: () => Navigator.of(context).pop(),
         );
       }
     } finally {
@@ -199,8 +200,10 @@ class FlashcardCreationPageState extends State<FlashcardCreationPage> {
             color: AppColors.textPrimary,
           ),
         ),
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.white,
         elevation: 0,
+        shadowColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
         iconTheme: IconThemeData(color: AppColors.textPrimary),
         actions: [
           Padding(

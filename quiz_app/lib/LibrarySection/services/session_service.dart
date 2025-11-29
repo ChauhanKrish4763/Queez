@@ -13,17 +13,25 @@ class SessionService {
     required String quizId,
     required String hostId,
     required String mode,
+    int? perQuestionTimeLimit,
   }) async {
     try {
+      final Map<String, dynamic> body = {
+        'quiz_id': quizId,
+        'host_id': hostId,
+        'mode': mode,
+      };
+      
+      // Add time settings if provided
+      if (perQuestionTimeLimit != null) {
+        body['per_question_time_limit'] = perQuestionTimeLimit;
+      }
+      
       final response = await http
           .post(
             Uri.parse('$baseUrl/api/multiplayer/create-session'),
             headers: {'Content-Type': 'application/json'},
-            body: jsonEncode({
-              'quiz_id': quizId,
-              'host_id': hostId,
-              'mode': mode,
-            }),
+            body: jsonEncode(body),
           )
           .timeout(
             const Duration(seconds: 30),

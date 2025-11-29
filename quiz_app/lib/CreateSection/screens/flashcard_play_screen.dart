@@ -105,8 +105,10 @@ class _FlashcardPlayScreenState extends State<FlashcardPlayScreen>
         backgroundColor: AppColors.background,
         appBar: AppBar(
           title: const Text('Loading...'),
-          backgroundColor: AppColors.background,
+          backgroundColor: AppColors.white,
           elevation: 0,
+          shadowColor: Colors.transparent,
+          surfaceTintColor: Colors.transparent,
         ),
         body: const Center(child: CircularProgressIndicator()),
       );
@@ -117,8 +119,10 @@ class _FlashcardPlayScreenState extends State<FlashcardPlayScreen>
         backgroundColor: AppColors.background,
         appBar: AppBar(
           title: const Text('Error'),
-          backgroundColor: AppColors.background,
+          backgroundColor: AppColors.white,
           elevation: 0,
+          shadowColor: Colors.transparent,
+          surfaceTintColor: Colors.transparent,
         ),
         body: Center(
           child: Column(
@@ -151,8 +155,10 @@ class _FlashcardPlayScreenState extends State<FlashcardPlayScreen>
         backgroundColor: AppColors.background,
         appBar: AppBar(
           title: const Text('No Cards'),
-          backgroundColor: AppColors.background,
+          backgroundColor: AppColors.white,
           elevation: 0,
+          shadowColor: Colors.transparent,
+          surfaceTintColor: Colors.transparent,
         ),
         body: const Center(child: Text('No flashcards available')),
       );
@@ -172,8 +178,10 @@ class _FlashcardPlayScreenState extends State<FlashcardPlayScreen>
             fontWeight: FontWeight.w700,
           ),
         ),
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.white,
         elevation: 0,
+        shadowColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
         iconTheme: IconThemeData(color: AppColors.textPrimary),
       ),
       body: Column(

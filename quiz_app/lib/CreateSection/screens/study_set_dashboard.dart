@@ -87,7 +87,7 @@ class _StudySetDashboardState extends State<StudySetDashboard> {
                           width: 40,
                           height: 4,
                           decoration: BoxDecoration(
-                            color: AppColors.textSecondary.withOpacity(0.3),
+                            color: AppColors.textSecondary.withValues(alpha: 0.3),
                             borderRadius: BorderRadius.circular(2),
                           ),
                         ),
@@ -151,7 +151,7 @@ class _StudySetDashboardState extends State<StudySetDashboard> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          border: Border.all(color: AppColors.primaryLight.withOpacity(0.3)),
+          border: Border.all(color: AppColors.primaryLight.withValues(alpha: 0.3)),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
@@ -159,7 +159,7 @@ class _StudySetDashboardState extends State<StudySetDashboard> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
+                color: AppColors.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(icon, color: AppColors.primary, size: 28),
@@ -312,8 +312,9 @@ class _StudySetDashboardState extends State<StudySetDashboard> {
       if (user == null) throw Exception('User not authenticated');
 
       final cachedStudySet = StudySetCacheManager.instance.getCurrentStudySet();
-      if (cachedStudySet == null)
+      if (cachedStudySet == null) {
         throw Exception('Study set not found in cache');
+      }
 
       // Save to MongoDB via backend API
       await StudySetService.saveStudySet(cachedStudySet);
@@ -364,9 +365,11 @@ class _StudySetDashboardState extends State<StudySetDashboard> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.white,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
+        shadowColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
         actions: [
           if (quizzes.isNotEmpty ||
               flashcardSets.isNotEmpty ||
@@ -515,7 +518,7 @@ class _StudySetDashboardState extends State<StudySetDashboard> {
                         'Tap the + button to add items',
                         style: TextStyle(
                           fontSize: 14,
-                          color: AppColors.textSecondary.withOpacity(0.7),
+                          color: AppColors.textSecondary.withValues(alpha: 0.7),
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -562,7 +565,7 @@ class _StudySetDashboardState extends State<StudySetDashboard> {
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w700,
-            color: AppColors.textSecondary.withOpacity(0.6),
+            color: AppColors.textSecondary.withValues(alpha: 0.6),
             letterSpacing: 1.2,
           ),
         ),
@@ -594,7 +597,7 @@ class _StudySetDashboardState extends State<StudySetDashboard> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
           decoration: BoxDecoration(
-            color: AppColors.primary.withOpacity(0.15),
+            color: AppColors.primary.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(
@@ -617,14 +620,14 @@ class _StudySetDashboardState extends State<StudySetDashboard> {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.primaryLight.withOpacity(0.2)),
+        border: Border.all(color: AppColors.primaryLight.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
+              color: AppColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(Icons.quiz, color: AppColors.primary, size: 24),
@@ -671,14 +674,14 @@ class _StudySetDashboardState extends State<StudySetDashboard> {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.primaryLight.withOpacity(0.2)),
+        border: Border.all(color: AppColors.primaryLight.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
+              color: AppColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(Icons.style, color: AppColors.primary, size: 24),
@@ -725,14 +728,14 @@ class _StudySetDashboardState extends State<StudySetDashboard> {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.primaryLight.withOpacity(0.2)),
+        border: Border.all(color: AppColors.primaryLight.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
+              color: AppColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(Icons.note, color: AppColors.primary, size: 24),

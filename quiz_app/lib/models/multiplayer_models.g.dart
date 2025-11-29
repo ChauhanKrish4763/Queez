@@ -67,9 +67,12 @@ _GameState _$GameStateFromJson(Map<String, dynamic> json) => _GameState(
   questionIndex: (json['question_index'] as num?)?.toInt() ?? 0,
   totalQuestions: (json['total_questions'] as num?)?.toInt() ?? 0,
   timeRemaining: (json['time_remaining'] as num?)?.toInt() ?? 30,
+  timeLimit: (json['time_limit'] as num?)?.toInt() ?? 30,
   hasAnswered: json['has_answered'] as bool? ?? false,
   isCorrect: json['is_correct'] as bool?,
   pointsEarned: (json['points_earned'] as num?)?.toInt(),
+  timeBonus: (json['time_bonus'] as num?)?.toInt(),
+  multiplier: (json['multiplier'] as num?)?.toDouble(),
   correctAnswer: json['correct_answer'],
   rankings:
       (json['rankings'] as List<dynamic>?)
@@ -85,6 +88,8 @@ _GameState _$GameStateFromJson(Map<String, dynamic> json) => _GameState(
   feedbackCountdown: (json['feedback_countdown'] as num?)?.toInt() ?? 0,
   isHost: json['is_host'] as bool? ?? false,
   currentScore: (json['current_score'] as num?)?.toInt() ?? 0,
+  isPartial: json['is_partial'] as bool? ?? false,
+  partialCredit: (json['partial_credit'] as num?)?.toDouble(),
 );
 
 Map<String, dynamic> _$GameStateToJson(_GameState instance) =>
@@ -93,9 +98,12 @@ Map<String, dynamic> _$GameStateToJson(_GameState instance) =>
       'question_index': instance.questionIndex,
       'total_questions': instance.totalQuestions,
       'time_remaining': instance.timeRemaining,
+      'time_limit': instance.timeLimit,
       'has_answered': instance.hasAnswered,
       'is_correct': instance.isCorrect,
       'points_earned': instance.pointsEarned,
+      'time_bonus': instance.timeBonus,
+      'multiplier': instance.multiplier,
       'correct_answer': instance.correctAnswer,
       'rankings': instance.rankings,
       'last_answer_correct': instance.lastAnswerCorrect,
@@ -107,6 +115,8 @@ Map<String, dynamic> _$GameStateToJson(_GameState instance) =>
       'feedback_countdown': instance.feedbackCountdown,
       'is_host': instance.isHost,
       'current_score': instance.currentScore,
+      'is_partial': instance.isPartial,
+      'partial_credit': instance.partialCredit,
     };
 
 _LeaderboardEntry _$LeaderboardEntryFromJson(Map<String, dynamic> json) =>

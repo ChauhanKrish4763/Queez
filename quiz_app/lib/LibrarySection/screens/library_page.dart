@@ -5,6 +5,9 @@ import 'package:quiz_app/LibrarySection/widgets/add_quiz_modal.dart';
 import 'package:quiz_app/LibrarySection/widgets/library_body.dart';
 import 'package:quiz_app/providers/library_provider.dart';
 import 'package:quiz_app/utils/color.dart';
+import 'package:quiz_app/widgets/core/core_widgets.dart';
+
+import '../../utils/quiz_design_system.dart';
 
 final GlobalKey<LibraryPageState> libraryPageKey =
     GlobalKey<LibraryPageState>();
@@ -37,7 +40,7 @@ class LibraryPageState extends ConsumerState<LibraryPage>
   void initState() {
     super.initState();
     _fadeController = AnimationController(
-      duration: const Duration(milliseconds: 600),
+      duration: QuizAnimations.feedback,
       vsync: this,
     );
     _fadeController.forward();
@@ -70,40 +73,37 @@ class LibraryPageState extends ConsumerState<LibraryPage>
   }
 
   void _showFilterDialog() {
-    showDialog(
+    AppDialog.show(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            title: Text('Filter Library'),
-            content: StatefulBuilder(
-              builder:
-                  (context, setDialogState) => RadioGroup<String?>(
-                    groupValue: _typeFilter,
-                    onChanged: (value) {
-                      setDialogState(() => _typeFilter = value);
-                      setState(() => _typeFilter = value);
-                      Navigator.pop(context);
-                    },
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        RadioListTile<String?>(
-                          title: Text('All Items'),
-                          value: null,
-                        ),
-                        RadioListTile<String?>(
-                          title: Text('Quizzes Only'),
-                          value: 'quiz',
-                        ),
-                        RadioListTile<String?>(
-                          title: Text('Flashcards Only'),
-                          value: 'flashcard',
-                        ),
-                      ],
-                    ),
+      title: 'Filter Library',
+      content: StatefulBuilder(
+        builder:
+            (context, setDialogState) => RadioGroup<String?>(
+              groupValue: _typeFilter,
+              onChanged: (value) {
+                setDialogState(() => _typeFilter = value);
+                setState(() => _typeFilter = value);
+                Navigator.pop(context);
+              },
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  RadioListTile<String?>(
+                    title: const Text('All Items'),
+                    value: null,
                   ),
+                  RadioListTile<String?>(
+                    title: const Text('Quizzes Only'),
+                    value: 'quiz',
+                  ),
+                  RadioListTile<String?>(
+                    title: const Text('Flashcards Only'),
+                    value: 'flashcard',
+                  ),
+                ],
+              ),
             ),
-          ),
+      ),
     );
   }
 

@@ -1,13 +1,15 @@
-import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:quiz_app/CreateSection/models/quiz.dart';
 import 'package:quiz_app/CreateSection/services/quiz_cache_manager.dart';
 import 'package:quiz_app/CreateSection/services/quiz_service.dart';
 import 'package:quiz_app/CreateSection/widgets/quiz_saved_dialog.dart';
+import 'package:quiz_app/utils/color.dart';
+import 'package:quiz_app/widgets/core/app_dialog.dart';
+
 import '../models/question.dart';
 import '../widgets/question_card/question_card.dart';
 import '../widgets/question_navigation.dart';
-import 'package:quiz_app/utils/color.dart';
 
 class QuizQuestions extends StatefulWidget {
   final List<Question>? questions;
@@ -29,6 +31,7 @@ class _QuizQuestionsState extends State<QuizQuestions> {
   int currentQuestionIndex = 0;
   bool isNavigationExpanded = false;
   bool _isLocked = false;
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -89,7 +92,7 @@ class _QuizQuestionsState extends State<QuizQuestions> {
           'Create Quiz Questions',
           style: TextStyle(fontWeight: FontWeight.w600, fontSize: 20),
         ),
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.white,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
         shadowColor: Colors.transparent,
@@ -98,23 +101,44 @@ class _QuizQuestionsState extends State<QuizQuestions> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: GestureDetector(
-              onTap: _saveQuiz,
+              onTap: _isSaving ? null : _saveQuiz,
               child: Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.secondary,
+                  color:
+                      _isSaving
+                          ? AppColors.secondary.withValues(alpha: 0.6)
+                          : AppColors.secondary,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Text(
-                  'Save',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
+                child:
+                    _isSaving
+                        ? SizedBox(
+                          width: 40,
+                          height: 20,
+                          child: Center(
+                            child: SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        )
+                        : Text(
+                          'Save',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
               ),
             ),
           ),
@@ -160,6 +184,12 @@ class _QuizQuestionsState extends State<QuizQuestions> {
   }
 
   Future<void> _saveQuiz() async {
+    if (_isSaving) return;
+
+    setState(() {
+      _isSaving = true;
+    });
+
     debugPrint('Starting _saveQuiz');
     try {
       // Update questions in cache
@@ -251,33 +281,29 @@ class _QuizQuestionsState extends State<QuizQuestions> {
       }
     } catch (e, stackTrace) {
       debugPrint('Error in _saveQuiz: $e\n$stackTrace');
+      setState(() {
+        _isSaving = false;
+      });
       // Show error dialog
       if (mounted) {
-        await showDialog(
+        await AppDialog.show(
           context: context,
-          builder:
-              (dialogContext) => AlertDialog(
-                title: Row(
-                  children: [
-                    Icon(Icons.error, color: Colors.red),
-                    SizedBox(width: 8),
-                    Text('Error'),
-                  ],
-                ),
-                content: Text('Failed to save quiz: $e'),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      if (mounted) {
-                        Navigator.of(dialogContext).pop();
-                        debugPrint('Error dialog dismissed');
-                      }
-                    },
-                    child: Text('OK'),
-                  ),
-                ],
-              ),
+          title: 'Error',
+          content: 'Failed to save quiz: $e',
+          primaryActionText: 'OK',
+          primaryActionCallback: () {
+            if (mounted) {
+              Navigator.of(context).pop();
+              debugPrint('Error dialog dismissed');
+            }
+          },
         );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
       }
     }
   }

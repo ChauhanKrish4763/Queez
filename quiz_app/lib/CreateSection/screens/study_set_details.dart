@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:quiz_app/CreateSection/screens/study_set_dashboard.dart';
+import 'package:quiz_app/CreateSection/services/image_picker_service.dart';
 import 'package:quiz_app/CreateSection/services/study_set_cache_manager.dart';
 import 'package:quiz_app/CreateSection/widgets/custom_dropdown.dart';
 import 'package:quiz_app/CreateSection/widgets/custom_text_field.dart';
@@ -48,9 +48,11 @@ class StudySetDetailsState extends State<StudySetDetails> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.white,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
+        shadowColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
       ),
       body: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
@@ -115,14 +117,19 @@ class StudySetDetailsState extends State<StudySetDetails> {
                     child: ImagePickerWidget(
                       imagePath: _coverImagePath,
                       onTap: () async {
-                        final ImagePicker picker = ImagePicker();
-                        final XFile? image = await picker.pickImage(
-                          source: ImageSource.gallery,
-                        );
-                        if (image != null) {
-                          setState(() {
-                            _coverImagePath = image.path;
-                          });
+                        try {
+                          final imagePath = await ImagePickerService().pickImageFromGallery();
+                          if (imagePath != null) {
+                            setState(() {
+                              _coverImagePath = imagePath;
+                            });
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Error picking image: $e')),
+                            );
+                          }
                         }
                       },
                     ),

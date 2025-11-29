@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quiz_app/utils/animations/page_transition.dart';
 import 'package:quiz_app/utils/color.dart';
+import 'package:quiz_app/utils/quiz_design_system.dart';
+import 'package:quiz_app/widgets/core/core_widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
@@ -38,7 +40,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
 
     _slideController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 400),
+      duration: QuizAnimations.slow,
     );
 
     _confirmPassOffsetAnimation = Tween<Offset>(
@@ -220,9 +222,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
   }
 
   void _showMessage(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    AppSnackBar.showError(context, message);
   }
 
   Widget _buildInputField({
@@ -232,28 +232,12 @@ class _LoginPageState extends ConsumerState<LoginPage>
     bool obscureText = false,
     TextInputType keyboardType = TextInputType.text,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.primaryLighter, width: 2),
-      ),
-      child: TextField(
-        controller: controller,
-        keyboardType: keyboardType,
-        obscureText: obscureText,
-        style: const TextStyle(fontSize: 18, color: Colors.black87),
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: TextStyle(color: Colors.grey[500]),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 20,
-          ),
-          prefixIcon: Icon(icon, color: AppColors.primary),
-        ),
-      ),
+    return AppTextField(
+      controller: controller,
+      hintText: hint,
+      prefixIcon: icon,
+      obscureText: obscureText,
+      keyboardType: keyboardType,
     );
   }
 
@@ -274,20 +258,20 @@ class _LoginPageState extends ConsumerState<LoginPage>
       backgroundColor: AppColors.primaryLight,
       body: Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.symmetric(horizontal: QuizSpacing.lg),
           child: AnimatedSize(
-            duration: const Duration(milliseconds: 400),
+            duration: QuizAnimations.slow,
             curve: Curves.easeInOut,
             child: Container(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(QuizSpacing.lg),
               decoration: BoxDecoration(
                 color: AppColors.background,
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: const [
+                borderRadius: BorderRadius.circular(QuizBorderRadius.xl),
+                boxShadow: [
                   BoxShadow(
-                    color: Colors.black12,
+                    color: AppColors.primary.withValues(alpha: 0.08),
                     blurRadius: 18,
-                    offset: Offset(0, 10),
+                    offset: const Offset(0, 10),
                   ),
                 ],
               ),
@@ -304,7 +288,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: QuizSpacing.sm),
                   Text(
                     _isSignUpMode
                         ? 'Let\'s begin your journey'
@@ -315,7 +299,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 28),
+                  const SizedBox(height: QuizSpacing.xl),
 
                   _buildInputField(
                     controller: _emailController,
@@ -323,7 +307,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
                     icon: Icons.email_outlined,
                     keyboardType: TextInputType.emailAddress,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: QuizSpacing.md),
 
                   _buildInputField(
                     controller: _passwordController,
@@ -338,7 +322,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
                     child: SlideTransition(
                       position: _confirmPassOffsetAnimation,
                       child: Padding(
-                        padding: const EdgeInsets.only(top: 16),
+                        padding: const EdgeInsets.only(top: QuizSpacing.md),
                         child: _buildInputField(
                           controller: _confirmPasswordController,
                           hint: 'Confirm your password',
@@ -349,47 +333,20 @@ class _LoginPageState extends ConsumerState<LoginPage>
                     ),
                   ),
 
-                  const SizedBox(height: 24),
+                  const SizedBox(height: QuizSpacing.lg),
 
                   SlideTransition(
                     position: _buttonOffsetAnimation,
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: ElevatedButton(
-                        onPressed:
-                            _loading
-                                ? null
-                                : _isSignUpMode
-                                ? _signUp
-                                : _login,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primaryLighter,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          elevation: 4,
-                        ),
-                        child:
-                            _loading
-                                ? const CircularProgressIndicator(
-                                  valueColor: AlwaysStoppedAnimation(
-                                    Colors.white,
-                                  ),
-                                )
-                                : Text(
-                                  _isSignUpMode ? 'Sign Up' : 'Login',
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    color: AppColors.secondaryDark,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                      ),
+                    child: AppButton.primary(
+                      text: _isSignUpMode ? 'Sign Up' : 'Login',
+                      onPressed: _isSignUpMode ? _signUp : _login,
+                      isLoading: _loading,
+                      fullWidth: true,
+                      size: AppButtonSize.large,
                     ),
                   ),
 
-                  const SizedBox(height: 18),
+                  const SizedBox(height: QuizSpacing.lg),
 
                   TextButton(
                     onPressed: _loading ? null : _toggleSignUpMode,

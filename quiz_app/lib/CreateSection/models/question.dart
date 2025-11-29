@@ -15,6 +15,7 @@ class Question {
   List<String>? dragItems; // For drag and drop source items
   List<String>? dropTargets; // For drag and drop target areas
   Map<String, String>? correctMatches; // For drag and drop correct pairs
+  int timeLimit; // Time limit in seconds per question (default 30s)
 
   Question({
     required this.id,
@@ -26,6 +27,7 @@ class Question {
     this.dragItems,
     this.dropTargets,
     this.correctMatches,
+    this.timeLimit = 30,
   }) : options = options ?? _getDefaultOptions(type);
 
   static List<String> _getDefaultOptions(QuestionType type) {
@@ -104,6 +106,7 @@ class Question {
       'dragItems': dragItems,
       'dropTargets': dropTargets,
       'correctMatches': correctMatches,
+      'timeLimit': timeLimit,
     };
   }
 
@@ -130,6 +133,7 @@ class Question {
           json['correctMatches'] != null
               ? Map<String, String>.from(json['correctMatches'])
               : null,
+      timeLimit: json['timeLimit'] ?? 30,
     );
   }
 
