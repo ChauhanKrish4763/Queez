@@ -16,19 +16,28 @@ import 'package:quiz_app/utils/color.dart';
 import 'package:quiz_app/utils/quiz_design_system.dart';
 import 'package:quiz_app/widgets/wait_screen.dart';
 
-class ItemCard extends StatelessWidget {
+class ItemCard extends StatefulWidget {
   final LibraryItem item;
   final VoidCallback onDelete;
 
   const ItemCard({super.key, required this.item, required this.onDelete});
 
   @override
+  State<ItemCard> createState() => _ItemCardState();
+}
+
+class _ItemCardState extends State<ItemCard> {
+  bool _isDeleting = false;
+
+  @override
   Widget build(BuildContext context) {
     final Color softRed = AppColors.error.withValues(alpha: 0.1);
 
     // Check if this item was shared in a restrictive mode (only for quizzes)
-    final isRestrictiveMode = item.isQuiz &&
-        (item.sharedMode == 'self_paced' || item.sharedMode == 'timed_individual');
+    final isRestrictiveMode =
+        widget.item.isQuiz &&
+        (widget.item.sharedMode == 'self_paced' ||
+            widget.item.sharedMode == 'timed_individual');
 
     // Show full features if not in restrictive mode
     final showFullFeatures = !isRestrictiveMode;
@@ -38,17 +47,17 @@ class ItemCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(16),
       elevation: 0,
       child: InkWell(
-        onTap: () => _handleItemTap(context),
+        onTap: _isDeleting ? null : () => _handleItemTap(context),
         borderRadius: BorderRadius.circular(16),
         child: Container(
           padding: const EdgeInsets.all(20),
           child: Column(
             children: [
-              _buildHeader(softRed),
+              _buildHeaderWithDelete(softRed),
               _buildCoverImage(),
               _buildTitle(),
-              if (item.originalOwnerUsername != null &&
-                  item.originalOwnerUsername!.isNotEmpty)
+              if (widget.item.originalOwnerUsername != null &&
+                  widget.item.originalOwnerUsername!.isNotEmpty)
                 _buildAuthorInfo(),
               _buildDescription(),
               _buildActionButtons(context, showFullFeatures),
@@ -60,12 +69,14 @@ class ItemCard extends StatelessWidget {
   }
 
   void _handleItemTap(BuildContext context) {
+    if (_isDeleting) return;
+
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
-    if (item.isNote) {
+    if (widget.item.isNote) {
       _navigateToNote(context, user.uid);
-    } else if (item.isFlashcard) {
+    } else if (widget.item.isFlashcard) {
       _navigateToFlashcard(context, user.uid);
     } else {
       _navigateToQuiz(context, user.uid);
@@ -77,24 +88,26 @@ class ItemCard extends StatelessWidget {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => WaitScreen(
-          loadingMessage: 'Loading note',
-          onLoadComplete: () async {
-            loadedNote = await NoteService.getNote(item.id, userId);
-          },
-          onNavigate: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => NoteViewerPage(
-                  noteId: item.id,
-                  userId: userId,
-                  preloadedNote: loadedNote,
-                ),
-              ),
-            );
-          },
-        ),
+        builder:
+            (context) => WaitScreen(
+              loadingMessage: 'Loading note',
+              onLoadComplete: () async {
+                loadedNote = await NoteService.getNote(widget.item.id, userId);
+              },
+              onNavigate: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder:
+                        (context) => NoteViewerPage(
+                          noteId: widget.item.id,
+                          userId: userId,
+                          preloadedNote: loadedNote,
+                        ),
+                  ),
+                );
+              },
+            ),
       ),
     );
   }
@@ -104,24 +117,28 @@ class ItemCard extends StatelessWidget {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => WaitScreen(
-          loadingMessage: 'Loading flashcards',
-          onLoadComplete: () async {
-            loadedFlashcardSet =
-                await FlashcardService.getFlashcardSet(item.id, userId);
-          },
-          onNavigate: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => FlashcardPlayScreen(
-                  flashcardSetId: item.id,
-                  preloadedFlashcardSet: loadedFlashcardSet,
-                ),
-              ),
-            );
-          },
-        ),
+        builder:
+            (context) => WaitScreen(
+              loadingMessage: 'Loading flashcards',
+              onLoadComplete: () async {
+                loadedFlashcardSet = await FlashcardService.getFlashcardSet(
+                  widget.item.id,
+                  userId,
+                );
+              },
+              onNavigate: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder:
+                        (context) => FlashcardPlayScreen(
+                          flashcardSetId: widget.item.id,
+                          preloadedFlashcardSet: loadedFlashcardSet,
+                        ),
+                  ),
+                );
+              },
+            ),
       ),
     );
   }
@@ -131,30 +148,35 @@ class ItemCard extends StatelessWidget {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => WaitScreen(
-          loadingMessage: 'Loading quiz',
-          onLoadComplete: () async {
-            loadedQuestions =
-                await QuizService.fetchQuestionsByQuizId(item.id, userId);
-          },
-          onNavigate: () {
-            Navigator.pushReplacement(
-              context,
-              customRoute(
-                QuizPlayScreen(
-                  quizItem: QuizLibraryItem.fromJson(item.toQuizLibraryItem()),
-                  preloadedQuestions: loadedQuestions,
-                ),
-                AnimationType.slideUp,
-              ),
-            );
-          },
-        ),
+        builder:
+            (context) => WaitScreen(
+              loadingMessage: 'Loading quiz',
+              onLoadComplete: () async {
+                loadedQuestions = await QuizService.fetchQuestionsByQuizId(
+                  widget.item.id,
+                  userId,
+                );
+              },
+              onNavigate: () {
+                Navigator.pushReplacement(
+                  context,
+                  customRoute(
+                    QuizPlayScreen(
+                      quizItem: QuizLibraryItem.fromJson(
+                        widget.item.toQuizLibraryItem(),
+                      ),
+                      preloadedQuestions: loadedQuestions,
+                    ),
+                    AnimationType.slideUp,
+                  ),
+                );
+              },
+            ),
       ),
     );
   }
 
-  Widget _buildHeader(Color softRed) {
+  Widget _buildHeaderWithDelete(Color softRed) {
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: QuizSpacing.md,
@@ -169,7 +191,45 @@ class ItemCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               _buildItemCountTag(),
-              _buildDateAndDeleteButton(softRed),
+              Row(
+                children: [
+                  Text(
+                    widget.item.createdAt ?? 'Unknown',
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  GestureDetector(
+                    onTap: () {
+                      // Prevent tap from propagating to parent InkWell
+                    },
+                    child: Material(
+                      color: softRed,
+                      shape: const CircleBorder(),
+                      child: IconButton(
+                        onPressed: () {
+                          setState(() => _isDeleting = true);
+                          widget.onDelete();
+                        },
+                        icon: const Icon(
+                          Icons.delete_outline,
+                          color: AppColors.error,
+                          size: 20,
+                        ),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(
+                          minWidth: 36,
+                          minHeight: 36,
+                          maxWidth: 36,
+                          maxHeight: 36,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ],
@@ -184,21 +244,27 @@ class ItemCard extends StatelessWidget {
         vertical: QuizSpacing.xs,
       ),
       decoration: BoxDecoration(
-        color: item.isQuiz
-            ? AppColors.primary.withValues(alpha: 0.15)
-            : item.isNote
+        color:
+            widget.item.isQuiz
+                ? AppColors.primary.withValues(alpha: 0.15)
+                : widget.item.isNote
                 ? AppColors.warning.withValues(alpha: 0.15)
                 : AppColors.accentBright.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(QuizBorderRadius.sm),
       ),
       child: Text(
-        item.isQuiz ? 'QUIZ' : item.isNote ? 'NOTE' : 'FLASHCARD SET',
+        widget.item.isQuiz
+            ? 'QUIZ'
+            : widget.item.isNote
+            ? 'NOTE'
+            : 'FLASHCARD SET',
         style: TextStyle(
           fontSize: 11,
           fontWeight: FontWeight.w700,
-          color: item.isQuiz
-              ? AppColors.primary
-              : item.isNote
+          color:
+              widget.item.isQuiz
+                  ? AppColors.primary
+                  : widget.item.isNote
                   ? AppColors.warning
                   : AppColors.accentBright,
           letterSpacing: 0.5,
@@ -220,19 +286,19 @@ class ItemCard extends StatelessWidget {
       child: Row(
         children: [
           Icon(
-            item.isQuiz
+            widget.item.isQuiz
                 ? Icons.quiz_outlined
-                : item.isNote
-                    ? Icons.description_outlined
-                    : Icons.style_outlined,
+                : widget.item.isNote
+                ? Icons.description_outlined
+                : Icons.style_outlined,
             size: 18,
             color: AppColors.primary,
           ),
           const SizedBox(width: 6),
           Text(
-            item.isNote
+            widget.item.isNote
                 ? 'Note'
-                : '${item.itemCount} ${item.isQuiz ? 'Questions' : 'Cards'}',
+                : '${widget.item.itemCount} ${widget.item.isQuiz ? 'Questions' : 'Cards'}',
             style: const TextStyle(
               fontSize: 13,
               color: AppColors.primary,
@@ -244,68 +310,33 @@ class ItemCard extends StatelessWidget {
     );
   }
 
-  Widget _buildDateAndDeleteButton(Color softRed) {
-    return Row(
-      children: [
-        Text(
-          item.createdAt ?? 'Unknown',
-          style: const TextStyle(
-            fontSize: 13,
-            color: AppColors.textSecondary,
-          ),
-        ),
-        const SizedBox(width: 12),
-        InkWell(
-          onTap: onDelete,
-          borderRadius: BorderRadius.circular(QuizBorderRadius.circular),
-          child: Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: softRed,
-              border: Border.all(
-                color: Colors.transparent,
-                width: 2,
-              ),
-            ),
-            child: const Icon(
-              Icons.delete_outline,
-              color: AppColors.error,
-              size: 20,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildCoverImage() {
     return Container(
       height: 160,
       margin: const EdgeInsets.symmetric(horizontal: QuizSpacing.lg),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(QuizBorderRadius.lg),
-        child: item.coverImagePath != null
-            ? Image.network(
-                item.coverImagePath!,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) =>
-                    _buildDefaultIcon(),
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return Container(
-                    color: AppColors.surface,
-                    child: const Center(
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation(AppColors.primary),
-                        strokeWidth: 2,
+        child:
+            widget.item.coverImagePath != null
+                ? Image.network(
+                  widget.item.coverImagePath!,
+                  fit: BoxFit.cover,
+                  errorBuilder:
+                      (context, error, stackTrace) => _buildDefaultIcon(),
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Container(
+                      color: AppColors.surface,
+                      child: const Center(
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation(AppColors.primary),
+                          strokeWidth: 2,
+                        ),
                       ),
-                    ),
-                  );
-                },
-              )
-            : _buildDefaultIcon(),
+                    );
+                  },
+                )
+                : _buildDefaultIcon(),
       ),
     );
   }
@@ -319,7 +350,7 @@ class ItemCard extends StatelessWidget {
         0,
       ),
       child: Text(
-        item.title,
+        widget.item.title,
         style: const TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.w700,
@@ -349,7 +380,7 @@ class ItemCard extends StatelessWidget {
           const SizedBox(width: 6),
           Expanded(
             child: Text(
-              item.originalOwnerUsername!,
+              widget.item.originalOwnerUsername!,
               style: TextStyle(
                 fontSize: 13,
                 color: AppColors.textSecondary.withValues(alpha: 0.8),
@@ -373,7 +404,7 @@ class ItemCard extends StatelessWidget {
         QuizSpacing.lg,
       ),
       child: Text(
-        item.description,
+        widget.item.description,
         style: const TextStyle(
           fontSize: 15,
           color: AppColors.textSecondary,
@@ -393,9 +424,10 @@ class ItemCard extends StatelessWidget {
         QuizSpacing.lg,
         QuizSpacing.lg,
       ),
-      child: item.isNote
-          ? _buildNoteButton(context)
-          : item.isFlashcard
+      child:
+          widget.item.isNote
+              ? _buildNoteButton(context)
+              : widget.item.isFlashcard
               ? _buildFlashcardButton(context)
               : _buildQuizButtons(context, showFullFeatures),
     );
@@ -483,8 +515,8 @@ class ItemCard extends StatelessWidget {
           final hostId = FirebaseAuth.instance.currentUser?.uid ?? 'anonymous';
           showModeSelection(
             context: context,
-            quizId: item.id,
-            quizTitle: item.title,
+            quizId: widget.item.id,
+            quizTitle: widget.item.title,
             hostId: hostId,
           );
         },
