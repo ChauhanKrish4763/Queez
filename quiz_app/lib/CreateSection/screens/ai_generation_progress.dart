@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lottie/lottie.dart';
 import 'package:quiz_app/CreateSection/providers/ai_study_set_provider.dart';
-import 'package:quiz_app/utils/color.dart';
 import 'package:quiz_app/CreateSection/widgets/quiz_saved_dialog.dart';
+import 'package:quiz_app/utils/color.dart';
 
 class AIGenerationProgress extends ConsumerStatefulWidget {
   const AIGenerationProgress({super.key});
@@ -27,7 +27,7 @@ class _AIGenerationProgressState extends ConsumerState<AIGenerationProgress> {
     final notifier = ref.read(aiStudySetProvider.notifier);
 
     try {
-      final studySet = await notifier.generateStudySet();
+      await notifier.generateStudySet();
 
       if (!mounted) return;
 
@@ -80,9 +80,11 @@ class _AIGenerationProgressState extends ConsumerState<AIGenerationProgress> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.red.withOpacity(0.1),
+                      color: Colors.red.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.red.withOpacity(0.3)),
+                      border: Border.all(
+                        color: Colors.red.withValues(alpha: 0.3),
+                      ),
                     ),
                     child: Text(
                       e.toString().replaceAll('Exception: ', ''),
@@ -123,37 +125,41 @@ class _AIGenerationProgressState extends ConsumerState<AIGenerationProgress> {
   Widget build(BuildContext context) {
     final state = ref.watch(aiStudySetProvider);
 
-    return WillPopScope(
-      onWillPop: () async {
-        // Prevent back navigation during generation
-        if (state.isGenerating) {
-          final shouldExit = await showDialog<bool>(
-            context: context,
-            builder:
-                (context) => AlertDialog(
-                  title: const Text('Cancel Generation?'),
-                  content: const Text(
-                    'Are you sure you want to cancel? Your progress will be lost.',
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context, false),
-                      child: const Text('Continue Generating'),
-                    ),
-                    ElevatedButton(
-                      onPressed: () => Navigator.pop(context, true),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        foregroundColor: Colors.white,
-                      ),
-                      child: const Text('Cancel'),
-                    ),
-                  ],
+    return PopScope(
+      canPop: !state.isGenerating,
+      onPopInvokedWithResult: (didPop, result) async {
+        // If already popped or not generating, do nothing
+        if (didPop || !state.isGenerating) return;
+
+        // Show confirmation dialog
+        final shouldExit = await showDialog<bool>(
+          context: context,
+          builder:
+              (context) => AlertDialog(
+                title: const Text('Cancel Generation?'),
+                content: const Text(
+                  'Are you sure you want to cancel? Your progress will be lost.',
                 ),
-          );
-          return shouldExit ?? false;
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: const Text('Continue Generating'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                    ),
+                    child: const Text('Cancel'),
+                  ),
+                ],
+              ),
+        );
+
+        if (shouldExit == true && context.mounted) {
+          Navigator.of(context).pop();
         }
-        return true;
       },
       child: Scaffold(
         backgroundColor: AppColors.background,
@@ -186,7 +192,7 @@ class _AIGenerationProgressState extends ConsumerState<AIGenerationProgress> {
                       return Icon(
                         Icons.auto_awesome,
                         size: 100,
-                        color: AppColors.primary.withOpacity(0.5),
+                        color: AppColors.primary.withValues(alpha: 0.5),
                       );
                     },
                   ),
@@ -225,10 +231,10 @@ class _AIGenerationProgressState extends ConsumerState<AIGenerationProgress> {
                       vertical: 16,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.05),
+                      color: AppColors.primary.withValues(alpha: 0.05),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: AppColors.primary.withOpacity(0.2),
+                        color: AppColors.primary.withValues(alpha: 0.2),
                         width: 1,
                       ),
                     ),
@@ -237,7 +243,7 @@ class _AIGenerationProgressState extends ConsumerState<AIGenerationProgress> {
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: AppColors.primary.withOpacity(0.1),
+                            color: AppColors.primary.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Icon(
@@ -270,9 +276,11 @@ class _AIGenerationProgressState extends ConsumerState<AIGenerationProgress> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.amber.withOpacity(0.1),
+                      color: Colors.amber.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.amber.withOpacity(0.3)),
+                      border: Border.all(
+                        color: Colors.amber.withValues(alpha: 0.3),
+                      ),
                     ),
                     child: Row(
                       children: [

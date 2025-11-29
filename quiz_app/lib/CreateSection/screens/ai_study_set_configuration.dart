@@ -90,7 +90,7 @@ class _AIStudySetConfigurationState
             _showError('Could not access file ${platformFile.name}');
             continue;
           }
-
+          if (!mounted) return;
           // Show loading
           showDialog(
             context: context,
@@ -262,7 +262,8 @@ class _AIStudySetConfigurationState
               children: [
                 Expanded(
                   child: DropdownButtonFormField<String>(
-                    value: _selectedCategory.isEmpty ? null : _selectedCategory,
+                    initialValue:
+                        _selectedCategory.isEmpty ? null : _selectedCategory,
                     decoration: InputDecoration(
                       labelText: 'Category *',
                       border: OutlineInputBorder(
@@ -288,7 +289,7 @@ class _AIStudySetConfigurationState
                 const SizedBox(width: 16),
                 Expanded(
                   child: DropdownButtonFormField<String>(
-                    value: _selectedLanguage.isEmpty ? null : _selectedLanguage,
+                    initialValue: _selectedLanguage.isEmpty ? null : _selectedLanguage,
                     decoration: InputDecoration(
                       labelText: 'Language *',
                       border: OutlineInputBorder(
@@ -367,7 +368,7 @@ class _AIStudySetConfigurationState
             const SizedBox(height: 16),
 
             DropdownButtonFormField<String>(
-              value: state.settings.difficulty,
+              initialValue: state.settings.difficulty,
               decoration: InputDecoration(
                 labelText: 'Difficulty Level',
                 border: OutlineInputBorder(
@@ -451,19 +452,19 @@ class _AIStudySetConfigurationState
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         border: Border.all(
-          color: AppColors.textSecondary.withOpacity(0.3),
+          color: AppColors.textSecondary.withValues(alpha: 0.3),
           width: 2,
           style: BorderStyle.solid,
         ),
         borderRadius: BorderRadius.circular(12),
-        color: AppColors.surface.withOpacity(0.5),
+        color: AppColors.surface.withValues(alpha: 0.5),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.textSecondary.withOpacity(0.1),
+              color: AppColors.textSecondary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
@@ -499,16 +500,19 @@ class _AIStudySetConfigurationState
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.primary.withOpacity(0.05),
+        color: AppColors.primary.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.primary.withOpacity(0.3), width: 1),
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.3),
+          width: 1,
+        ),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
+              color: AppColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(Icons.check_circle, color: AppColors.primary, size: 24),
@@ -573,7 +577,7 @@ class _AIStudySetConfigurationState
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
+                color: AppColors.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
