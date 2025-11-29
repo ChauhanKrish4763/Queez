@@ -108,61 +108,22 @@ class FlashcardCreationPageState extends State<FlashcardCreationPage> {
         widget.onSaveForStudySet!(flashcardSet);
 
         if (mounted) {
-          // Show success dialog and await its dismissal
-          await showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder:
-                (dialogContext) => AlertDialog(
-                  backgroundColor: AppColors.surface,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  title: Row(
-                    children: [
-                      Icon(Icons.check_circle, color: Colors.green, size: 28),
-                      const SizedBox(width: 12),
-                      Text(
-                        'Flashcard Set Added!',
-                        style: TextStyle(
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                  content: Text(
-                    'Flashcard set has been added to your study set.',
-                    style: TextStyle(color: AppColors.textSecondary),
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pop(dialogContext); // Close dialog only
-                      },
-                      child: Text(
-                        'OK',
-                        style: TextStyle(color: AppColors.primary),
-                      ),
-                    ),
-                  ],
-                ),
+          // Show success dialog with custom QuizSavedDialog
+          await QuizSavedDialog.show(
+            context,
+            title: 'Flashcard Set Added!',
+            message: 'Flashcard set has been added to your study set.',
+            onDismiss: () {
+              if (mounted) {
+                // Pop back to dashboard with simple slide animation
+                // Stack: ... -> Dashboard -> FlashcardDetailsPage -> FlashcardCreationPage (current)
+                int popCount = 0;
+                Navigator.of(context).popUntil((route) {
+                  return popCount++ >= 2 || route.isFirst;
+                });
+              }
+            },
           );
-          
-          // After dialog is closed, pop back to dashboard
-          // Stack: ... -> Dashboard -> FlashcardDetailsPage -> FlashcardCreationPage (current)
-          // We need to pop 2 times to get back to Dashboard
-          if (mounted) {
-            // Use a small delay to ensure dialog is fully dismissed
-            await Future.delayed(Duration(milliseconds: 100));
-            if (mounted && Navigator.of(context).canPop()) {
-              Navigator.of(context).pop(); // Pop FlashcardCreationPage
-            }
-            await Future.delayed(Duration(milliseconds: 100));
-            if (mounted && Navigator.of(context).canPop()) {
-              Navigator.of(context).pop(); // Pop FlashcardDetailsPage -> back to Dashboard
-            }
-          }
         }
         return;
       }

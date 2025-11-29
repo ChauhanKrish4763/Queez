@@ -13,20 +13,31 @@ part 'library_provider.g.dart';
 class QuizLibrary extends _$QuizLibrary {
   @override
   Future<List<LibraryItem>> build() async {
-    // Depend on the auth state. If the user logs out, this will auto-rebuild.
-    final authState = ref.watch(appAuthProvider);
+    // Wait for auth state to be fully loaded before proceeding
+    final authState = await ref.watch(appAuthProvider.future);
     final user = FirebaseAuth.instance.currentUser;
 
+    debugPrint(
+      '📚 LIBRARY_PROVIDER - Auth state: loggedIn=${authState.loggedIn}, user=${user?.uid}',
+    );
+
     // Only fetch if the user is logged in.
-    if (authState.value?.loggedIn == true && user != null) {
+    if (authState.loggedIn && user != null) {
+      debugPrint(
+        '📚 LIBRARY_PROVIDER - Fetching library for user: ${user.uid}',
+      );
       final items = await UnifiedLibraryService.getUnifiedLibrary(user.uid);
 
       // Fetch usernames from Firestore for items with originalOwner
       await _fetchUsernames(items);
 
+      debugPrint('📚 LIBRARY_PROVIDER - Fetched ${items.length} items');
       return items;
     } else {
       // Return an empty list if not logged in.
+      debugPrint(
+        '📚 LIBRARY_PROVIDER - User not logged in, returning empty list',
+      );
       return [];
     }
   }
@@ -40,8 +51,7 @@ class QuizLibrary extends _$QuizLibrary {
         items
             .where(
               (item) =>
-                  item.originalOwner != null &&
-                  item.originalOwner!.isNotEmpty,
+                  item.originalOwner != null && item.originalOwner!.isNotEmpty,
             )
             .map((item) => item.originalOwner!)
             .toSet()

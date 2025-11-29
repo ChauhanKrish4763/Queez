@@ -50,22 +50,39 @@ class StudySet {
 
   factory StudySet.fromJson(Map<String, dynamic> json) {
     return StudySet(
-      id: json['id'],
-      name: json['name'],
-      description: json['description'],
-      category: json['category'],
-      language: json['language'],
+      id: json['id'] ?? json['_id'] ?? '',
+      name: json['name'] ?? '',
+      description: json['description'] ?? '',
+      category: json['category'] ?? '',
+      language: json['language'] ?? '',
       coverImagePath: json['coverImagePath'],
-      ownerId: json['ownerId'],
-      quizzes: (json['quizzes'] as List).map((q) => Quiz.fromJson(q)).toList(),
+      ownerId: json['ownerId'] ?? json['owner_id'] ?? '',
+      quizzes:
+          (json['quizzes'] as List? ?? [])
+              .map((q) => Quiz.fromJson(q))
+              .toList(),
       flashcardSets:
-          (json['flashcardSets'] as List)
+          (json['flashcardSets'] as List? ?? [])
               .map((f) => FlashcardSet.fromJson(f))
               .toList(),
-      notes: (json['notes'] as List).map((n) => Note.fromJson(n)).toList(),
-      createdAt: DateTime.parse(json['createdAt']),
-      updatedAt: DateTime.parse(json['updatedAt']),
+      notes:
+          (json['notes'] as List? ?? []).map((n) => Note.fromJson(n)).toList(),
+      createdAt: _parseDate(json['createdAt']),
+      updatedAt: _parseDate(json['updatedAt']),
     );
+  }
+
+  static DateTime _parseDate(dynamic dateValue) {
+    if (dateValue == null) return DateTime.now();
+    if (dateValue is DateTime) return dateValue;
+
+    // Try parsing ISO format first
+    try {
+      return DateTime.parse(dateValue);
+    } catch (e) {
+      // If it's a month/year format like "November, 2025", just return current time
+      return DateTime.now();
+    }
   }
 
   StudySet copyWith({

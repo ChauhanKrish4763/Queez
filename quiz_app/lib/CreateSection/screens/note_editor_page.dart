@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:quiz_app/CreateSection/models/note.dart';
 import 'package:quiz_app/CreateSection/services/note_service.dart';
+import 'package:quiz_app/CreateSection/widgets/quiz_saved_dialog.dart';
 import 'package:quiz_app/utils/color.dart';
 
 class NoteEditorPage extends StatefulWidget {
@@ -73,61 +74,22 @@ class _NoteEditorPageState extends State<NoteEditorPage> {
         widget.onSaveForStudySet!(note);
 
         if (mounted) {
-          // Show success dialog and await its dismissal
-          await showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder:
-                (dialogContext) => AlertDialog(
-                  backgroundColor: AppColors.surface,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  title: Row(
-                    children: [
-                      Icon(Icons.check_circle, color: Colors.green, size: 28),
-                      const SizedBox(width: 12),
-                      Text(
-                        'Note Added!',
-                        style: TextStyle(
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                  content: Text(
-                    'Note has been added to your study set.',
-                    style: TextStyle(color: AppColors.textSecondary),
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pop(dialogContext); // Close dialog only
-                      },
-                      child: Text(
-                        'OK',
-                        style: TextStyle(color: AppColors.primary),
-                      ),
-                    ),
-                  ],
-                ),
+          // Show success dialog with custom QuizSavedDialog
+          await QuizSavedDialog.show(
+            context,
+            title: 'Note Added!',
+            message: 'Note has been added to your study set.',
+            onDismiss: () {
+              if (mounted) {
+                // Pop back to dashboard with simple slide animation
+                // Stack: ... -> Dashboard -> NoteDetailsPage -> NoteEditorPage (current)
+                int popCount = 0;
+                Navigator.of(context).popUntil((route) {
+                  return popCount++ >= 2 || route.isFirst;
+                });
+              }
+            },
           );
-          
-          // After dialog is closed, pop back to dashboard
-          // Stack: ... -> Dashboard -> NoteDetailsPage -> NoteEditorPage (current)
-          // We need to pop 2 times to get back to Dashboard
-          if (mounted) {
-            // Use a small delay to ensure dialog is fully dismissed
-            await Future.delayed(Duration(milliseconds: 100));
-            if (mounted && Navigator.of(context).canPop()) {
-              Navigator.of(context).pop(); // Pop NoteEditorPage
-            }
-            await Future.delayed(Duration(milliseconds: 100));
-            if (mounted && Navigator.of(context).canPop()) {
-              Navigator.of(context).pop(); // Pop NoteDetailsPage -> back to Dashboard
-            }
-          }
         }
         return;
       }

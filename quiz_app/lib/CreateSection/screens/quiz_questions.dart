@@ -36,9 +36,11 @@ class _QuizQuestionsState extends State<QuizQuestions> {
     debugPrint('========================================');
     debugPrint('QuizQuestions initialized');
     debugPrint('isStudySetMode: ${widget.isStudySetMode}');
-    debugPrint('onSaveForStudySet callback: ${widget.onSaveForStudySet != null ? "PROVIDED" : "NULL"}');
+    debugPrint(
+      'onSaveForStudySet callback: ${widget.onSaveForStudySet != null ? "PROVIDED" : "NULL"}',
+    );
     debugPrint('========================================');
-    
+
     if (widget.questions != null && widget.questions!.isNotEmpty) {
       questions = List.from(widget.questions!);
       _isLocked = true;
@@ -178,71 +180,31 @@ class _QuizQuestionsState extends State<QuizQuestions> {
         debugPrint('STUDY SET MODE DETECTED - NOT SAVING TO DATABASE');
         debugPrint('Adding quiz to study set cache only');
         debugPrint('========================================');
-        
+
         widget.onSaveForStudySet!(quiz);
         QuizCacheManager.instance.clearCache();
 
         if (mounted) {
-          // Show success dialog and await its dismissal
-          await showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder:
-                (dialogContext) => AlertDialog(
-                  backgroundColor: AppColors.surface,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  title: Row(
-                    children: [
-                      Icon(Icons.check_circle, color: Colors.green, size: 28),
-                      const SizedBox(width: 12),
-                      Text(
-                        'Quiz Added!',
-                        style: TextStyle(
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                  content: Text(
-                    'Quiz has been added to your study set.',
-                    style: TextStyle(color: AppColors.textSecondary),
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pop(dialogContext); // Close dialog only
-                      },
-                      child: Text(
-                        'OK',
-                        style: TextStyle(color: AppColors.primary),
-                      ),
-                    ),
-                  ],
-                ),
+          // Show success dialog with custom QuizSavedDialog
+          await QuizSavedDialog.show(
+            context,
+            title: 'Quiz Added!',
+            message: 'Quiz has been added to your study set.',
+            onDismiss: () {
+              debugPrint('Dialog dismissed, now popping navigation stack...');
+
+              if (mounted) {
+                // Pop back to dashboard with simple slide animation
+                // Stack: ... -> Dashboard -> QuizDetails -> QuizQuestions (current)
+                // Pop to Dashboard (2 screens back)
+                int popCount = 0;
+                Navigator.of(context).popUntil((route) {
+                  return popCount++ >= 2 || route.isFirst;
+                });
+                debugPrint('Navigation complete - should be at Dashboard now');
+              }
+            },
           );
-          
-          debugPrint('Dialog dismissed, now popping navigation stack...');
-          
-          // After dialog is closed, pop back to dashboard
-          // Stack: ... -> Dashboard -> QuizDetails -> QuizQuestions (current)
-          // We need to pop 2 times to get back to Dashboard
-          if (mounted) {
-            // Use a small delay to ensure dialog is fully dismissed
-            await Future.delayed(Duration(milliseconds: 100));
-            if (mounted && Navigator.of(context).canPop()) {
-              debugPrint('Popping QuizQuestions (1/2)...');
-              Navigator.of(context).pop();
-            }
-            await Future.delayed(Duration(milliseconds: 100));
-            if (mounted && Navigator.of(context).canPop()) {
-              debugPrint('Popping QuizDetails (2/2)...');
-              Navigator.of(context).pop();
-            }
-            debugPrint('Navigation complete - should be at Dashboard now');
-          }
         }
         debugPrint('Returning early - database save will NOT execute');
         return;

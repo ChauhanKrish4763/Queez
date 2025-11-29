@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:quiz_app/utils/color.dart';
-import 'package:quiz_app/CreateSection/models/study_set.dart';
 import 'package:quiz_app/CreateSection/models/quiz.dart';
 import 'package:quiz_app/CreateSection/models/flashcard_set.dart';
 import 'package:quiz_app/CreateSection/models/note.dart';
@@ -11,7 +10,10 @@ import 'package:quiz_app/CreateSection/services/study_set_service.dart';
 import 'package:quiz_app/CreateSection/screens/quiz_details.dart';
 import 'package:quiz_app/CreateSection/screens/flashcard_details_page.dart';
 import 'package:quiz_app/CreateSection/screens/note_details_page.dart';
+import 'package:quiz_app/CreateSection/widgets/quiz_saved_dialog.dart';
+import 'package:quiz_app/LibrarySection/screens/library_page.dart';
 import 'package:quiz_app/utils/animations/page_transition.dart';
+import 'package:quiz_app/utils/globals.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class StudySetDashboard extends StatefulWidget {
@@ -198,89 +200,95 @@ class _StudySetDashboardState extends State<StudySetDashboard> {
   }
 
   void _navigateToQuizCreation() {
-    Navigator.of(context).push(
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) {
-          return PageTransition(
-            animation: animation,
-            animationType: AnimationType.slideLeft,
-            child: QuizDetails(
-              isStudySetMode: true,
-              onSaveForStudySet: (Quiz quiz) {
-                StudySetCacheManager.instance.addQuizToStudySet(quiz);
-                setState(() {
-                  _loadCachedItems();
-                });
-              },
-            ),
-          );
-        },
-        transitionDuration: const Duration(milliseconds: 300),
-      ),
-    ).then((_) {
-      // Reload items when returning to dashboard
-      setState(() {
-        _loadCachedItems();
-      });
-    });
+    Navigator.of(context)
+        .push(
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) {
+              return PageTransition(
+                animation: animation,
+                animationType: AnimationType.slideLeft,
+                child: QuizDetails(
+                  isStudySetMode: true,
+                  onSaveForStudySet: (Quiz quiz) {
+                    StudySetCacheManager.instance.addQuizToStudySet(quiz);
+                    setState(() {
+                      _loadCachedItems();
+                    });
+                  },
+                ),
+              );
+            },
+            transitionDuration: const Duration(milliseconds: 300),
+          ),
+        )
+        .then((_) {
+          // Reload items when returning to dashboard
+          setState(() {
+            _loadCachedItems();
+          });
+        });
   }
 
   void _navigateToFlashcardCreation() {
-    Navigator.of(context).push(
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) {
-          return PageTransition(
-            animation: animation,
-            animationType: AnimationType.slideLeft,
-            child: FlashcardDetailsPage(
-              isStudySetMode: true,
-              onSaveForStudySet: (FlashcardSet flashcardSet) {
-                StudySetCacheManager.instance.addFlashcardSetToStudySet(
-                  flashcardSet,
-                );
-                setState(() {
-                  _loadCachedItems();
-                });
-              },
-            ),
-          );
-        },
-        transitionDuration: const Duration(milliseconds: 300),
-      ),
-    ).then((_) {
-      // Reload items when returning to dashboard
-      setState(() {
-        _loadCachedItems();
-      });
-    });
+    Navigator.of(context)
+        .push(
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) {
+              return PageTransition(
+                animation: animation,
+                animationType: AnimationType.slideLeft,
+                child: FlashcardDetailsPage(
+                  isStudySetMode: true,
+                  onSaveForStudySet: (FlashcardSet flashcardSet) {
+                    StudySetCacheManager.instance.addFlashcardSetToStudySet(
+                      flashcardSet,
+                    );
+                    setState(() {
+                      _loadCachedItems();
+                    });
+                  },
+                ),
+              );
+            },
+            transitionDuration: const Duration(milliseconds: 300),
+          ),
+        )
+        .then((_) {
+          // Reload items when returning to dashboard
+          setState(() {
+            _loadCachedItems();
+          });
+        });
   }
 
   void _navigateToNoteCreation() {
-    Navigator.of(context).push(
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) {
-          return PageTransition(
-            animation: animation,
-            animationType: AnimationType.slideLeft,
-            child: NoteDetailsPage(
-              isStudySetMode: true,
-              onSaveForStudySet: (Note note) {
-                StudySetCacheManager.instance.addNoteToStudySet(note);
-                setState(() {
-                  _loadCachedItems();
-                });
-              },
-            ),
-          );
-        },
-        transitionDuration: const Duration(milliseconds: 300),
-      ),
-    ).then((_) {
-      // Reload items when returning to dashboard
-      setState(() {
-        _loadCachedItems();
-      });
-    });
+    Navigator.of(context)
+        .push(
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) {
+              return PageTransition(
+                animation: animation,
+                animationType: AnimationType.slideLeft,
+                child: NoteDetailsPage(
+                  isStudySetMode: true,
+                  onSaveForStudySet: (Note note) {
+                    StudySetCacheManager.instance.addNoteToStudySet(note);
+                    setState(() {
+                      _loadCachedItems();
+                    });
+                  },
+                ),
+              );
+            },
+            transitionDuration: const Duration(milliseconds: 300),
+          ),
+        )
+        .then((_) {
+          // Reload items when returning to dashboard
+          setState(() {
+            _loadCachedItems();
+          });
+        });
   }
 
   Future<void> _saveStudySet() async {
@@ -308,58 +316,28 @@ class _StudySetDashboardState extends State<StudySetDashboard> {
         throw Exception('Study set not found in cache');
 
       // Save to MongoDB via backend API
-      final studySetId = await StudySetService.saveStudySet(cachedStudySet);
+      await StudySetService.saveStudySet(cachedStudySet);
       StudySetCacheManager.instance.clearCache();
 
       if (!mounted) return;
 
       // Show success dialog and navigate to library
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder:
-            (context) => AlertDialog(
-              backgroundColor: AppColors.surface,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              title: Row(
-                children: [
-                  Icon(Icons.check_circle, color: Colors.green, size: 28),
-                  const SizedBox(width: 12),
-                  Text(
-                    'Success!',
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-              content: Text(
-                'Your study set has been saved successfully.',
-                style: TextStyle(color: AppColors.textSecondary),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context); // Close dialog
-                    Navigator.pop(context); // Go back to create page
-                    // Navigate to library section (index 1 in bottom navigation)
-                    // The library will fetch study sets via GET request
-                    Navigator.of(context).pushNamedAndRemoveUntil(
-                      '/home',
-                      (route) => false,
-                      arguments: 1, // Index for library tab
-                    );
-                  },
-                  child: Text(
-                    'View in Library',
-                    style: TextStyle(color: AppColors.primary),
-                  ),
-                ),
-              ],
-            ),
+      await QuizSavedDialog.show(
+        context,
+        title: 'Success!',
+        message: 'Your study set has been saved successfully.',
+        onDismiss: () {
+          if (mounted) {
+            // Pop back to dashboard
+            Navigator.of(context).popUntil((route) => route.isFirst);
+
+            // Switch to library tab (index 1) and trigger GET request
+            bottomNavbarKey.currentState?.setIndex(1);
+
+            // Trigger library reload to fetch the new study set
+            LibraryPage.reloadItems();
+          }
+        },
       );
     } catch (e) {
       if (!mounted) return;

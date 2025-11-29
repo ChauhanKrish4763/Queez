@@ -14,7 +14,7 @@ class CreatePage extends StatelessWidget {
   }
 
   void _onStudySetTap(BuildContext context) {
-    customNavigate(context, '/study_set_details', AnimationType.fade);
+    customNavigate(context, '/study_set_mode_selection', AnimationType.fade);
   }
 
   @override

@@ -87,11 +87,18 @@ class StudySetService {
           );
 
       debugPrint('Response status code: ${response.statusCode}');
+      debugPrint('Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        return StudySet.fromJson(data);
+        // Backend returns { "success": true, "studySet": {...} }
+        if (data['studySet'] != null) {
+          debugPrint('Study set data found, parsing...');
+          return StudySet.fromJson(data['studySet']);
+        }
+        return null;
       } else if (response.statusCode == 404) {
+        debugPrint('Study set not found (404)');
         return null;
       } else {
         final errorBody = jsonDecode(response.body);

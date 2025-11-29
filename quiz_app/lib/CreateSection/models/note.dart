@@ -37,15 +37,15 @@ class Note {
 
   factory Note.fromJson(Map<String, dynamic> json) {
     return Note(
-      id: json['id'],
-      title: json['title'],
-      description: json['description'],
-      category: json['category'],
+      id: json['id'] ?? json['_id'] ?? '',
+      title: json['title'] ?? '',
+      description: json['description'] ?? '',
+      category: json['category'] ?? '',
       coverImagePath: json['coverImagePath'],
-      creatorId: json['creatorId'],
-      content: json['content'],
-      createdAt: json['createdAt'],
-      updatedAt: json['updatedAt'],
+      creatorId: json['creatorId'] ?? json['creator_id'] ?? '',
+      content: json['content'] ?? '',
+      createdAt: json['createdAt'] ?? '',
+      updatedAt: json['updatedAt'] ?? '',
     );
   }
 }

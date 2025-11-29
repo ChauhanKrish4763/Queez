@@ -1,6 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:quiz_app/CreateSection/services/flashcard_service.dart';
+import 'package:quiz_app/CreateSection/services/note_service.dart';
 import 'package:quiz_app/CreateSection/services/quiz_service.dart';
+import 'package:quiz_app/CreateSection/services/study_set_service.dart';
 import 'package:quiz_app/LibrarySection/models/library_item.dart';
 import 'package:quiz_app/LibrarySection/widgets/item_card.dart';
 import 'package:quiz_app/utils/color.dart';
@@ -297,7 +300,13 @@ class _AnimatedItemListState extends State<_AnimatedItemList> {
                   builder:
                       (context) => AlertDialog(
                         title: Text(
-                          'Delete ${item.isQuiz ? 'Quiz' : 'Flashcard Set'}',
+                          'Delete ${item.isQuiz
+                              ? 'Quiz'
+                              : item.isNote
+                              ? 'Note'
+                              : item.isStudySet
+                              ? 'Study Set'
+                              : 'Flashcard Set'}',
                         ),
                         content: Text(
                           'Are you sure you want to delete "${item.title}"?',
@@ -323,8 +332,15 @@ class _AnimatedItemListState extends State<_AnimatedItemList> {
                     // Delete from backend based on type
                     if (item.isQuiz) {
                       await QuizService.deleteQuiz(item.id);
-                    } else {
+                    } else if (item.isFlashcard) {
                       await FlashcardService.deleteFlashcardSet(item.id);
+                    } else if (item.isNote) {
+                      final user = FirebaseAuth.instance.currentUser;
+                      if (user != null) {
+                        await NoteService.deleteNote(item.id, user.uid);
+                      }
+                    } else if (item.isStudySet) {
+                      await StudySetService.deleteStudySet(item.id);
                     }
 
                     // Remove item with animation
@@ -335,7 +351,13 @@ class _AnimatedItemListState extends State<_AnimatedItemList> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
-                          '${item.isQuiz ? 'Quiz' : 'Flashcard set'} deleted successfully',
+                          '${item.isQuiz
+                              ? 'Quiz'
+                              : item.isNote
+                              ? 'Note'
+                              : item.isStudySet
+                              ? 'Study Set'
+                              : 'Flashcard set'} deleted successfully',
                         ),
                         backgroundColor: Colors.green,
                         duration: Duration(seconds: 2),

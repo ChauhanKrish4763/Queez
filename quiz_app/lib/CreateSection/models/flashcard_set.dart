@@ -50,14 +50,17 @@ class FlashcardSet {
 
   factory FlashcardSet.fromJson(Map<String, dynamic> json) {
     return FlashcardSet(
-      id: json['id'],
-      title: json['title'],
-      description: json['description'],
-      category: json['category'],
+      id: json['id'] ?? json['_id'] ?? '',
+      title: json['title'] ?? '',
+      description: json['description'] ?? '',
+      category: json['category'] ?? '',
       coverImagePath: json['coverImagePath'],
-      creatorId: json['creatorId'],
-      cards: (json['cards'] as List).map((c) => Flashcard.fromJson(c)).toList(),
-      createdAt: json['createdAt'],
+      creatorId: json['creatorId'] ?? json['creator_id'] ?? '',
+      cards:
+          (json['cards'] as List? ?? [])
+              .map((c) => Flashcard.fromJson(c))
+              .toList(),
+      createdAt: json['createdAt'] ?? '',
     );
   }
 }

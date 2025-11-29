@@ -1,8 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:quiz_app/CreateSection/models/note.dart';
+import 'package:quiz_app/CreateSection/models/study_set.dart';
 import 'package:quiz_app/CreateSection/screens/flashcard_play_screen_new.dart';
 import 'package:quiz_app/CreateSection/screens/note_viewer_page.dart';
+import 'package:quiz_app/CreateSection/screens/study_set_viewer.dart';
 import 'package:quiz_app/LibrarySection/PlaySection/screens/quiz_play_screen.dart';
 import 'package:quiz_app/LibrarySection/models/library_item.dart';
 import 'package:quiz_app/LibrarySection/screens/mode_selection_sheet.dart';
@@ -13,6 +15,7 @@ import 'package:quiz_app/widgets/wait_screen.dart';
 import 'package:quiz_app/CreateSection/services/flashcard_service.dart';
 import 'package:quiz_app/CreateSection/services/quiz_service.dart';
 import 'package:quiz_app/CreateSection/services/note_service.dart';
+import 'package:quiz_app/CreateSection/services/study_set_service.dart';
 
 class ItemCard extends StatelessWidget {
   final LibraryItem item;
@@ -71,6 +74,8 @@ class ItemCard extends StatelessWidget {
                               ? AppColors.primary.withValues(alpha: 0.15)
                               : item.isNote
                               ? AppColors.warning.withValues(alpha: 0.15)
+                              : item.isStudySet
+                              ? AppColors.secondary.withValues(alpha: 0.15)
                               : AppColors.accentBright.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(6),
                     ),
@@ -79,6 +84,8 @@ class ItemCard extends StatelessWidget {
                           ? 'QUIZ'
                           : item.isNote
                           ? 'NOTE'
+                          : item.isStudySet
+                          ? 'STUDY SET'
                           : 'FLASHCARD SET',
                       style: TextStyle(
                         fontSize: 11,
@@ -88,6 +95,8 @@ class ItemCard extends StatelessWidget {
                                 ? AppColors.primary
                                 : item.isNote
                                 ? AppColors.warning
+                                : item.isStudySet
+                                ? AppColors.secondary
                                 : AppColors.accentBright,
                         letterSpacing: 0.5,
                       ),
@@ -115,6 +124,8 @@ class ItemCard extends StatelessWidget {
                                   ? Icons.quiz_outlined
                                   : item.isNote
                                   ? Icons.description_outlined
+                                  : item.isStudySet
+                                  ? Icons.collections_bookmark_outlined
                                   : Icons.style_outlined,
                               size: 18,
                               color: AppColors.primary,
@@ -123,6 +134,8 @@ class ItemCard extends StatelessWidget {
                             Text(
                               item.isNote
                                   ? 'Note'
+                                  : item.isStudySet
+                                  ? '${item.itemCount} Items'
                                   : '${item.itemCount} ${item.isQuiz ? 'Questions' : 'Cards'}',
                               style: const TextStyle(
                                 fontSize: 13,
@@ -262,17 +275,50 @@ class ItemCard extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            // Buttons - Different layout for Quiz vs Flashcard vs Note
+            // Buttons - Different layout for Quiz vs Flashcard vs Note vs Study Set
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
               child:
-                  item.isNote
-                      ? // Notes: Only View button (full width)
+                  item.isNote || item.isStudySet
+                      ? // Notes and Study Sets: Only View button (full width)
                       SizedBox(
                         width: double.infinity,
                         height: 48,
                         child: ElevatedButton.icon(
                           onPressed: () {
+                            if (item.isStudySet) {
+                              StudySet? loadedStudySet;
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (context) => WaitScreen(
+                                        loadingMessage: 'Loading study set',
+                                        onLoadComplete: () async {
+                                          // Preload study set and store it
+                                          loadedStudySet =
+                                              await StudySetService.fetchStudySetById(
+                                                item.id,
+                                              );
+                                        },
+                                        onNavigate: () {
+                                          Navigator.pushReplacement(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder:
+                                                  (context) => StudySetViewer(
+                                                    studySetId: item.id,
+                                                    preloadedStudySet:
+                                                        loadedStudySet,
+                                                  ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                ),
+                              );
+                              return;
+                            }
                             final user = FirebaseAuth.instance.currentUser;
                             if (user != null) {
                               Note? loadedNote;
@@ -313,15 +359,15 @@ class ItemCard extends StatelessWidget {
                             size: 20,
                             color: AppColors.white,
                           ),
-                          label: const Text(
+                          label: Text(
                             'View',
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.warning,
+                            backgroundColor: AppColors.primary,
                             foregroundColor: AppColors.white,
                             elevation: 0,
                             shape: RoundedRectangleBorder(

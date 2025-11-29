@@ -1,0 +1,190 @@
+import 'dart:convert';
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:quiz_app/CreateSection/models/ai_study_set_models.dart';
+import 'package:quiz_app/CreateSection/models/study_set.dart';
+import 'package:quiz_app/api_config.dart';
+import 'package:http_parser/http_parser.dart';
+
+class AIStudySetService {
+  static const String baseUrl = ApiConfig.baseUrl;
+
+  static Map<String, String> get _headers => {
+    'Content-Type': 'application/json',
+  };
+
+  /// Get resumable upload URL from backend
+  static Future<String> getUploadUrl({
+    required String fileName,
+    required String mimeType,
+  }) async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) throw Exception('User not authenticated');
+
+      final token = await user.getIdToken();
+
+      final response = await http
+          .post(
+            Uri.parse('$baseUrl/ai/get-upload-url'),
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            },
+            body: jsonEncode({'file_name': fileName, 'mime_type': mimeType}),
+          )
+          .timeout(
+            const Duration(seconds: 30),
+            onTimeout: () {
+              throw Exception('Request timed out');
+            },
+          );
+
+      debugPrint('Upload URL response: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['uploadUrl'];
+      } else {
+        final error = jsonDecode(response.body);
+        throw Exception(error['detail'] ?? 'Failed to get upload URL');
+      }
+    } catch (e) {
+      debugPrint('Error getting upload URL: $e');
+      rethrow;
+    }
+  }
+
+  /// Upload file using resumable upload URL
+  static Future<UploadedFile> uploadFileToGemini({required File file}) async {
+    try {
+      debugPrint('Uploading file to Gemini: ${file.path}');
+
+      final fileName = file.path.split(Platform.pathSeparator).last;
+      final fileBytes = await file.readAsBytes();
+      final fileSize = fileBytes.length;
+
+      // Determine MIME type
+      String mimeType = 'application/octet-stream';
+      if (fileName.toLowerCase().endsWith('.pdf')) {
+        mimeType = 'application/pdf';
+      } else if (fileName.toLowerCase().endsWith('.pptx')) {
+        mimeType =
+            'application/vnd.openxmlformats-officedocument.presentationml.presentation';
+      } else if (fileName.toLowerCase().endsWith('.ppt')) {
+        mimeType = 'application/vnd.ms-powerpoint';
+      } else if (fileName.toLowerCase().endsWith('.docx')) {
+        mimeType =
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+      } else if (fileName.toLowerCase().endsWith('.doc')) {
+        mimeType = 'application/msword';
+      } else if (fileName.toLowerCase().endsWith('.txt')) {
+        mimeType = 'text/plain';
+      }
+
+      debugPrint('File: $fileName, Size: $fileSize bytes, MIME: $mimeType');
+
+      // Get resumable upload URL from backend
+      final uploadUrl = await getUploadUrl(
+        fileName: fileName,
+        mimeType: mimeType,
+      );
+
+      debugPrint('Got upload URL, uploading file...');
+
+      // Upload file data using resumable protocol
+      final uploadResponse = await http
+          .put(
+            Uri.parse(uploadUrl),
+            headers: {
+              'Content-Length': fileSize.toString(),
+              'X-Goog-Upload-Offset': '0',
+              'X-Goog-Upload-Command': 'upload, finalize',
+            },
+            body: fileBytes,
+          )
+          .timeout(
+            const Duration(minutes: 2),
+            onTimeout: () {
+              throw Exception('Upload timed out');
+            },
+          );
+
+      debugPrint('Gemini upload response: ${uploadResponse.statusCode}');
+      debugPrint('Response body: ${uploadResponse.body}');
+
+      if (uploadResponse.statusCode == 200) {
+        final data = jsonDecode(uploadResponse.body);
+        final fileData = data['file'];
+
+        return UploadedFile(
+          fileName: fileData['displayName'] ?? fileName,
+          fileUri: fileData['uri'] ?? fileData['name'],
+          fileSize: fileSize,
+          mimeType: fileData['mimeType'] ?? mimeType,
+        );
+      } else {
+        throw Exception('Upload failed: ${uploadResponse.body}');
+      }
+    } catch (e) {
+      debugPrint('Error uploading file to Gemini: $e');
+      rethrow;
+    }
+  }
+
+  /// Generate study set using uploaded file URIs
+  static Future<StudySet> generateStudySet({
+    required List<String> fileUris,
+    required StudySetConfig config,
+    required GenerationSettings settings,
+  }) async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) throw Exception('User not authenticated');
+
+      final token = await user.getIdToken();
+
+      debugPrint('Generating study set with ${fileUris.length} files');
+
+      final response = await http
+          .post(
+            Uri.parse('$baseUrl/ai/generate-study-set'),
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            },
+            body: jsonEncode({
+              'fileUris': fileUris,
+              'config': config.toJson(),
+              'settings': settings.toJson(),
+            }),
+          )
+          .timeout(
+            const Duration(minutes: 3),
+            onTimeout: () {
+              throw Exception(
+                'Generation timed out. Please try with smaller documents.',
+              );
+            },
+          );
+
+      debugPrint('Generation response: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['studySet'] != null) {
+          return StudySet.fromJson(data['studySet']);
+        }
+        throw Exception('Invalid response format');
+      } else {
+        final error = jsonDecode(response.body);
+        throw Exception(error['error'] ?? 'Generation failed');
+      }
+    } catch (e) {
+      debugPrint('Error generating study set: $e');
+      rethrow;
+    }
+  }
+}
